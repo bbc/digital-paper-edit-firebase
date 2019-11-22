@@ -63,8 +63,8 @@
     "clean:cache": "npm cache clean --force",
     "deploy:all": "rimraf build && npm run build && firebase deploy",
     "deploy:ghpages": "rimraf build && cross-env REACT_APP_NODE_ENV=demo npm run build && gh-pages -d build",
-    "deploy:dev:hosting": "rimraf build && npm run build && firebase deploy --only hosting:digital-paper-edit-dev",
-    "deploy:prod:hosting": "rimraf build && npm run build && firebase deploy --only hosting:digital-paper-edit",
+    "deploy:dev:hosting": "rimraf build && npm run build && firebase deploy -P dev --only hosting:digital-paper-edit-dev",
+    "deploy:prod:hosting": "rimraf build && npm run build && firebase deploy -P prod --only hosting:digital-paper-edit",
     "publish:prep": "npm run build && cp package.json ./build/package.json && cp README.md ./build/README.md && rimraf ./build/db",
     "publish:public": "npm run publish:prep && npm publish build --access public"
   },
