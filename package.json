@@ -35,11 +35,10 @@
     "react-scripts": "3.0.1",
     "react-select": "^2.4.3",
     "react-sortable-hoc": "^1.9.1",
-    "react-with-firebase-auth": "^1.1.0",
     "recompose": "^0.30.0",
     "videocontext": "^0.53.1"
   },
-  "author": "Pietro Passarelli CC0 BBC 2019",
+  "author": "BBC 2019",
   "contributors": [
     ""
   ],
@@ -64,8 +63,7 @@
     "clean:cache": "npm cache clean --force",
     "deploy:ghpages": "rimraf build && cross-env REACT_APP_NODE_ENV=demo npm run build && gh-pages -d build",
     "publish:prep": "npm run build && cp package.json ./build/package.json && cp README.md ./build/README.md && rimraf ./build/db",
-    "publish:public": "npm run publish:prep && npm publish build --access public",
-    "spec": "speculate --name=digital-paper-edit-client --release ${BUILD_NUMBER}"
+    "publish:public": "npm run publish:prep && npm publish build --access public"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -85,24 +83,7 @@
     "eslint-plugin-react-hooks": "^2.1.2",
     "gh-pages": "^2.0.1",
     "http-proxy-middleware": "^0.20.0",
-    "npm-run-all": "^4.1.5",
-    "speculate": "^2.0.0"
-  },
-  "spec": {
-    "prune": false,
-    "requires": [
-      "cloud-httpd24-ssl-services-devs-staff"
-    ],
-    "buildRequires": [
-      "python"
-    ],
-    "executable": [
-      "./bake-scripts/*"
-    ],
-    "post": [
-      "mkdir -p /etc/bake-scripts/digital-paper-edit-client",
-      "cp -rf /usr/lib/digital-paper-edit-client/bake-scripts/* /etc/bake-scripts/digital-paper-edit-client/"
-    ]
+    "npm-run-all": "^4.1.5"
   },
   "jest": {}
 }
