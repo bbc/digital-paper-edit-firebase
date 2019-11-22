@@ -14,11 +14,12 @@ class Firebase {
   constructor() {
     app.initializeApp(config);
     this.auth = app.auth();
-    this.db = app.firestore();
+    const firestore = app.firestore();
+    this.db = firestore.collection('apps').doc('digital-paper-edit');
   }
 
-  userRef = uid => this.db.doc(`users/${ uid }`);
   usersRef = () => this.db.collection('users');
+  userRef = uid => this.usersRef().doc(`${ uid }`);
 
   user = async uid => await this.userRef(uid).get();
   users = async () => await this.usersRef().get();
@@ -27,12 +28,15 @@ class Firebase {
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged(async authUser => {
       if (authUser) {
-        const dbSnapshot = await this.user(authUser.uid);
+        const dbUserRef = this.userRef(authUser.uid);
+        const dbSnapshot = await dbUserRef.get();
         const dbUser = dbSnapshot.data();
 
-        // default empty roles
-        if (!dbUser.roles) {
-          dbUser.roles = {};
+        if (!dbSnapshot.exists || !dbUser) {
+          dbUserRef.set({
+            projects: [],
+            roles: {}
+          });
         }
 
         // merge auth and db user
