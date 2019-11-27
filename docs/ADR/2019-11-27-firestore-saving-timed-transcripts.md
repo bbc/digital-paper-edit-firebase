@@ -77,7 +77,7 @@ Firebase Storage
 1. Break down data in firestore - "paginated" every 20 min
 2. Break down data in firestore - "paginated" every paragraph
 3. Break down data in firestore - every word is a document
-4. Saving json in Firebase cloud storage?
+4. Saving JSON as a file in Firebase cloud storage, while storing the location of path in Firestore
 5. Compression - JSONB 
 6. Compression - JSONC
 7. Compression - binary with UBJSON
