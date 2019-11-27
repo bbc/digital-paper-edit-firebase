@@ -128,7 +128,8 @@ Using a cloud function as way to perform CRUD operations, would also incur the e
 
 Also need to double check if this would introduce a considerable delay in the user experience, as the function might need to boot up before performing the operation (?).
 
-* Good, because cost of reads would be contained
+* Good, because cost of reads would only increase by smaller increments based on length of content
+* Good, because it's easy to do cost estimation
 * Bad, because introduces cost of calling a firebase cloud function to perform the operation
 * … <!-- numbers of pros and cons can vary -->
 
