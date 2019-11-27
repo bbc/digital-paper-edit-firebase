@@ -49,7 +49,19 @@ Generally this data structure is quite efficient, compared to GCP STT one hour w
 We have seen that 20 min worth of timed text, can be saved in firestore, as in this DPE json format it's roughly 315 KB. - roughly 3581 words.
 
 _For an example see [Soleio interiview as example in DPE demo](https://bbc.github.io/digital-paper-edit-client/#/projects/10046281c4ad4938b7d0ae6fa9899bec/transcripts/1000cjw29xii80000ird74yb19swa/correct), (click export btn arrow top right, and choose last option `Digital Paper Edit - Json`)_
+The problem is balancing technical limitations and cost: while we want to take advantage of Firestore, there is a limit (1MB) for uploads per document. The challenge is balancing the number of IO operations ([monetary cost](https://firebase.google.com/pricing)) and engineering effort. 
 
+The following is the limit to free-tier:
+
+Firestore
+* GiB stored - 1 GiB / about 20 M chat messages at 50 bytes per chat message
+* Document writes - 600,000 writes / number of times data is written
+* Document reads - 1,500,000 reads / number of times data is read
+* Document deletes - 600,000 deletes / number of times data is deleted
+Firebase Storage
+* GB stored - 5 GB / about 2,500 high-res photos at 2 MB per photo
+* GB transferred - 30 GB / about 15,000 high-res photos at 2 MB per photo
+* Operations (uploads & downloads) - 2,100,000 ops /about 210,000 uploads & 1,890,000 downloads
 ## Decision Drivers <!-- optional -->
 
 1. Easy to reason around
