@@ -93,6 +93,7 @@ For instance these are the following is the limit to free-tier:
 5. Compression - JSONB 
 6. Compression - JSONC
 7. Compression - binary with UBJSON
+8. Convert to `tsv`
 
 ## Decision Outcome
 
@@ -251,14 +252,84 @@ RangeError: Maximum call stack size exceeded
 
 
 
-### 8. Convert to plain text
+### 8. Convert to `tsv`
 
-It is stated in firebase docs, that within 1mb, you could hold a whole book. Eg is [x] mb.
- Word count [x]
+It is stated in firebase docs, that within 1mb, you could hold a whole book (soruce needed). As generally a whole book in plain text it's under 1mb.
+[Moby dick from project gutenberg]((https://www.gutenberg.org/files/2701/2701-h/2701-h.htm)) it's 1.3mb. roughly 215,831 words.
 
-we could convert words to plain text. Eg
+If 3581 words in 20 minutes then in 215,831 words it's 1,205.42 minutes, which is roughly 20 hours.
 
-* Good, because [argument a]
-* Good, because [argument b]
-* Bad, because [argument c]
+_if my math is not failing me_
+
+So words like this 
+
+```json
+{
+  "words": [
+    {
+      "id": 0,
+      "start": 1.4,
+      "end": 3.9,
+      "text": "Can"
+    },
+    {
+      "id": 1,
+      "start": 3.9,
+      "end": 4,
+      "text": "you"
+    },
+    {
+      "id": 2,
+      "start": 4,
+      "end": 4.1,
+      "text": "hear"
+    },
+    {
+      "id": 3,
+      "start": 4.1,
+      "end": 4.2,
+      "text": "it?"
+    },
+    ...
+```
+
+could be converted to one string, so a document in a collection
+```
+Text startTime endTime\ttext startTime endTime\t...
+```
+
+```
+Can 1.4 3.9\tyou 3.9 4\thear 4 4.1\tit? 4.1 4.2\t...
+```
+
+
+And then parse it back to a list of words objects.
+
+
+or it could be a collection with 3 documents. of type text string
+
+first one is text
+
+```
+Can\tyou\thear\tit?\t...
+```
+then a document for the Start timecodes
+
+```
+1.4\t3.9\t4\t...
+```
+
+last but not least a document for the End timecodes
+
+```
+3.9\t4\t4.2\t
+```
+
+
+Paragraphs would get saved in a similar way with speaker attribute instead of text attribute in a separate collection.
+
+The conversion could be done either on the client or in a cloud function.
+
+* Good, because can save a lot of space
+* Bad, because serializing and deserialising 
 * … <!-- numbers of pros and cons can vary -->
