@@ -89,7 +89,7 @@ For instance these are the following is the limit to free-tier:
 3. Break down data in firestore - every word is a document
 4. Saving JSON as a file in Firebase cloud storage, while storing the location of path in Firestore
 5. Compression - JSONB 
-6. Compression - JSONC
+6. Compression - JSONC with Gzip
 7. Compression - binary with UBJSON
 
 ## Decision Outcome
