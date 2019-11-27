@@ -16,6 +16,8 @@ In this domain we generally use components such as [@bbc/react-transcript-editor
 
 We have seen that 20 min worth of timed text transcription in JSON (see below, referred to as DPE JSON) format is roughly 315 KB - roughly 3581 words.
 
+20 minutes is conservative - could also be pushed up to 30 minutes. I think if the limit is 1000KB, we should at least aim to be around the 50% mark (500KB).
+
 Generally the data structure for the transcription is quite efficient. Comparing 1 hour worth of transcription in GCP STT and DPE JSON, GCP STT is easily 2MB while the equivalent DPE data format is 1.3MB.
 
 _For an example see [Soleio interiview as example in DPE demo](https://bbc.github.io/digital-paper-edit-client/#/projects/10046281c4ad4938b7d0ae6fa9899bec/transcripts/1000cjw29xii80000ird74yb19swa/correct), (click export btn arrow top right, and choose last option `Digital Paper Edit - Json`)_
@@ -246,3 +248,17 @@ RangeError: Maximum call stack size exceeded
 <!-- * Good, because [argument a]
 * Good, because [argument b] -->
 * Bad, because wasn't able to try out the libary
+
+
+
+### 8. Convert to plain text
+
+It is stated in firebase docs, that within 1mb, you could hold a whole book. Eg is [x] mb.
+ Word count [x]
+
+we could convert words to plain text. Eg
+
+* Good, because [argument a]
+* Good, because [argument b]
+* Bad, because [argument c]
+* … <!-- numbers of pros and cons can vary -->
