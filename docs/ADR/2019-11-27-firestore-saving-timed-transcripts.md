@@ -8,7 +8,7 @@ Technical Story: [description | ticket/issue URL] <!-- optional -->
 
 ## Context and Problem Statement
 
-### the Conext
+### The Conext
 The context is the development of applications to work with transcriptions of audio or video interviews, these could range from 20 minutes to 1 hour or over in length, depending on the production requirements.
 
 We need to save word level timed text transcriptions into Firebase and Firestore.
@@ -49,12 +49,26 @@ Data structure (referred to as DPE JSON)
 
 ### The Problem
 
-Cloud Functions
+The problem is balancing technical limitations and cost: while we want to take advantage of Firestore, there is a limit (1MB) for uploads per document. The challenge is balancing the number of IO operations ([monetary cost](https://firebase.google.com/pricing)) and engineering effort. 
+
+For instance these are the following is the limit to free-tier:
+
+#### Firestore
+* GiB stored - 1 GiB / about 20 M chat messages at 50 bytes per chat message
+* Document writes - 600,000 writes / number of times data is written
+* Document reads - 1,500,000 reads / number of times data is read
+* Document deletes - 600,000 deletes / number of times data is deleted
+
+#### Firebase Storage
+* GB stored - 5 GB / about 2,500 high-res photos at 2 MB per photo
+* GB transferred - 30 GB / about 15,000 high-res photos at 2 MB per photo
+* Operations (uploads & downloads) - 2,100,000 ops /about 210,000 uploads & 1,890,000 downloads
+
+#### Cloud Functions
 * Invocations - 2,000,000 invocations / number of times a function is invoked
 * GB-seconds - 400,000 GB-seconds / time with 1 GB of memory provisioned
 * CPU-seconds - 200,000 CPU-seconds / time with 1 GHz CPU provisioned
 * Networking (egress) - 5 GB / outbound data transfer
-
 
 
 
@@ -73,7 +87,7 @@ Cloud Functions
 1. Break down data in firestore - "paginated" every 20 min
 2. Break down data in firestore - "paginated" every paragraph
 3. Break down data in firestore - every word is a document
-4. Saving json in Firebase cloud storage?
+4. Saving JSON as a file in Firebase cloud storage, while storing the location of path in Firestore
 5. Compression - JSONB 
 6. Compression - JSONC
 7. Compression - binary with UBJSON
@@ -155,7 +169,7 @@ This might change and get optimised in the future, but we also just want a solut
 * Bad, because introduces cost of calling a firebase cloud function to perform the operation
 * Bad, because it might introduce a delay (?)
 
-### 5. Compression - JSONB 
+### 5. Compression - BSON 
 Another option is to compress the json. eg with [js-bson](https://github.com/mongodb/js-bson)
 
 If we consider that 1 hour in DPE format is 1.3 MB, and for reference in GCP STT json format it is 2mb. After BSON compressed is 836 KB.
@@ -165,12 +179,12 @@ As we so in the data structure example above for DPE json, paragraphs and words 
 So if you do words only then it's 1.1MB compressed to 822KB.
 And paragraphs that are 15KB in DPE json, and after JSONB compression they go down to 11KB.
 
-So I'd say this doesn't help much (?).
+On average, this saves up to 60% in size - but there has been an occasion when it's increased in size, so we would need to do more testing. The is [some documentation](https://stackoverflow.com/questions/24114932/which-one-is-lighter-json-or-bson) in the official FAQ of BSON as to why that may happen more frequently than not.
 
 Hard to see how this compression option would scale.
 
 * Good, because for around an hour worth of transcript, could get it below 1mb
-* Bad, because Hard to see how this compression option would scale.
+* Bad, because we need to do a lot more testing
 
 ### 6. Compression - JSONC
 
@@ -232,4 +246,3 @@ RangeError: Maximum call stack size exceeded
 <!-- * Good, because [argument a]
 * Good, because [argument b] -->
 * Bad, because wasn't able to try out the libary
-
