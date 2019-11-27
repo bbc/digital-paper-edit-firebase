@@ -333,5 +333,5 @@ Paragraphs would get saved in a similar way with speaker attribute instead of te
 The conversion could be done either on the client or in a cloud function.
 
 * Good, because can save a lot of space
-* Bad, because serializing and deserialising 
+* Bad, because serializing and deserialising could introuce errors in the data
 * … <!-- numbers of pros and cons can vary -->
