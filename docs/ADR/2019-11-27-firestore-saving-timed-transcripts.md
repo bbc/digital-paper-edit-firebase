@@ -174,7 +174,7 @@ So I'd say this doesn't help much (?).
 Hard to see how this compression option would scale.
 
 * Good, because for around an hour worth of transcript, could get it below 1mb
-* Bad, because Hard to see how this compression option would scale.
+* Bad, because we need to do a lot more testing
 
 ### 6. Compression - JSONC
 
