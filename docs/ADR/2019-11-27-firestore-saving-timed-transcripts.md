@@ -11,11 +11,18 @@ Technical Story: [description | ticket/issue URL] <!-- optional -->
 ### the Conext
 The context is the development of applications to work with transcriptions of audio or video interviews, these could range from 20 minutes to 1 hour or over in length, depending on the production requirements.
 
+We need to save word level timed text transcriptions into Firebase and Firestore.
+In this domain we generally use components such as [@bbc/react-transcript-editor](https://github.com/bbc/react-transcript-editor)  as a way to manipulate timed text.
 
-### The Problem 
-Saving word level timed text transcriptions into firebase.
+We have seen that 20 min worth of timed text transcription in JSON (see below, referred to as DPE JSON) format is roughly 315 KB - roughly 3581 words.
 
-Data structure (refered to as DPE Json)
+Generally the data structure for the transcription is quite efficient. Comparing 1 hour worth of transcription in GCP STT and DPE JSON, GCP STT is easily 2MB while the equivalent DPE data format is 1.3MB.
+
+_For an example see [Soleio interiview as example in DPE demo](https://bbc.github.io/digital-paper-edit-client/#/projects/10046281c4ad4938b7d0ae6fa9899bec/transcripts/1000cjw29xii80000ird74yb19swa/correct), (click export btn arrow top right, and choose last option `Digital Paper Edit - Json`)_
+
+#### Transcription
+Paragraphs and speakers are interpolated on the client.
+Data structure (referred to as DPE JSON)
 
 ```json
 {
@@ -40,15 +47,16 @@ Data structure (refered to as DPE Json)
 }
 ```
 
-Paragraphs and speakers are interpolated on the client.
+### The Problem
 
-In this domain we generally use components such as [@bbc/react-transcript-editor](https://github.com/bbc/react-transcript-editor) as a way to manipulate timed text.
+Cloud Functions
+* Invocations - 2,000,000 invocations / number of times a function is invoked
+* GB-seconds - 400,000 GB-seconds / time with 1 GB of memory provisioned
+* CPU-seconds - 200,000 CPU-seconds / time with 1 GHz CPU provisioned
+* Networking (egress) - 5 GB / outbound data transfer
 
-Generally this data structure is quite efficient, compared to GCP STT one hour worth of transcript, in GCP STT is easily 2mb while in this DPE format it is 1.3mb.
 
-We have seen that 20 min worth of timed text, can be saved in firestore, as in this DPE json format it's roughly 315 KB. - roughly 3581 words.
 
-_For an example see [Soleio interiview as example in DPE demo](https://bbc.github.io/digital-paper-edit-client/#/projects/10046281c4ad4938b7d0ae6fa9899bec/transcripts/1000cjw29xii80000ird74yb19swa/correct), (click export btn arrow top right, and choose last option `Digital Paper Edit - Json`)_
 
 ## Decision Drivers <!-- optional -->
 
@@ -166,7 +174,7 @@ Hard to see how this compression option would scale.
 
 ### 6. Compression - JSONC
 
-[github JSONC](https://github.com/tcorral/JSONC), [npm jsonc](https://www.npmjs.com/package/jsonc)
+[github JSONC](https://github.com/tcorral/JSONC), [npm jsonc](https://www.npmjs.com/package/jsoncomp)
 
 > Be careful with this method because it's really impressive if you use it with a JSON with a big amount of data, but it could be awful if you use it to compress JSON objects with small amount of data because it could increase the final size.
 
