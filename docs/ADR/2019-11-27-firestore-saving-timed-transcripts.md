@@ -327,6 +327,51 @@ last but not least a document for the End timecodes
 3.9\t4\t4.2\t
 ```
 
+eg quick example of code, for separate text, start, and end time.
+```js
+const dpeJson = require('./dpe.json');
+
+const text = dpeJson.words.map((word)=>{
+    return word.text;
+}).join('\t')
+
+console.log(text)
+
+const startTime = dpeJson.words.map((word)=>{
+    return word.start;
+}).join('\t')
+
+console.log(startTime)
+
+const endTime = dpeJson.words.map((word)=>{
+    return word.end;
+}).join('\t')
+
+console.log(endTime)
+```
+
+From 1.4M to 85K for end time, 85K for start time and 70K for text.
+
+Or combined
+
+```js
+const dpeJson = require('./dpe.json');
+
+console.log(dpeJson)
+
+const text = dpeJson.words.map((word)=>{
+    return `${word.text}\t${word.start}\t${word.end}`;
+}).join('\t')
+
+console.log(text)
+```
+example output (where the spaces are tabs `\t`)
+
+```js
+the     4511.7  4511.9  scrape  4511.9  4512.2  on      4512.2  4512.4  Ematic  4512.4  4512.6  Lee.    4512.6  4512.8  I       4514.6  4515.3  think   4515.3  4515.8  most    4515.8  4516.6  of      4516.6  4516.6  like    4516.6  4517.6  journalism      4517.6  4518    organizations.  4518    4518.4
+```
+
+From 1.4M `json` to 241K `tsv`.
 
 Paragraphs would get saved in a similar way with speaker attribute instead of text attribute in a separate collection.
 
