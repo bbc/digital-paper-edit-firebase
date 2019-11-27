@@ -142,6 +142,7 @@ However when correcting paragraphs on the client, these might change and get re-
 
 * Good, because easy to reason around
 * Bad, because could get expensive, as it would increase number of reads
+* Bad, because could get expensive, as it would increase number of writes
 * Bad, because paragraph breakdown subject to change
 * … <!-- numbers of pros and cons can vary -->
 
