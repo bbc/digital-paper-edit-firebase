@@ -373,6 +373,30 @@ the     4511.7  4511.9  scrape  4511.9  4512.2  on      4512.2  4512.4  Ematic  
 
 From 1.4M `json` to 241K `tsv`.
 
+as a quick example of reassambly from tsv to json 
+
+```js
+// const fs = require('fs');
+//const textTsv  = fs.readFileSync('dpe-text.tsv').toString()
+// const startTimeTsv  = fs.readFileSync('dpe-startTime.tsv').toString()
+// const endTimeTimeTsv  = fs.readFileSync('dpe-startTime.tsv').toString()
+
+const startTimeList = startTimeTsv.split('\t');
+const endTimeList = endTimeTimeTsv.split('\t');
+
+const words = textTsv.split('\t').map((wordText, index)=>{
+    return {
+        text: wordText,
+        start: startTimeList[index],
+        end: endTimeList[index]
+    }
+})
+
+const result = { words} ;
+
+console.log(result);
+```
+
 Paragraphs would get saved in a similar way with speaker attribute instead of text attribute in a separate collection.
 
 The conversion could be done either on the client or in a cloud function.
