@@ -157,7 +157,7 @@ However it could get very expensive to do a read of a whole document, as we'd ne
 * Bad, because could get expensive, as it would increase number of reads
 
 
-### 4. Saving json in Firebase cloud storage?
+### 4. Saving JSON in Firebase cloud storage?
 
 Another option is to use firestore triggers and/or [HTTPS callable functions](https://firebase.google.com/docs/functions/callable) to save the DPE json format into cloud storage.
 
