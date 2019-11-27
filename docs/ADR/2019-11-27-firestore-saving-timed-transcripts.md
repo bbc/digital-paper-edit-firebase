@@ -122,7 +122,7 @@ When saving it could be splitted into these documents, and when retrieving could
 
 This is to show that the cost of the extra reads per transcription, would not be outrageous.
 
-A [fireabse HTTPS callable functions](https://firebase.google.com/docs/functions/callable) could be used to save and retrieve from firestore to do this fragmenting and aggregating.
+A [firebase HTTPS callable functions](https://firebase.google.com/docs/functions/callable) could be used to save and retrieve from firestore to do this fragmenting and aggregating.
 
 Using a cloud function as way to perform CRUD operations, would also incur the extra cost for the use of the cloud function. 
 
