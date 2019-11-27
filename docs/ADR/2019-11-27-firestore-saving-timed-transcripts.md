@@ -181,7 +181,7 @@ And paragraphs that are 15KB in DPE json, and after JSONB compression they go do
 
 On average, this saves up to 60% in size - but there has been an occasion when it's increased in size, so we would need to do more testing. The is [some documentation](https://stackoverflow.com/questions/24114932/which-one-is-lighter-json-or-bson) in the official FAQ of BSON as to why that may happen more frequently than not.
 
-Hard to see how this compression option would scale.
+Hard to know if this compression option would be reliable and consistent.
 
 * Good, because for around an hour worth of transcript, could get it below 1mb
 * Bad, because we need to do a lot more testing
