@@ -1,4 +1,4 @@
-# Digital Paper Edit - Client
+# Digital Paper Edit - Firebase
 
 ---> _Work in progress_ <--
 
@@ -8,133 +8,85 @@ See [intro](./docs/intro.md) for more info on the project. And [user journey](./
 
 ## Project Architecture
 
-It's a React, Express, Electron, Adobe CEP, AWS stack to be able to deploy one modular code base as a Web app or Cross platform Desktop app (for Mac, win and linux).
+This is a simplified version of the [`bbc/digital-paper-edit-client`](https://github.com/bbc/digital-paper-edit-client) application, using Firebase.
+There are many moving parts in this project, but Firebase is self-contained. If you want to see all the projects you can also look at them as a list [here](https://github.com/topics/digital-paper-edit). Most React Components are developed, maintained and imported from [`bbc/digital-paper-edit-react-components`](https://github.com/bbc/digital-paper-edit-react-components). There is a Storybook (demo) website in the repo that you access to view the components.
 
-The project is organised across these repository
+See docs in ADR for an understanding of the architectural decisions made. If you'd like some information on Firebase, pleaseread [Firebase ADR](./docs/ADR/2019-11-05-firebase.md) and the [Modular Architecture ADR for more info on the implementation](./docs/ADR/2019-05-09-modular-architecture.md)
 
-- [`bbc/digital-paper-edit-client`](https://github.com/bbc/digital-paper-edit-client) - React Client - [npm](https://www.npmjs.com/package/@bbc/digital-paper-edit-client)
-- [`bbc/digital-paper-edit-react-components`](https://github.com/bbc/digital-paper-edit-react-components) - React Storybook for Client components - `npm`.
-- [`bbc/digital-paper-edit-api`](https://github.com/bbc/digital-paper-edit-api) - Express server API - [npm](https://www.npmjs.com/package/@bbc/digital-paper-edit-api)
-- [`bbc/digital-paper-edit-infrastructure`](https://github.com/bbc/digital-paper-edit-infrastructure) - AWS infrastructure for API server and Client.
-- [`bbc/digital-paper-edit-electron`](https://github.com/bbc/digital-paper-edit-electron) - Electron, Cross Platform Desktop app - Mac, Windows, Linux
-- [`bbc/digital-paper-edit-cep`](https://github.com/bbc/digital-paper-edit-cep) Adobe CEP (Common Extensibility Platform) - Premiere Pro Plugin Panel
+![Firebase architecture diagram](./docs/img/firebase-arch.png)
 
-Micro services for web app backend
-
-- [`bbc/digital-paper-edit-stt-proxy`](https://github.com/bbc/digital-paper-edit-stt-proxy) - An express server to connect to STT service
-- [`bbc/digital-paper-edit-video-preview-converter`](https://github.com/bbc/digital-paper-edit-video-preview-converter) - An express server to generate an mp4 video preview using ffmpeg
-- [`bbc/digital-paper-edit-audio-converter`](https://github.com/bbc/digital-paper-edit-audio-converter) - An express server to generate an audio file with the stt specs to be able to send it to `STT Proxy`.
-
-[See here to see them as a list in github](https://github.com/topics/digital-paper-edit).
-
-See [modular architecture section](./docs/guides/modular-architecture.md) for more details on the stack and the [Modular Architecture ADR for more info on the implementation](https://github.com/bbc/digital-paper-edit-client/blob/master/docs/ADR/2019-05-09-modular-architecture.md)
+## Versioning
 
 The projects use [npm semantic versioning](https://docs.npmjs.com/about-semantic-versioning)
 
-![](https://raw.githubusercontent.com/bbc/digital-paper-edit-infrastructure/master/docs/adr/newest_arch.png)
+## Current project board
 
-Between the 5 June and 17 July there is a sprint board used for organising the backlog for each two-week sprint cycle.
+- [BBC News Labs - Digital Paper Edit - Sprint Board](https://github.com/orgs/bbc/projects/47)
 
-- [BBC News Labs - Digital Paper Edit - Sprint Board](https://github.com/orgs/bbc/projects/33) is a Github project board [with linked repository](https://help.github.com/en/articles/linking-a-repository-to-a-project-board) where issues are added from the relevant repository listed in architecture section.
-
-The project is divided into [concurrent milestones as described here](https://github.com/bbc/digital-paper-edit-client/milestones)
-
-And there are [github project board for each milestone](https://github.com/bbc/digital-paper-edit-client/projects)
-
-- [1 - Transcript - Editing](https://github.com/bbc/digital-paper-edit-client/projects/2)
-- [2 - Transcript - Annotating](https://github.com/bbc/digital-paper-edit-client/projects/3)
-- [3 - Paper-editing](https://github.com/bbc/digital-paper-edit-client/projects/4)
-
-With UX being an overarching milestone that cuts across these different parts
-
-- [UX](https://github.com/bbc/digital-paper-edit-client/projects/1)
-
-See [UX Approach](./docs/guides/ux-approach.md) in docs guides for more info.
+The project is divided into [concurrent milestones as described here](https://github.com/bbc/digital-paper-edit-client/milestones) with UX being an overarching milestone that cuts across these different parts.
+See [UX Approach](./docs/guides/ux-approach.md) in docs guides for more information on the UX development process.
 
 ## Setup
 
-<!-- _stack - optional_
-
-_How to build and run the code/app_ -->
-
-See _optional_ [getting setup with the visual code workspace](docs/guides/visual-code-workspace-setup.md) to get up and running with the various repository needed for this project.
-
-```
-git clone git@github.com:bbc/digital-paper-edit-client.git
-```
-
-```
-cd digital-paper-edit-client
-```
-
 Optional step to setup [nvm](https://github.com/nvm-sh/nvm) to use node version 10, otherwise just use node version 10
 
-```
+```sh
 nvm use || nvm install`
 ```
 
 in root of project
 
-```
+```sh
 npm install
 ```
 
-## Usage - development
+## Configuration
+
+[`.env`](./.env) contains environment config for the React client side app. You can copy over the `.env.example` to start.
+`REACT_APP_NAME` App name is used in browser title and navbar component.
+
+## Development
 
 <!-- `cd` into the individual repository inside [`./packages`](./packages) and npm start, or see respective README and package.json for how deal with each. -->
 
-In root of the client project (`cd digital-paper-edit-client`) start React
+You must setup the Firebase credentials in order to do development of the project as mentioned in above Configuration section. Firebase can be free, but some parts of the app may not work.
+In root of the project (`cd digital-paper-edit-firebase`):
 
-```
+```sh
 npm run start
 ```
 
-To developer for the web app [you will need to start setup and the API server](https://github.com/bbc/digital-paper-edit-api#setup) as well.
+This will start two servers: proxy (`3000`) and Firebase server (`4000`). You should have an entry point app running in port `3000`.
 
-> Runs the app in the development mode.<br>
-> Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
->
-> The page will reload if you make edits.<br>
-> You will also see any lint errors in the console.
+## Production
 
-<!-- additionally to develop for electron also run ,in another terminal, in root of project.
+See Configuration step above and configure `firebase.json`, `.firebaserc` to change the sitename and environment.
 
-```
-make start-electron
-``` -->
+To deploy to development environment:
 
-## Usage - production
-
-The project is also publicly available in the npm registry [`@bbc/digital-paper-edit-client`](https://www.npmjs.com/package/@bbc/digital-paper-edit-client)
-
-you can add it to your project
-
-```
-npm install @bbc/digital-paper-edit-client
+```sh
+npm run deploy:dev:hosting
 ```
 
-and eg in an express server you can serve the static build as follows
+To deploy to production environment:
 
+```sh
+npm run deploy:prod:hosting
 ```
-app.use("/", express.static(path.join(__dirname, '..', 'node_modules/@bbc/digital-paper-edit-client')));
-```
+
+Both steps will remove the build folder, rebuild and deploy, using `firebase cli tools`. You must ensure that Firebase is installed globally (`npm i -g firebase-tools`).
+
+Read more about [Firebase](https://firebase.google.com/) and initialising [here](https://firebase.google.com/docs/cli).
 
 ## System Architecture
 
-Client - React, is setup using [Create React App](https://facebook.github.io/create-react-app/docs/getting-started).
+React is setup using [Create React App](https://facebook.github.io/create-react-app/docs/getting-started).
 
 > You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 >
 > To learn React, check out the [React documentation](https://reactjs.org/).
 
 ## Development env
-
-<!--
- _How to run the development environment_
-
-_Coding style convention ref optional, eg which linter to use_
-
-_Linting, github pre-push hook - optional_ -->
 
 - [ ] npm > `6.1.0`
 - [ ] node v 10 - [lts/dubnium](https://scotch.io/tutorials/whats-new-in-node-10-dubnium)
@@ -163,11 +115,7 @@ We are using [this template for ADR](https://gist.github.com/iaincollins/92923cc
 
 ## Build
 
-<!-- _How to run build_ -->
-
-<!-- See README for individual packages for more details ?-->
-
-```
+```sh
 npm run build
 ```
 
@@ -179,41 +127,11 @@ Build of react client side will be in `build`
 > The build is minified and the filenames include the hashes.<br>
 > Your app is ready to be deployed!
 
-### Electron
-
-See [docs](https://github.com/bbc/digital-paper-edit-client/commit/15a9fe2d06c9b8666b6bd9ddd1aaa64246de6bfd) for more information on how this works with Electron.
-
-In `public/index.html`:
-
-```js
-if(window.process && window.process.versions.electron){
-        const ElectronWrapper = require('../src/ElectronWrapper/index.js');
-        window.ElectronWrapper = ElectronWrapper;
-}
-```
-
-`ElectronWrapper` needs to be on the Electron render process otherwise (i.e. from the main process) the app will hang.
-
-<!-- Build proc
-First do `make build-react` then `make build-electron`
-`packages/client/dist` will contain your packaged version of the app for desktop
--->
-
-1. run `npm run build` which will output a `build` folder
-2. move the `build` folder to `digital-paper-edit-electron` repository
-3. from `digital-paper-edit-electron`, run `npm run start:prod`
-
-Running in development (`npm start:dev`) in `digital-paper-edit-electron` will not work. In development mode, the `electron-main.js` looks for the app served by webpack in `src/ElectronWrapper/index.js`, which doesn't resolve as that is in a different repository.
-
 ## Tests
-
-<!-- _How to carry out tests_ -->
-
-_TBC_
 
 Test coverage using [`jest`](https://jestjs.io/), to run tests
 
-```
+```sh
 npm run test
 ```
 
@@ -232,17 +150,7 @@ npm run test:watch
 
 On commit this repo uses the [.travis.yml](./.travis.yml) config tu run the automated test on [travis CI](https://travis-ci.org/bbc/react-transcript-editor). -->
 
-## Environment variables
-
-[`.env`](./.env) contains environment variables config for the React client side app.
-
-<mark>Do not store credentials in `.env` during development.</mark>
-
-`REACT_APP_NAME` App name is used in browser title and navbar component.
-
 ## Deployment
-
-<!-- _How to deploy the code/app into test/staging/production_ -->
 
 ```
 npm run publish:public
@@ -253,14 +161,6 @@ npm run publish:public
 for more info on Create React app deployment:
 
 > See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-## Demo page on github pages
-
-To update demo on github pages [bbc.github.io/digital-paper-edit-client](https://bbc.github.io/digital-paper-edit-client)
-
-```
-npm run deploy:ghpages
-```
 
 ## Contributing
 
