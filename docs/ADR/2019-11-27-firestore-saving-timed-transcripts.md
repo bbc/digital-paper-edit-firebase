@@ -159,7 +159,7 @@ This might change and get optimised in the future, but we also just want a solut
 * Bad, because introduces cost of calling a firebase cloud function to perform the operation
 * Bad, because it might introduce a delay (?)
 
-### 5. Compression - JSONB 
+### 5. Compression - BSON 
 Another option is to compress the json. eg with [js-bson](https://github.com/mongodb/js-bson)
 
 If we consider that 1 hour in DPE format is 1.3 MB, and for reference in GCP STT json format it is 2mb. After BSON compressed is 836 KB.
