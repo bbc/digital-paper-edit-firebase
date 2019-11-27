@@ -7,8 +7,8 @@ import PropTypes from 'prop-types';
 import { anyInText } from '../../../Util/in-text';
 import arrayMatch from '../../../Util/array-match';
 import List from '@bbc/digital-paper-edit-react-components/List';
-import SearchBar from '@bbc/digital-paper-edit-react-components/SearchBar';
 import FormModal from '@bbc/digital-paper-edit-react-components/FormModal';
+import SearchBar from '@bbc/digital-paper-edit-react-components/SearchBar';
 
 const initialFormState = {
   title: '',
@@ -30,12 +30,10 @@ const formReducer = (state = initialFormState, { type, payload }) => {
 
 const ItemsContainer = props => {
   const type = props.type;
-  const [ items, setItems ] = useState([]);
-
+  const [ showingItems, setShowingItems ] = useState(props.items);
   const [ showModal, setShowModal ] = useState(false);
   const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
 
-  // The form works both for new/create and edit/update
   const handleSaveForm = item => {
     props.handleSave(item);
     setShowModal(false);
@@ -43,7 +41,7 @@ const ItemsContainer = props => {
   };
 
   const handleEditItem = id => {
-    const item = items.find(i => i.id === id);
+    const item = props.items.find(i => i.id === id);
     dispatchForm({
       type: 'update',
       payload: item
@@ -66,37 +64,35 @@ const ItemsContainer = props => {
   };
 
   const handleSearch = text => {
-    const results = items.map(item => handleFilterDisplay(item, text));
-    setItems(results);
+    const results = props.items.map(item => handleFilterDisplay(item, text));
+    setShowingItems(results);
   };
 
   const toggleShowModal = () => {
-    console.log('toggle', !showModal);
     setShowModal(!showModal);
   };
 
   useEffect(() => {
-    if (!arrayMatch(props.items, items)) {
-      setItems(props.items);
-    }
+    setShowingItems(props.items);
+    console.log(showingItems);
 
     return () => {};
-  }, [ items, props.items ]);
+  }, [ props.items, showingItems ]);
 
   let searchEl;
-  let showItems;
+  let items;
 
-  if (items.length > 0) {
+  if (showingItems.length > 0) {
     searchEl = <SearchBar handleSearch={ handleSearch } />;
-    showItems = (
+    items = (
       <List
-        items={ items }
+        items={ showingItems }
         handleEditItem={ handleEditItem }
         handleDeleteItem={ handleDeleteItem }
       />
     );
   } else {
-    showItems = <i>There are no {type}s, create a new one to get started.</i>;
+    items = <i>There are no {type}s, create a new one to get started.</i>;
   }
 
   return (
@@ -114,7 +110,8 @@ const ItemsContainer = props => {
           </Button>
         </Col>
       </Row>
-      {showItems}
+      {showingItems.length > 0 ? <p>{showingItems.length}</p> : null}
+      {showingItems.length > 0 ? items : null}
       <FormModal
         { ...formData }
         modalTitle={ formData.id ? `Edit ${ type }` : `New ${ type }` }

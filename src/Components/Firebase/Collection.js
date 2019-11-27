@@ -1,5 +1,3 @@
-import cuid from "cuid";
-
 class Collection {
   constructor(db, name) {
     this.name = name;
@@ -26,18 +24,14 @@ class Collection {
     return item.data();
   };
 
-  // const getRefItem = async (collection, refId) => {
-  // do something to get ref item
-  // };
-
   postItem = async data => {
     try {
       const docRef = await this.collection.add(data);
-      console.log("Document written with ID: ", docRef.id);
+      console.log('Document written with ID: ', docRef.id);
 
       return docRef;
     } catch (error) {
-      console.error("Error adding document: ", error);
+      console.error('Error adding document: ', error);
     }
   };
 
@@ -49,10 +43,10 @@ class Collection {
     await this.collection.doc(id).delete();
   };
 
-  userRef = userId => this.collection.where("users", "array-contains", userId);
+  userRef = userId => this.collection.where('users', 'array-contains', userId);
   user = async userId => await this.userRef(userId).get();
 
-  projectRef = projectId => this.collection.where("projectId", "==", projectId);
+  projectRef = projectId => this.collection.where('projectId', '==', projectId);
   project = async projectId => await this.userRef(projectId).get();
 }
 

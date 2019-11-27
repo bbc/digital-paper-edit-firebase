@@ -10,12 +10,10 @@ import Breadcrumb from '@bbc/digital-paper-edit-react-components/Breadcrumb';
 
 import Transcripts from './Transcripts/index.js';
 import ProgrammeScript from './ProgrammeScript';
-import ApiContext from '../../Context/ApiContext';
 import PropTypes from 'prop-types';
 import Collection from '../Firebase/Collection';
 
 class PaperEditor extends Component {
-  static contextType = ApiContext;
   constructor(props) {
     super(props);
     this.state = {

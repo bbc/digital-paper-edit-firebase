@@ -97,8 +97,6 @@ const Projects = props => {
     }
   ];
 
-  console.log(items);
-
   return (
     <>
       <Container

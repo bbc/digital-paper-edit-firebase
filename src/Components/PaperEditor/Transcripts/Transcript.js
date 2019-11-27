@@ -15,7 +15,6 @@ import Paragraphs from './Paragraphs/index.js';
 import LabelsList from './LabelsList/index.js';
 import onlyCallOnce from '../../../Util/only-call-once/index.js';
 import getTimeFromUserWordsSelection from './get-user-selection.js';
-import ApiContext from '../../../Context/ApiContext';
 
 // import Paragraph from './Paragraph.js';
 
@@ -46,7 +45,6 @@ function makeListOfUniqueSpeakers(array) {
 }
 
 class Transcript extends Component {
-  static contextType = ApiContext;
   constructor(props) {
     super(props);
     this.videoRef = React.createRef();
