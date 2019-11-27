@@ -90,10 +90,10 @@ For instance these are the following is the limit to free-tier:
 2. Break down data in firestore - "paginated" every paragraph
 3. Break down data in firestore - every word is a document
 4. Saving JSON as a file in Firebase cloud storage, while storing the location of path in Firestore
-5. Compression - JSONB 
-6. Compression - JSONC
-7. Compression - binary with UBJSON
-8. Convert to `tsv`
+5. Compression - BSON - Binary JSON 
+6. Compression - JSONC with Gzip
+7. Compression - UBJSON - Universal Binary JSON
+8. Convert to a collection of 3 `tsv` documents 
 
 ## Decision Outcome
 
@@ -125,13 +125,14 @@ When saving it could be splitted into these documents, and when retrieving could
 
 This is to show that the cost of the extra reads per transcription, would not be outrageous.
 
-A [fireabse HTTPS callable functions](https://firebase.google.com/docs/functions/callable) could be used to save and retrieve from firestore to do this fragmenting and aggregating.
+A [firebase HTTPS callable functions](https://firebase.google.com/docs/functions/callable) could be used to save and retrieve from firestore to do this fragmenting and aggregating.
 
 Using a cloud function as way to perform CRUD operations, would also incur the extra cost for the use of the cloud function. 
 
 Also need to double check if this would introduce a considerable delay in the user experience, as the function might need to boot up before performing the operation (?).
 
-* Good, because cost of reads would be contained
+* Good, because cost of reads would only increase by smaller increments based on length of content
+* Good, because it's easy to do cost estimation
 * Bad, because introduces cost of calling a firebase cloud function to perform the operation
 * … <!-- numbers of pros and cons can vary -->
 
@@ -145,6 +146,7 @@ However when correcting paragraphs on the client, these might change and get re-
 
 * Good, because easy to reason around
 * Bad, because could get expensive, as it would increase number of reads
+* Bad, because could get expensive, as it would increase number of writes
 * Bad, because paragraph breakdown subject to change
 * … <!-- numbers of pros and cons can vary -->
 
@@ -158,7 +160,7 @@ However it could get very expensive to do a read of a whole document, as we'd ne
 * Bad, because could get expensive, as it would increase number of reads
 
 
-### 4. Saving json in Firebase cloud storage?
+### 4. Saving JSON in Firebase cloud storage?
 
 Another option is to use firestore triggers and/or [HTTPS callable functions](https://firebase.google.com/docs/functions/callable) to save the DPE json format into cloud storage.
 
@@ -184,7 +186,7 @@ And paragraphs that are 15KB in DPE json, and after JSONB compression they go do
 
 On average, this saves up to 60% in size - but there has been an occasion when it's increased in size, so we would need to do more testing. The is [some documentation](https://stackoverflow.com/questions/24114932/which-one-is-lighter-json-or-bson) in the official FAQ of BSON as to why that may happen more frequently than not.
 
-Hard to see how this compression option would scale.
+Hard to know if this compression option would be reliable and consistent.
 
 * Good, because for around an hour worth of transcript, could get it below 1mb
 * Bad, because we need to do a lot more testing
@@ -252,7 +254,7 @@ RangeError: Maximum call stack size exceeded
 
 
 
-### 8. Convert to `tsv`
+### 8. Convert to a collection of 3 `tsv` documents 
 
 It is stated in firebase docs, that within 1mb, you could hold a whole book (soruce needed). As generally a whole book in plain text it's under 1mb.
 [Moby dick from project gutenberg]((https://www.gutenberg.org/files/2701/2701-h/2701-h.htm)) it's 1.3mb. roughly 215,831 words.
