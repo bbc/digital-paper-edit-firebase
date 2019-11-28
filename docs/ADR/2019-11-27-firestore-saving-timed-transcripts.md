@@ -304,6 +304,18 @@ Text startTime endTime\ttext startTime endTime\t...
 Can 1.4 3.9\tyou 3.9 4\thear 4 4.1\tit? 4.1 4.2\t...
 ```
 
+or alternatevely as a proper `tsv` as 
+```
+Text\tstartTime\tendTime
+Text\tstartTime\tendTime
+...
+```
+
+```
+Can\1.4\t3.9\nyou\t3.9\t4\n...
+```
+
+You generally use the \n to break to say that it's a new record, but you use tabs to differentiate the values, instead of spaces. See [JS TSV lib](https://github.com/ricardobeat/TSV)
 
 And then parse it back to a list of words objects.
 
