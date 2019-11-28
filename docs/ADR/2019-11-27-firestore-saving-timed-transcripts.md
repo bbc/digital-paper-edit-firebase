@@ -185,6 +185,7 @@ So if you do words only then it's 1.1MB compressed to 822KB.
 And paragraphs that are 15KB in DPE json, and after JSONB compression they go down to 11KB.
 
 On average, this saves up to 60% in size - but there has been an occasion when it's increased in size, so we would need to do more testing. The is [some documentation](https://stackoverflow.com/questions/24114932/which-one-is-lighter-json-or-bson) in the official FAQ of BSON as to why that may happen more frequently than not.
+For more comparison information, see [here](https://www.educba.com/json-vs-bson/)
 
 Hard to know if this compression option would be reliable and consistent.
 
