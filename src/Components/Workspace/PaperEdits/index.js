@@ -5,9 +5,11 @@ import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 
 const PaperEdits = props => {
-  const api = new Collection(props.firebase.db, 'paperedits');
-  const [ items, setItems ] = useState([]);
+  const PAPEREDITS = '/paperedits';
   const TYPE = 'Paper Edit';
+
+  const collection = new Collection(props.firebase.db, PAPEREDITS);
+  const [ items, setItems ] = useState([]);
   const [ loading, setIsLoading ] = useState(false);
 
   const genUrl = id => {
@@ -17,7 +19,7 @@ const PaperEdits = props => {
   useEffect(() => {
     const getPaperEdits = async () => {
       try {
-        api.projectRef(props.projectId).onShapshot(snapshot => {
+        collection.projectRef(props.projectId).onSnapshot(snapshot => {
           const paperEdits = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });
@@ -34,11 +36,11 @@ const PaperEdits = props => {
     }
 
     return () => {};
-  }, [ api, loading, items, props.projectId ]);
+  }, [ collection, loading, items, props.projectId ]);
 
   const createPaperEdit = async item => {
     item.projectId = props.projectId;
-    const docRef = await api.postItem(item);
+    const docRef = await collection.postItem(item);
     item.url = genUrl(docRef.id);
 
     docRef.update({
@@ -51,7 +53,7 @@ const PaperEdits = props => {
   };
 
   const updatePaperEdit = async (id, item) => {
-    await api.put(id, item);
+    await collection.put(id, item);
     item.display = true;
   };
 
@@ -65,7 +67,7 @@ const PaperEdits = props => {
 
   const deletePaperEdit = async id => {
     try {
-      await api.delete(id);
+      await collection.delete(id);
     } catch (e) {
       console.log(e);
     }

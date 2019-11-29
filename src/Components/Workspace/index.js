@@ -9,7 +9,7 @@ import Transcripts from './Transcripts';
 import PaperEdits from './PaperEdits';
 import Breadcrumb from '@bbc/digital-paper-edit-react-components/Breadcrumb';
 import Collection from '../Firebase/Collection';
-import * as ROUTES from '../../constants/routes';
+import { PROJECTS } from '../../constants/routes';
 import { withAuthorization } from '../Session';
 
 const genBreadcrumb = name => [
@@ -23,7 +23,7 @@ const genBreadcrumb = name => [
 ];
 
 const WorkspaceView = props => {
-  const projects = new Collection(props.firebase.db, ROUTES.PROJECTS);
+  const projects = new Collection(props.firebase.db, PROJECTS);
   const id = props.match.params.projectId;
   const [ active, setActive ] = useState('transcripts');
   const [ name, setName ] = useState('Project Name');

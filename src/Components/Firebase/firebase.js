@@ -1,6 +1,7 @@
 import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
+import 'firebase/storage';
 
 const config = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -16,24 +17,26 @@ class Firebase {
     this.auth = app.auth();
     const firestore = app.firestore();
     this.db = firestore.collection('apps').doc('digital-paper-edit');
+    this.storage = app.storage().ref('apps/digital-paper-edit/users');
   }
 
-  usersRef = () => this.db.collection('users');
-  userRef = uid => this.usersRef().doc(`${ uid }`);
+  dbUsersRef = () => this.db.collection('users');
+  dbUserRef = uid => this.dbUsersRef().doc(`${ uid }`);
 
-  user = async uid => await this.userRef(uid).get();
-  users = async () => await this.usersRef().get();
+  user = async uid => await this.dbUserRef(uid).get();
+  users = async () => await this.dbUsersRef().get();
+
   // *** Merge Auth and DB User API *** //
 
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged(async authUser => {
       if (authUser) {
-        const dbUserRef = this.userRef(authUser.uid);
-        const dbSnapshot = await dbUserRef.get();
+        const dbdbUserRef = this.dbUserRef(authUser.uid);
+        const dbSnapshot = await dbdbUserRef.get();
         const dbUser = dbSnapshot.data();
 
         if (!dbSnapshot.exists || !dbUser) {
-          dbUserRef.set({
+          dbdbUserRef.set({
             projects: [],
             roles: {}
           });

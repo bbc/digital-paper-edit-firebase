@@ -5,10 +5,12 @@ import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 
 const Transcripts = props => {
-  const api = new Collection(props.firebase.db, 'transcripts');
+  const TRANSCRIPTS = '/transcripts';
+  const TYPE = 'Transcript';
+
+  const collection = new Collection(props.firebase.db, TRANSCRIPTS);
   const [ loading, setIsLoading ] = useState(false);
   const [ items, setItems ] = useState([]);
-  const TYPE = 'Transcript';
 
   const genUrl = id => {
     return `#/projects/${ props.projectId }/transcripts/${ id }/correct`;
@@ -17,10 +19,11 @@ const Transcripts = props => {
   useEffect(() => {
     const getTranscripts = async () => {
       try {
-        api.projectRef(props.projectId).onShapshot(snapshot => {
+        collection.projectRef(props.projectId).onSnapshot(snapshot => {
           const transcripts = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });
+
           setItems(transcripts);
         });
       } catch (error) {
@@ -34,18 +37,19 @@ const Transcripts = props => {
     }
 
     return () => {};
-  }, [ api, api.collection, loading, props.projectId ]);
+  }, [ collection, collection.collection, loading, props.projectId ]);
 
   const updateTranscript = async (id, item) => {
-    await api.putItem(id, item);
+    await collection.putItem(id, item);
     item.display = true;
 
     return item;
   };
 
   const createTranscript = async item => {
+    console.log(item);
     item.projectId = props.projectId;
-    const docRef = await api.postItem(item);
+    const docRef = await collection.postItem(item);
     item.url = genUrl(docRef.id);
     item.status = 'in-progress';
 
@@ -69,7 +73,7 @@ const Transcripts = props => {
 
   const deleteTranscript = async id => {
     try {
-      await api.deleteItem(id);
+      await collection.deleteItem(id);
     } catch (e) {
       console.log(e);
     }
