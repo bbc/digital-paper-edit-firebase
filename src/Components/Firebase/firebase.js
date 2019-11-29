@@ -1,6 +1,7 @@
 import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
+import 'firebase/storage';
 
 const config = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -16,36 +17,40 @@ class Firebase {
     this.auth = app.auth();
     const firestore = app.firestore();
     this.db = firestore.collection('apps').doc('digital-paper-edit');
+    const storage = app.storage();
+    this.storage = storage.ref('apps/digital-paper-edit');
   }
 
-  usersRef = () => this.db.collection('users');
-  userRef = uid => this.usersRef().doc(`${ uid }`);
-
-  user = async uid => await this.userRef(uid).get();
-  users = async () => await this.usersRef().get();
   // *** Merge Auth and DB User API *** //
+
+  initDB = async uid => {
+    const dbUserRef = this.db.collection('users').doc(uid);
+    const dbSnapshot = await dbUserRef.get();
+    const dbUser = dbSnapshot.data();
+
+    if (!dbSnapshot.exists || !dbUser) {
+      dbUserRef.set({
+        projects: [],
+        roles: {}
+      });
+
+      // also create collection for uploads in the next steps ticket (#5)
+    }
+
+    return dbUser;
+  };
 
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged(async authUser => {
       if (authUser) {
-        const dbUserRef = this.userRef(authUser.uid);
-        const dbSnapshot = await dbUserRef.get();
-        const dbUser = dbSnapshot.data();
+        const db = await this.initDB(authUser.uid);
 
-        if (!dbSnapshot.exists || !dbUser) {
-          dbUserRef.set({
-            projects: [],
-            roles: {}
-          });
-        }
-
-        // merge auth and db user
         const mergeUser = {
           uid: authUser.uid,
           email: authUser.email,
           emailVerified: authUser.emailVerified,
           providerData: authUser.providerData,
-          ...dbUser
+          ...db
         };
 
         next(mergeUser);

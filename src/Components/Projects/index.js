@@ -14,11 +14,11 @@ const Projects = props => {
   const [ loading, setIsLoading ] = useState(false);
   const [ items, setItems ] = useState([]);
   const type = 'Project';
-  const api = new Collection(props.firebase.db, PROJECTS);
+  const collection = new Collection(props.firebase.db, PROJECTS);
 
   const createProject = async item => {
     item.users = [ uid ];
-    const docRef = await api.postItem(item);
+    const docRef = await collection.postItem(item);
 
     item.url = `/projects/${ docRef.id }`;
     docRef.update({
@@ -31,7 +31,7 @@ const Projects = props => {
   };
 
   const updateProject = async (id, item) => {
-    await api.putItem(id, item);
+    await collection.putItem(id, item);
     item.display = true;
 
     return item;
@@ -47,7 +47,7 @@ const Projects = props => {
 
   const deleteProject = async id => {
     try {
-      await api.deleteItem(id);
+      await collection.deleteItem(id);
     } catch (e) {
       console.log(e);
     }
@@ -60,7 +60,7 @@ const Projects = props => {
   useEffect(() => {
     const getUserProjects = async () => {
       try {
-        api.userRef(uid).onSnapshot(snapshot => {
+        collection.userRef(uid).onSnapshot(snapshot => {
           const projects = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });
@@ -88,7 +88,7 @@ const Projects = props => {
     return () => {
       authListener();
     };
-  }, [ api, items, loading, props.firebase, uid ]);
+  }, [ collection, items, loading, props.firebase, uid ]);
 
   const breadcrumbItems = [
     {
