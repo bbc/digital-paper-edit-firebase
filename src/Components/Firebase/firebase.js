@@ -17,38 +17,40 @@ class Firebase {
     this.auth = app.auth();
     const firestore = app.firestore();
     this.db = firestore.collection('apps').doc('digital-paper-edit');
-    this.storage = app.storage().ref('apps/digital-paper-edit/users');
+    const storage = app.storage();
+    this.storage = storage.ref('apps/digital-paper-edit');
   }
 
-  dbUsersRef = () => this.db.collection('users');
-  dbUserRef = uid => this.dbUsersRef().doc(`${ uid }`);
-
-  user = async uid => await this.dbUserRef(uid).get();
-  users = async () => await this.dbUsersRef().get();
-
   // *** Merge Auth and DB User API *** //
+
+  initDB = async uid => {
+    const dbUserRef = this.db.collection('users').doc(uid);
+    const dbSnapshot = await dbUserRef.get();
+    const dbUser = dbSnapshot.data();
+
+    if (!dbSnapshot.exists || !dbUser) {
+      dbUserRef.set({
+        projects: [],
+        roles: {}
+      });
+
+      // also create collection
+    }
+
+    return dbUser;
+  };
 
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged(async authUser => {
       if (authUser) {
-        const dbdbUserRef = this.dbUserRef(authUser.uid);
-        const dbSnapshot = await dbdbUserRef.get();
-        const dbUser = dbSnapshot.data();
+        const db = await this.initDB(authUser.uid);
 
-        if (!dbSnapshot.exists || !dbUser) {
-          dbdbUserRef.set({
-            projects: [],
-            roles: {}
-          });
-        }
-
-        // merge auth and db user
         const mergeUser = {
           uid: authUser.uid,
           email: authUser.email,
           emailVerified: authUser.emailVerified,
           providerData: authUser.providerData,
-          ...dbUser
+          ...db
         };
 
         next(mergeUser);

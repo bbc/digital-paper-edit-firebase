@@ -26,7 +26,7 @@ class Collection {
 
   postItem = async data => {
     try {
-      const docRef = await this.collection.add(item);
+      const docRef = await this.collection.add(data);
       console.log('Document written with ID: ', docRef.id);
 
       return docRef;
