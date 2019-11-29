@@ -72,9 +72,12 @@ const ItemsContainer = props => {
     setShowModal(!showModal);
   };
 
+  const handleOnHide = () => {
+    setShowModal(false);
+  };
+
   useEffect(() => {
     setShowingItems(props.items);
-    console.log(showingItems);
 
     return () => {};
   }, [ props.items, showingItems ]);
@@ -116,8 +119,9 @@ const ItemsContainer = props => {
         { ...formData }
         modalTitle={ formData.id ? `Edit ${ type }` : `New ${ type }` }
         showModal={ showModal }
+        handleOnHide={ handleOnHide }
         handleSaveForm={ handleSaveForm }
-        itemType={ type.toLowerCase }
+        type={ type }
       />
     </>
   );
