@@ -34,7 +34,7 @@ class Firebase {
         roles: {}
       });
 
-      // also create collection
+      // also create collection for uploads in the next steps ticket (#5)
     }
 
     return dbUser;
