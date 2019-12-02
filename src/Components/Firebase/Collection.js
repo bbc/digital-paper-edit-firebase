@@ -1,9 +1,12 @@
 class Collection {
-  constructor(db, name) {
-    this.name = name;
+  constructor(firebase, name) {
+    const db = firebase.db;
     this.collection = db.collection(name);
+    this.firestore = firebase.firestore;
+    this.name = name;
     this.snapshot = [];
   }
+  getServerTimestamp = () => this.firestore.FieldValue.serverTimestamp();
 
   getCollection = async () => {
     const querySnapshot = await this.collection.get();
@@ -26,7 +29,10 @@ class Collection {
 
   postItem = async data => {
     try {
-      const docRef = await this.collection.add(data);
+      const docRef = await this.collection.add({
+        ...data,
+        created: this.getServerTimestamp()
+      });
       console.log('Document written with ID: ', docRef.id);
 
       return docRef;
@@ -35,8 +41,22 @@ class Collection {
     }
   };
 
+  setItem = async (id, data) => {
+    try {
+      await this.collection
+        .doc(id)
+        .set({ ...data, created: this.getServerTimestamp() });
+      console.log('Document written with ID: ', id);
+    } catch (error) {
+      console.error('Error adding document: ', error);
+    }
+  };
+
   putItem = async (id, data) => {
-    await this.collection.doc(id).update(data);
+    await this.collection.doc(id).update({
+      ...data,
+      updated: this.getServerTimestamp()
+    });
   };
 
   deleteItem = async id => {

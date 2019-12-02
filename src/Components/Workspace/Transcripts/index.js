@@ -3,29 +3,31 @@ import ItemsContainer from '../../lib/ItemsContainer';
 import PropTypes from 'prop-types';
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
-import cuid from 'cuid';
 
 const Transcripts = props => {
-  const TRANSCRIPTS = '/transcripts';
-  const TYPE = 'Transcript';
-
-  const collection = new Collection(props.firebase.db, TRANSCRIPTS);
   const [ loading, setIsLoading ] = useState(false);
   const [ items, setItems ] = useState([]);
   const [ uid, setUid ] = useState();
+  const TYPE = 'Transcript';
+
+  const Data = new Collection(
+    props.firebase,
+    `/projects/${ props.projectId }/transcripts`
+  );
+
+  const UserData = new Collection(props.firebase, `/users/${ uid }/uploads`);
 
   const genUrl = id => {
-    return `#/projects/${ props.projectId }/transcripts/${ id }/correct`;
+    return `/projects/${ props.projectId }/transcripts/${ id }/correct`;
   };
 
   useEffect(() => {
     const getTranscripts = async () => {
       try {
-        collection.projectRef(props.projectId).onSnapshot(snapshot => {
+        Data.collection.onSnapshot(snapshot => {
           const transcripts = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });
-
           setItems(transcripts);
         });
       } catch (error) {
@@ -39,9 +41,7 @@ const Transcripts = props => {
           setUid(authUser.uid);
         }
       },
-      () => {
-        setUid();
-      }
+      () => setUid()
     );
 
     if (!loading) {
@@ -52,19 +52,18 @@ const Transcripts = props => {
     return () => {
       authListener();
     };
-  }, [ collection, loading, props.firebase, props.projectId, uid ]);
+  }, [ Data.collection, loading, props.firebase ]);
 
   const updateTranscript = async (id, item) => {
-    await collection.putItem(id, item);
+    await Data.putItem(id, item);
     item.display = true;
 
     return item;
   };
 
-  const uploadFile = async file => {
-    const id = cuid();
-    const path = `users/${ uid }/uploads`;
-    const uploadTask = props.firebase.storage.child(`${ path }/${ id }`).put(file);
+  const asyncUploadFile = async (id, file) => {
+    const path = `users/${ uid }/uploads/${ id }`;
+    const uploadTask = props.firebase.storage.child(path).put(file);
 
     uploadTask.on(
       'state_changed',
@@ -72,7 +71,7 @@ const Transcripts = props => {
       async error => {
         console.error('Failed to upload file: ', error);
         // Handle unsuccessful uploads
-        await collection.put(id, { status: 'error' });
+        await updateTranscript(id, { status: 'error' });
       },
       async () => {
         // Handle successful uploads on complete
@@ -84,41 +83,52 @@ const Transcripts = props => {
   };
 
   const createTranscript = async item => {
-    const transcript = item;
-    transcript.projectId = props.projectId;
+    const docRef = await Data.postItem(item);
 
-    if (transcript.file) {
-      uploadFile(transcript.file);
-      delete transcript.file;
-    }
-
-    const docRef = await collection.postItem(transcript);
-    transcript.url = genUrl(docRef.id);
-    transcript.status = 'in-progress';
-
-    docRef.update({
-      url: transcript.url,
-      status: transcript.status
-    });
-
-    transcript.display = true;
-
-    return transcript;
+    return docRef;
   };
 
   const handleSave = async item => {
     if (item.id) {
       return await updateTranscript(item.id, item);
     } else {
-      return await createTranscript(item);
+      const newTranscript = await createTranscript({
+        title: item.title,
+        description: item.description,
+        status: '',
+        projectId: props.projectId
+      });
+
+      await UserData.setItem(newTranscript.id, {
+        name: item.file.name,
+        size: item.file.size,
+        type: item.file.type
+      });
+
+      asyncUploadFile(newTranscript.id, item.file);
+
+      newTranscript.update({
+        url: genUrl(newTranscript.id),
+        status: 'in-progress'
+      });
     }
   };
 
   const deleteTranscript = async id => {
     try {
-      await collection.deleteItem(id);
+      await Data.deleteItem(id);
     } catch (e) {
-      console.log(e);
+      console.error('Failed to delete item from collection: ', e.code_);
+    }
+    try {
+      await UserData.deleteItem(id);
+    } catch (e) {
+      console.error('Failed to delete item for user: ', e.code_);
+    }
+    try {
+      await props.firebase.storage.child(`users/${ uid }/uploads/${ id }`).delete();
+    } catch (e) {
+      console.error('Failed to delete item in storage: ', e.code_);
     }
   };
 

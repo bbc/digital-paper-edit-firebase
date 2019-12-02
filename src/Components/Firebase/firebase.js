@@ -15,14 +15,15 @@ class Firebase {
   constructor() {
     app.initializeApp(config);
     this.auth = app.auth();
-    const firestore = app.firestore();
-    this.db = firestore.collection('apps').doc('digital-paper-edit');
-    const storage = app.storage();
-    this.storage = storage.ref('apps/digital-paper-edit');
+
+    this.firestore = app.firestore;
+    this.db = this.firestore()
+      .collection('apps')
+      .doc('digital-paper-edit');
+    this.storage = app.storage().ref('apps/digital-paper-edit');
   }
 
   // *** Merge Auth and DB User API *** //
-
   initDB = async uid => {
     const dbUserRef = this.db.collection('users').doc(uid);
     const dbSnapshot = await dbUserRef.get();
@@ -31,7 +32,8 @@ class Firebase {
     if (!dbSnapshot.exists || !dbUser) {
       dbUserRef.set({
         projects: [],
-        roles: {}
+        role: 'USER',
+        created: this.getServerTimestamp()
       });
 
       // also create collection for uploads in the next steps ticket (#5)

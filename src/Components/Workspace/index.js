@@ -23,7 +23,7 @@ const genBreadcrumb = name => [
 ];
 
 const WorkspaceView = props => {
-  const projects = new Collection(props.firebase.db, PROJECTS);
+  const projects = new Collection(props.firebase, PROJECTS);
   const id = props.match.params.projectId;
   const [ active, setActive ] = useState('transcripts');
   const [ name, setName ] = useState('Project Name');
