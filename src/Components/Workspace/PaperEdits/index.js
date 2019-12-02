@@ -1,21 +1,21 @@
-import React, { useEffect, useState, useContext } from 'react';
-import ItemsContainer from '../../lib/ItemsContainer';
-import PropTypes from 'prop-types';
-import Collection from '../../Firebase/Collection';
-import { withAuthorization } from '../../Session';
+import React, { useEffect, useState, useContext } from "react";
+import ItemsContainer from "../../lib/ItemsContainer";
+import PropTypes from "prop-types";
+import Collection from "../../Firebase/Collection";
+import { withAuthorization } from "../../Session";
 
 const PaperEdits = props => {
-  const TYPE = 'Paper Edit';
+  const TYPE = "Paper Edit";
 
   const Data = new Collection(
-    props.firebase.db,
-    `/projects/${ props.projectId }/paperedits`
+    props.firebase,
+    `/projects/${props.projectId}/paperedits`
   );
-  const [ items, setItems ] = useState([]);
-  const [ loading, setIsLoading ] = useState(false);
+  const [items, setItems] = useState([]);
+  const [loading, setIsLoading] = useState(false);
 
   const genUrl = id => {
-    return `/projects/${ props.projectId }/paperedits/${ id }`;
+    return `/projects/${props.projectId}/paperedits/${id}`;
   };
 
   useEffect(() => {
@@ -28,7 +28,7 @@ const PaperEdits = props => {
           setItems(paperEdits);
         });
       } catch (error) {
-        console.log('Error getting documents: ', error);
+        console.log("Error getting documents: ", error);
       }
     };
     // TODO: some error handling
@@ -38,7 +38,7 @@ const PaperEdits = props => {
     }
 
     return () => {};
-  }, [ Data, loading, items, props.projectId ]);
+  }, [Data, loading, items, props.projectId]);
 
   const createPaperEdit = async item => {
     const paperEdit = { ...item, projectId: props.projectId };
@@ -82,10 +82,10 @@ const PaperEdits = props => {
 
   return (
     <ItemsContainer
-      type={ TYPE }
-      items={ items }
-      handleSave={ handleSave }
-      handleDelete={ handleDelete }
+      type={TYPE}
+      items={items}
+      handleSave={handleSave}
+      handleDelete={handleDelete}
     />
   );
 };

@@ -14,7 +14,7 @@ const Projects = props => {
   const [ loading, setIsLoading ] = useState(false);
   const [ items, setItems ] = useState([]);
   const type = 'Project';
-  const collection = new Collection(props.firebase.db, PROJECTS);
+  const collection = new Collection(props.firebase, PROJECTS);
 
   const createProject = async item => {
     item.users = [ uid ];

@@ -5,7 +5,6 @@ import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 
 import { anyInText } from '../../../Util/in-text';
-import arrayMatch from '../../../Util/array-match';
 import List from '@bbc/digital-paper-edit-react-components/List';
 import FormModal from '@bbc/digital-paper-edit-react-components/FormModal';
 import SearchBar from '@bbc/digital-paper-edit-react-components/SearchBar';
@@ -30,7 +29,8 @@ const formReducer = (state = initialFormState, { type, payload }) => {
 
 const ItemsContainer = props => {
   const type = props.type;
-  const [ showingItems, setShowingItems ] = useState(props.items);
+
+  // modal
   const [ showModal, setShowModal ] = useState(false);
   const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
 
@@ -49,9 +49,17 @@ const ItemsContainer = props => {
     setShowModal(true);
   };
 
-  const handleDeleteItem = id => {
-    props.handleDelete(id);
+  const toggleShowModal = () => {
+    setShowModal(!showModal);
   };
+
+  const handleOnHide = () => {
+    setShowModal(false);
+  };
+
+  // search
+
+  const [ showingItems, setShowingItems ] = useState([]);
 
   const handleFilterDisplay = (item, text) => {
     if (anyInText([ item.title, item.description ], text)) {
@@ -68,25 +76,24 @@ const ItemsContainer = props => {
     setShowingItems(results);
   };
 
-  const toggleShowModal = () => {
-    setShowModal(!showModal);
-  };
+  // generic
 
-  const handleOnHide = () => {
-    setShowModal(false);
+  const handleDeleteItem = id => {
+    props.handleDelete(id);
   };
 
   useEffect(() => {
     setShowingItems(props.items);
 
-    return () => {};
+    return () => {
+      setShowingItems([]);
+    };
   }, [ props.items, showingItems ]);
 
   let searchEl;
   let items;
 
   if (showingItems.length > 0) {
-    searchEl = <SearchBar handleSearch={ handleSearch } />;
     items = (
       <List
         items={ showingItems }
@@ -101,7 +108,9 @@ const ItemsContainer = props => {
   return (
     <>
       <Row>
-        <Col sm={ 9 }>{searchEl}</Col>
+        <Col sm={ 9 }>
+          <SearchBar handleSearch={ handleSearch } />
+        </Col>
         <Col xs={ 12 } sm={ 3 }>
           <Button
             onClick={ toggleShowModal }
@@ -113,8 +122,10 @@ const ItemsContainer = props => {
           </Button>
         </Col>
       </Row>
+
       {showingItems.length > 0 ? <p>{showingItems.length}</p> : null}
       {showingItems.length > 0 ? items : null}
+
       <FormModal
         { ...formData }
         modalTitle={ formData.id ? `Edit ${ type }` : `New ${ type }` }
