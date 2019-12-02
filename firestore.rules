@@ -2,15 +2,23 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
   	match /apps/{appName} {
-      allow read, write: if request.auth.uid == "gLoKESQNkVavUfSiqqoSEEEa6Lo2"; // admin write need to be rethought
+
+    function isAdmin() {
+      return get(/databases/$(database)/documents/apps/digital-paper-edit/users/$(request.auth.uid)).data.role == "ADMIN";
+		}
+      allow read, write: if isAdmin();
+      
   		match /users/{userId}/{document=**} {
-         allow read, write: if request.auth.uid == userId;
+         allow read, write: if isAdmin() || request.auth.uid == userId;
       }
-      match /projects/{pId} {
-      	allow read, write: if request.auth.uid in resource.data.users;
-        match /{table}/{fieldId} {
-      		allow read, write;
-				} 
+
+      match /projects/{pId}/{document=**} {
+        
+      	function isOnProject() {
+      		return request.auth.uid in get(/databases/$(database)/documents/projects/$(pid)).data.users;
+        }
+
+        allow read, write: if isAdmin() || isOnProject();        
 			} 
   	}
 	}
