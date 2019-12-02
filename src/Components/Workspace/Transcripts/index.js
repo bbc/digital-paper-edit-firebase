@@ -6,10 +6,12 @@ import { withAuthorization } from '../../Session';
 import cuid from 'cuid';
 
 const Transcripts = props => {
-  const TRANSCRIPTS = '/transcripts';
   const TYPE = 'Transcript';
 
-  const collection = new Collection(props.firebase.db, TRANSCRIPTS);
+  const Data = new Collection(
+    props.firebase.db,
+    `/projects/${ props.projectId }/transcripts`
+  );
   const [ loading, setIsLoading ] = useState(false);
   const [ items, setItems ] = useState([]);
   const [ uid, setUid ] = useState();
@@ -21,7 +23,7 @@ const Transcripts = props => {
   useEffect(() => {
     const getTranscripts = async () => {
       try {
-        collection.projectRef(props.projectId).onSnapshot(snapshot => {
+        Data.collection.onSnapshot(snapshot => {
           const transcripts = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });
@@ -52,17 +54,16 @@ const Transcripts = props => {
     return () => {
       authListener();
     };
-  }, [ collection, loading, props.firebase, props.projectId, uid ]);
+  }, [ Data, loading, props.firebase, props.projectId, uid ]);
 
   const updateTranscript = async (id, item) => {
-    await collection.putItem(id, item);
+    await Data.putItem(id, item);
     item.display = true;
 
     return item;
   };
 
-  const uploadFile = async file => {
-    const id = cuid();
+  const asyncUploadFile = async (id, file) => {
     const path = `users/${ uid }/uploads`;
     const uploadTask = props.firebase.storage.child(`${ path }/${ id }`).put(file);
 
@@ -72,7 +73,7 @@ const Transcripts = props => {
       async error => {
         console.error('Failed to upload file: ', error);
         // Handle unsuccessful uploads
-        await collection.put(id, { status: 'error' });
+        await Data.put(id, { status: 'error' });
       },
       async () => {
         // Handle successful uploads on complete
@@ -84,39 +85,41 @@ const Transcripts = props => {
   };
 
   const createTranscript = async item => {
-    const transcript = item;
-    transcript.projectId = props.projectId;
+    const docRef = await Data.postItem(item);
 
-    if (transcript.file) {
-      uploadFile(transcript.file);
-      delete transcript.file;
-    }
-
-    const docRef = await collection.postItem(transcript);
-    transcript.url = genUrl(docRef.id);
-    transcript.status = 'in-progress';
-
-    docRef.update({
-      url: transcript.url,
-      status: transcript.status
-    });
-
-    transcript.display = true;
-
-    return transcript;
+    return docRef;
   };
 
   const handleSave = async item => {
     if (item.id) {
       return await updateTranscript(item.id, item);
     } else {
-      return await createTranscript(item);
+      const transcript = {
+        title: item.title,
+        description: item.description,
+        status: '',
+        projectId: props.projectId
+      };
+
+      const newTranscript = await createTranscript(transcript);
+
+      asyncUploadFile(newTranscript.id, item.file);
+
+      newTranscript.update({
+        url: genUrl(newTranscript.id),
+        status: 'in-progress'
+      });
+
+      const tr = newTranscript.get();
+      tr.display = true;
+
+      return tr;
     }
   };
 
   const deleteTranscript = async id => {
     try {
-      await collection.deleteItem(id);
+      await Data.deleteItem(id);
     } catch (e) {
       console.log(e);
     }

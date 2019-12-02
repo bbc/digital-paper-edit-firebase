@@ -2,11 +2,16 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
   	match /apps/{appName} {
-      // admin write need to be rethought
-      allow read, write: if request.auth.uid == "gLoKESQNkVavUfSiqqoSEEEa6Lo2"; 
+      allow read, write: if request.auth.uid == "gLoKESQNkVavUfSiqqoSEEEa6Lo2"; // admin write need to be rethought
   		match /users/{userId}/{document=**} {
-    		 allow read, write: if request.auth.uid == userId;
-    	}
+         allow read, write: if request.auth.uid == userId;
+      }
+      match /projects/{pId} {
+      	allow read, write: if request.auth.uid in resource.data.users;
+        match /{table}/{fieldId} {
+      		allow read, write;
+				} 
+			} 
   	}
 	}
 }
