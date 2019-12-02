@@ -18,7 +18,7 @@ const Transcripts = props => {
   const UserData = new Collection(props.firebase, `/users/${ uid }/uploads`);
 
   const genUrl = id => {
-    return `#/projects/${ props.projectId }/transcripts/${ id }/correct`;
+    return `/projects/${ props.projectId }/transcripts/${ id }/correct`;
   };
 
   useEffect(() => {

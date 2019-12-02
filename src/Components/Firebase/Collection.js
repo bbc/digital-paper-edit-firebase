@@ -43,12 +43,10 @@ class Collection {
 
   setItem = async (id, data) => {
     try {
-      const docRef = await this.collection
+      await this.collection
         .doc(id)
         .set({ ...data, created: this.getServerTimestamp() });
-      console.log('Document written with ID: ', docRef.id);
-
-      return docRef;
+      console.log('Document written with ID: ', id);
     } catch (error) {
       console.error('Error adding document: ', error);
     }
