@@ -20,7 +20,7 @@ class Firebase {
     this.db = this.firestore()
       .collection('apps')
       .doc('digital-paper-edit');
-    this.storage = app.storage().ref('apps/digital-paper-edit');
+    this.storage = app.storage().ref();
   }
 
   // *** Merge Auth and DB User API *** //

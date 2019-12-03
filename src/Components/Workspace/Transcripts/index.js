@@ -15,8 +15,6 @@ const Transcripts = props => {
     `/projects/${ props.projectId }/transcripts`
   );
 
-  const UserData = new Collection(props.firebase, `/users/${ uid }/uploads`);
-
   const genUrl = id => {
     return `/projects/${ props.projectId }/transcripts/${ id }/correct`;
   };
@@ -99,12 +97,6 @@ const Transcripts = props => {
         projectId: props.projectId
       });
 
-      await UserData.setItem(newTranscript.id, {
-        name: item.file.name,
-        size: item.file.size,
-        type: item.file.type
-      });
-
       asyncUploadFile(newTranscript.id, item.file);
 
       newTranscript.update({
@@ -120,11 +112,11 @@ const Transcripts = props => {
     } catch (e) {
       console.error('Failed to delete item from collection: ', e.code_);
     }
-    try {
-      await UserData.deleteItem(id);
-    } catch (e) {
-      console.error('Failed to delete item for user: ', e.code_);
-    }
+    // try {
+    //   await UserData.deleteItem(id);
+    // } catch (e) {
+    //   console.error('Failed to delete item for user: ', e.code_);
+    // }
     try {
       await props.firebase.storage.child(`users/${ uid }/uploads/${ id }`).delete();
     } catch (e) {
