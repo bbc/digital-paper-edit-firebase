@@ -55,7 +55,7 @@ We will authenticate users based on a field in projects called `users`. Each pro
 
 A security rule like below will be able to test authentication and membership of the project on users.
 
-````js
+```js
 function isOnProject() {
     return request.auth.uid in get(/databases/$(database)/documents/projects/$(pid)).data.users;
 }
@@ -74,4 +74,4 @@ To keep consistency, we also use the same `id` for `transcript` and `uploads`
 | Firestore                              | Firestore                     |
 | -------------------------------------- | ----------------------------- |
 | `projects/{id}/{transcripts}/{itemId}` | `users/{id}/uploads/{itemId}` |
-````
+
