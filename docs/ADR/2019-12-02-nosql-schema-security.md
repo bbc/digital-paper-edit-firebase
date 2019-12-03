@@ -1,4 +1,4 @@
-# [short title of solved problem and solution]
+# NoSQL Schema (Firestore) for Security Rules
 
 - Status: accepted
 - Deciders: Eimi
