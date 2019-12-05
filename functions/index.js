@@ -1,21 +1,23 @@
+const firebase = require("./Firebase");
 const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-admin.initializeApp();
-
-const docRef = admin
-  .firestore()
-  .collection("apps")
-  .doc("digital-paper-edit");
 
 const BucketFunctions = functions.storage
-  .bucket(functions.config().storage.bucket)
+  .bucket(firebase.functionsConfig.storage.bucket)
   .object();
 
 const inventoryChecker = require("./inventoryChecker");
+const audioStripper = require("./audioStripper");
 
 exports.onFinalize = BucketFunctions.onFinalize(obj =>
-  inventoryChecker.finalizeHandler(obj, docRef)
+  inventoryChecker.finalizeHandler(obj, firebase)
 );
+
 exports.onDelete = BucketFunctions.onDelete(obj =>
-  inventoryChecker.deleteHandler(obj, docRef)
+  inventoryChecker.deleteHandler(obj, firebase)
 );
+
+exports.onCreateUpload = functions.firestore
+  .document("users/{userId}/uploads/{itemId}")
+  .onCreate((snap, context) => {
+    audioStripper.createHandler(snap, context);
+  });
