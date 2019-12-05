@@ -9,13 +9,12 @@ const Transcripts = props => {
   const [ items, setItems ] = useState([]);
   const [ uid, setUid ] = useState();
   const TYPE = 'Transcript';
+  const UPLOADFOLDER = 'uploads';
 
   const Data = new Collection(
     props.firebase,
     `/projects/${ props.projectId }/transcripts`
   );
-
-  const UserData = new Collection(props.firebase, `/users/${ uid }/uploads`);
 
   const genUrl = id => {
     return `/projects/${ props.projectId }/transcripts/${ id }/correct`;
@@ -62,8 +61,17 @@ const Transcripts = props => {
   };
 
   const asyncUploadFile = async (id, file) => {
-    const path = `users/${ uid }/uploads/${ id }`;
-    const uploadTask = props.firebase.storage.child(path).put(file);
+    const path = `users/${ uid }/${ UPLOADFOLDER }/${ id }`;
+
+    const metadata = {
+      customMetadata: {
+        userId: uid,
+        id: id,
+        name: file.name,
+        folder: UPLOADFOLDER
+      }
+    };
+    const uploadTask = props.firebase.storage.child(path).put(file, metadata);
 
     uploadTask.on(
       'state_changed',
@@ -99,12 +107,6 @@ const Transcripts = props => {
         projectId: props.projectId
       });
 
-      await UserData.setItem(newTranscript.id, {
-        name: item.file.name,
-        size: item.file.size,
-        type: item.file.type
-      });
-
       asyncUploadFile(newTranscript.id, item.file);
 
       newTranscript.update({
@@ -119,11 +121,6 @@ const Transcripts = props => {
       await Data.deleteItem(id);
     } catch (e) {
       console.error('Failed to delete item from collection: ', e.code_);
-    }
-    try {
-      await UserData.deleteItem(id);
-    } catch (e) {
-      console.error('Failed to delete item for user: ', e.code_);
     }
     try {
       await props.firebase.storage.child(`users/${ uid }/uploads/${ id }`).delete();
