@@ -9,6 +9,7 @@ const Transcripts = props => {
   const [ items, setItems ] = useState([]);
   const [ uid, setUid ] = useState();
   const TYPE = 'Transcript';
+  const UPLOADFOLDER = 'uploads';
 
   const Data = new Collection(
     props.firebase,
@@ -60,8 +61,17 @@ const Transcripts = props => {
   };
 
   const asyncUploadFile = async (id, file) => {
-    const path = `users/${ uid }/uploads/${ id }`;
-    const uploadTask = props.firebase.storage.child(path).put(file);
+    const path = `users/${ uid }/${ UPLOADFOLDER }/${ id }`;
+
+    const metadata = {
+      customMetadata: {
+        userId: uid,
+        id: id,
+        name: file.name,
+        folder: UPLOADFOLDER
+      }
+    };
+    const uploadTask = props.firebase.storage.child(path).put(file, metadata);
 
     uploadTask.on(
       'state_changed',
