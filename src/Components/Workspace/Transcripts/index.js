@@ -122,7 +122,6 @@ const Transcripts = props => {
     } catch (e) {
       console.error('Failed to delete item from collection: ', e.code_);
     }
-    // try {
     //   await UserData.deleteItem(id);
     // } catch (e) {
     //   console.error('Failed to delete item for user: ', e.code_);
