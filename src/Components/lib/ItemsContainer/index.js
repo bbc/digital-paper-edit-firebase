@@ -29,23 +29,20 @@ const formReducer = (state = initialFormState, { type, payload }) => {
 
 const ItemsContainer = props => {
   const type = props.type;
-
-  // modal
+  const [ showingItems, setShowingItems ] = useState([]);
   const [ showModal, setShowModal ] = useState(false);
   const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
 
+  // modal
+
   const handleSaveForm = item => {
-    console.log('handleSaveItem ', item);
     props.handleSave(item);
     setShowModal(false);
     dispatchForm({ type: 'reset' });
   };
 
   const handleEditItem = id => {
-    console.log('hanldeEdit', id);
-    console.log('props.items', props.items);
     const item = props.items.find(i => i.id === id);
-    console.log('found item', item);
     dispatchForm({
       type: 'update',
       payload: item
@@ -62,8 +59,6 @@ const ItemsContainer = props => {
   };
 
   // search
-
-  const [ showingItems, setShowingItems ] = useState([]);
 
   const handleFilterDisplay = (item, text) => {
     if (anyInText([ item.title, item.description ], text)) {
