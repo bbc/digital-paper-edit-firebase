@@ -418,3 +418,16 @@ The conversion could be done either on the client or in a cloud function.
 * Good, because can save a lot of space
 * Bad, because serializing and deserialising could introuce errors in the data
 * … <!-- numbers of pros and cons can vary -->
+
+ ### 9. Compression with Gzip
+ 
+ Using Gzip (zlib) module to zip and unzip an entire JSON.
+ 
+ See implementation [here](https://github.com/emettely/compare-json-compression/blob/master/src/gzip.js)
+
+If Gzip gives a compression rate of 85% for the entire JSON without extraction of words, it's simpler and might be good enough, assuming the longest video might be 6 hours long. E.g if the transcript size is 5MB in size and the compression is 85%, it'll result in 0.75MB, under the 1MB limit. So tl;dr just using Gzip only gives a good balance of simplicity and compression.
+ 
+ * Good, because saves lots (85%) of [space](https://github.com/emettely/compare-json-compression#outcome)
+ * Good, because you don't need an extra library (if you have NodeJS)
+ * Good, because it's pretty fast
+ * Bad, because you are serializing and deserializing data and would need an additional step to debug if there's an error
