@@ -97,6 +97,7 @@ const Transcripts = props => {
   };
 
   const handleSave = async item => {
+    console.log(item);
     if (item.id) {
       return await updateTranscript(item.id, item);
     } else {
@@ -117,6 +118,7 @@ const Transcripts = props => {
   };
 
   const deleteTranscript = async id => {
+    console.log('delete', id);
     try {
       await Data.deleteItem(id);
     } catch (e) {
@@ -132,6 +134,11 @@ const Transcripts = props => {
   const handleDelete = id => {
     deleteTranscript(id);
   };
+
+  console.log(
+    'ids',
+    items.map(i => i.id)
+  );
 
   return (
     <ItemsContainer

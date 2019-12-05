@@ -35,13 +35,17 @@ const ItemsContainer = props => {
   const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
 
   const handleSaveForm = item => {
+    console.log('handleSaveItem ', item);
     props.handleSave(item);
     setShowModal(false);
     dispatchForm({ type: 'reset' });
   };
 
   const handleEditItem = id => {
+    console.log('hanldeEdit', id);
+    console.log('props.items', props.items);
     const item = props.items.find(i => i.id === id);
+    console.log('found item', item);
     dispatchForm({
       type: 'update',
       payload: item
