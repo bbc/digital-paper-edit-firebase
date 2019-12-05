@@ -123,7 +123,6 @@ const Transcripts = props => {
       console.error('Failed to delete item from collection: ', e.code_);
     }
     //   await UserData.deleteItem(id);
-    //   console.error('Failed to delete item for user: ', e.code_);
     try {
       await props.firebase.storage.child(`users/${ uid }/uploads/${ id }`).delete();
     } catch (e) {
