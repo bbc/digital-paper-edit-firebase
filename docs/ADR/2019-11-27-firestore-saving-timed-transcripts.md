@@ -94,6 +94,7 @@ For instance these are the following is the limit to free-tier:
 6. Compression - JSONC with Gzip
 7. Compression - UBJSON - Universal Binary JSON
 8. Convert to a collection of 3 `tsv` documents 
+9. Compression - Gzip only using `zlib`
 
 ## Decision Outcome
 
