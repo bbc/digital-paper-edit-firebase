@@ -30,7 +30,7 @@ const Transcripts = props => {
           setItems(transcripts);
         });
       } catch (error) {
-        console.log('Error getting documents: ', error);
+        console.error('Error getting documents: ', error);
       }
     };
 

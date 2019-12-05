@@ -49,7 +49,7 @@ const Projects = props => {
     try {
       await collection.deleteItem(id);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   };
 
@@ -67,7 +67,7 @@ const Projects = props => {
           setItems(projects);
         });
       } catch (error) {
-        console.log('Error getting documents: ', error);
+        console.error('Error getting documents: ', error);
       }
     };
 

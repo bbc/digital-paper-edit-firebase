@@ -29,10 +29,11 @@ const formReducer = (state = initialFormState, { type, payload }) => {
 
 const ItemsContainer = props => {
   const type = props.type;
-
-  // modal
+  const [ showingItems, setShowingItems ] = useState([]);
   const [ showModal, setShowModal ] = useState(false);
   const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
+
+  // modal
 
   const handleSaveForm = item => {
     props.handleSave(item);
@@ -58,8 +59,6 @@ const ItemsContainer = props => {
   };
 
   // search
-
-  const [ showingItems, setShowingItems ] = useState([]);
 
   const handleFilterDisplay = (item, text) => {
     if (anyInText([ item.title, item.description ], text)) {
