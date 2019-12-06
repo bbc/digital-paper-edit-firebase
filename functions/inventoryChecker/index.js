@@ -16,8 +16,8 @@ const deleteFirestore = async (admin, object) => {
     console.log(`Deleting item ${id} for user ${uid} in ${folder}`);
   } catch (e) {
     console.error(
-      `Failed to delete item ${id} for user ${uid} in ${folder}= `,
-      e.code_
+      `Failed to delete item ${id} for user ${uid} in ${folder}: `,
+      e
     );
   }
 };
@@ -27,22 +27,26 @@ const updateFirestore = async (admin, object) => {
   const id = object.metadata.id;
   const folder = object.metadata.folder;
 
-  await getUserCollection(admin, uid, folder)
-    .doc(id)
-    .set({
-      name: object.metadata.name,
-      size: object.size,
-      contentType: object.contentType,
-      md5Hash: object.md5Hash,
-      timeCreated: object.timeCreated
-    });
-  console.log(`Setting item ${id} for user ${uid} in ${folder}`);
+  try {
+    await getUserCollection(admin, uid, folder)
+      .doc(id)
+      .set({
+        name: object.metadata.name,
+        size: object.size,
+        contentType: object.contentType,
+        md5Hash: object.md5Hash,
+        timeCreated: object.timeCreated
+      });
+    console.log(`Setting item ${id} for user ${uid} in ${folder}`);
+  } catch (e) {
+    console.error(`Failed to set item ${id} for user ${uid} in ${folder}: `, e);
+  }
 };
 
 exports.deleteHandler = async (object, admin) => {
-  deleteFirestore(admin, object);
+  await deleteFirestore(admin, object);
 };
 
 exports.finalizeHandler = async (object, admin) => {
-  updateFirestore(admin, object);
+  await updateFirestore(admin, object);
 };
