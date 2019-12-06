@@ -28,10 +28,12 @@ const updateFirestore = async (admin, object) => {
   const uid = object.metadata.userId;
   const id = object.metadata.id;
   const folder = object.metadata.folder;
-  const name = object.metadata.name ? object.metadata.name : "";
+  const originalName = object.metadata.originalName
+    ? object.metadata.originalName
+    : "";
 
   const update = {
-    name: name,
+    originalName: originalName,
     size: object.size,
     contentType: object.contentType,
     md5Hash: object.md5Hash,

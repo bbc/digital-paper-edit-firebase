@@ -49,7 +49,7 @@ exports.createHandler = async (admin, snap, bucketName, context) => {
       userId: userId,
       id: itemId,
       folder: "audio",
-      name: upload.name
+      originalName: upload.originalName
     }
   };
 
