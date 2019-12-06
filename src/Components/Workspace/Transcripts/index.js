@@ -102,7 +102,7 @@ const Transcripts = props => {
     } else {
       const newTranscript = await createTranscript({
         title: item.title,
-        description: item.description,
+        description: item.description ? item.description : '',
         status: '',
         projectId: props.projectId
       });
