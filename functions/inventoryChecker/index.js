@@ -9,14 +9,16 @@ const deleteFirestore = async (admin, object) => {
   const id = object.metadata.id;
   const folder = object.metadata.folder;
 
+  console.log(`[START] Deleting item ${id} for user ${uid} in ${folder}`);
+
   try {
     await getUserCollection(admin, uid, folder)
       .doc(id)
       .delete();
-    console.log(`Deleting item ${id} for user ${uid} in ${folder}`);
+    console.log(`[COMPLETE] Deleted item ${id} for user ${uid} in ${folder}`);
   } catch (e) {
     console.error(
-      `Failed to delete item ${id} for user ${uid} in ${folder}: `,
+      `[ERROR] Failed to delete item ${id} for user ${uid} in ${folder}: `,
       e
     );
   }
@@ -26,20 +28,31 @@ const updateFirestore = async (admin, object) => {
   const uid = object.metadata.userId;
   const id = object.metadata.id;
   const folder = object.metadata.folder;
+  const name = object.metadata.name ? object.metadata.name : "";
 
+  const update = {
+    name: name,
+    size: object.size,
+    contentType: object.contentType,
+    md5Hash: object.md5Hash,
+    timeCreated: object.timeCreated
+  };
+
+  console.log(
+    `[START] Setting item ${id} for user ${uid} in ${folder} with: ${JSON.stringify(
+      update
+    )}`
+  );
   try {
     await getUserCollection(admin, uid, folder)
       .doc(id)
-      .set({
-        name: object.metadata.name,
-        size: object.size,
-        contentType: object.contentType,
-        md5Hash: object.md5Hash,
-        timeCreated: object.timeCreated
-      });
-    console.log(`Setting item ${id} for user ${uid} in ${folder}`);
+      .set(update);
+    console.log(`[COMPLETE] Set item ${id} for user ${uid} in ${folder}`);
   } catch (e) {
-    console.error(`Failed to set item ${id} for user ${uid} in ${folder}: `, e);
+    console.error(
+      `[ERROR] Failed to set item ${id} for user ${uid} in ${folder}: `,
+      e
+    );
   }
 };
 

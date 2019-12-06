@@ -1,5 +1,4 @@
 const functions = require("firebase-functions");
-
 const admin = require("firebase-admin");
 admin.initializeApp();
 
@@ -18,9 +17,7 @@ exports.onDelete = bucketTrigger.onDelete(obj =>
 );
 
 exports.onCreateUpload = functions.firestore
-  .document("users/{userId}/uploads/{itemId}")
-  .onCreate((snap, context) => {
-    const bucket = admin.storage().bucket(bucketName);
-    const storage = admin.storage;
-    audioStripper.createHandler(storage, bucket, snap, context);
-  });
+  .document("apps/digital-paper-edit/users/{userId}/uploads/{itemId}")
+  .onCreate((snap, context) =>
+    audioStripper.createHandler(admin, snap, bucketName, context)
+  );

@@ -36,7 +36,8 @@ class Firebase {
         created: this.getServerTimestamp()
       });
 
-      // also create collection for uploads in the next steps ticket (#5)
+      // https://firebase.google.com/docs/firestore/data-model
+      // Docs / Collections are automatically created if not existing
     }
 
     return dbUser;
