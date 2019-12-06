@@ -67,7 +67,7 @@ const Transcripts = props => {
       customMetadata: {
         userId: uid,
         id: id,
-        name: file.name,
+        originalName: file.name,
         folder: UPLOADFOLDER
       }
     };
@@ -124,6 +124,7 @@ const Transcripts = props => {
     }
     try {
       await props.firebase.storage.child(`users/${ uid }/uploads/${ id }`).delete();
+      await props.firebase.storage.child(`users/${ uid }/audio/${ id }`).delete();
     } catch (e) {
       console.error('Failed to delete item in storage: ', e.code_);
     }
