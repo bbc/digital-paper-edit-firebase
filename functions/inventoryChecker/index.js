@@ -4,7 +4,11 @@ const getUserCollection = (admin, uid, collection) => {
     .collection(`apps/digital-paper-edit/users/${uid}/${collection}`);
 };
 
-const deleteFirestore = async (admin, uid, id, folder) => {
+const deleteFirestore = async (admin, object) => {
+  const uid = object.metadata.userId;
+  const id = object.metadata.id;
+  const folder = object.metadata.folder;
+
   try {
     await getUserCollection(admin, uid, folder)
       .doc(id)
@@ -18,7 +22,11 @@ const deleteFirestore = async (admin, uid, id, folder) => {
   }
 };
 
-const updateFirestore = async (admin, uid, id, folder) => {
+const updateFirestore = async (admin, object) => {
+  const uid = object.metadata.userId;
+  const id = object.metadata.id;
+  const folder = object.metadata.folder;
+
   await getUserCollection(admin, uid, folder)
     .doc(id)
     .set({
@@ -32,15 +40,9 @@ const updateFirestore = async (admin, uid, id, folder) => {
 };
 
 exports.deleteHandler = async (object, admin) => {
-  const uid = object.metadata.userId;
-  const id = object.metadata.id;
-  const folder = object.metadata.folder;
-  deleteFirestore(admin, uid, id, folder);
+  deleteFirestore(admin, object);
 };
 
 exports.finalizeHandler = async (object, admin) => {
-  const uid = object.metadata.userId;
-  const id = object.metadata.id;
-  const folder = object.metadata.folder;
-  updateFirestore(admin, uid, id, folder);
+  updateFirestore(admin, object);
 };
