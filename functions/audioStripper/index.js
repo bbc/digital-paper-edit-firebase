@@ -4,7 +4,21 @@ const cleanUp = files => {
   files.forEach(f => fs.unlinkSync(f));
 };
 
-const handleNewUpload = async (destPath, object, firebase) => {
+const downloadFile = async (name, filePath) => {
+  const tmpFilePath = path.join(os.tmpdir(), name);
+  await bucket.file(filePath).download({ destination: tmpFilePath });
+  console.log("Image downloaded locally to", tmpFilePath);
+  return tmpFilePath;
+};
+
+const uploadFile = async (destPath, srcPath, metadata) => {
+  await storage()
+    .ref()
+    .child(destPath)
+    .put(srcPath, metadata);
+};
+
+const handleNewUpload = async (destPath, object, admin) => {
   let tmpSrcPath;
 
   try {
@@ -34,7 +48,7 @@ const handleNewUpload = async (destPath, object, firebase) => {
   cleanUp([tmpAudioPath, tmpSrcPath]);
 };
 
-exports.createHandler = async (snap, context) => {
+exports.createHandler = async (storage, bucket, snap, context) => {
   // Get an object representing the document
   // e.g. {'name': 'Marie', 'age': 66}
   const uploadedItem = snap.data();

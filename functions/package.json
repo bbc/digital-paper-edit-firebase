@@ -3,7 +3,8 @@
   "description": "Cloud Functions for Firebase",
   "scripts": {
     "lint": "eslint .",
-    "serve": "firebase serve --only functions",
+    "serve:dev": "firebase serve -P dev --only functions",
+    "serve:prod": "firebase serve -P prod --only functions",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy:dev": "firebase deploy -P dev --only functions",

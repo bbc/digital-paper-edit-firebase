@@ -1,23 +1,26 @@
-const firebase = require("./Firebase");
 const functions = require("firebase-functions");
 
-const BucketFunctions = functions.storage
-  .bucket(firebase.functionsConfig.storage.bucket)
-  .object();
+const admin = require("firebase-admin");
+admin.initializeApp();
+
+const bucketName = functions.config().storage.bucket;
+const bucketTrigger = functions.storage.bucket(bucketName).object();
 
 const inventoryChecker = require("./inventoryChecker");
 const audioStripper = require("./audioStripper");
 
-exports.onFinalize = BucketFunctions.onFinalize(obj =>
-  inventoryChecker.finalizeHandler(obj, firebase)
+exports.onFinalize = bucketTrigger.onFinalize(obj =>
+  inventoryChecker.finalizeHandler(obj, admin)
 );
 
-exports.onDelete = BucketFunctions.onDelete(obj =>
-  inventoryChecker.deleteHandler(obj, firebase)
+exports.onDelete = bucketTrigger.onDelete(obj =>
+  inventoryChecker.deleteHandler(obj, admin)
 );
 
 exports.onCreateUpload = functions.firestore
   .document("users/{userId}/uploads/{itemId}")
   .onCreate((snap, context) => {
-    audioStripper.createHandler(snap, context);
+    const bucket = admin.storage().bucket(bucketName);
+    const storage = admin.storage;
+    audioStripper.createHandler(storage, bucket, snap, context);
   });
