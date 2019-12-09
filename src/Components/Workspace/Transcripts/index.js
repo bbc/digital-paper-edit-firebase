@@ -60,8 +60,12 @@ const Transcripts = props => {
     return item;
   };
 
+  const getUploadPath = id => {
+    return `users/${ uid }/${ UPLOADFOLDER }/${ id }`;
+  };
+
   const asyncUploadFile = async (id, file) => {
-    const path = `users/${ uid }/${ UPLOADFOLDER }/${ id }`;
+    const path = getUploadPath(id);
 
     const metadata = {
       customMetadata: {
@@ -72,10 +76,14 @@ const Transcripts = props => {
       }
     };
     const uploadTask = props.firebase.storage.child(path).put(file, metadata);
+    await updateTranscript(id, { status: 'uploading' });
 
     uploadTask.on(
       'state_changed',
-      snapshot => {},
+      snapshot => {
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log(progress);
+      },
       async error => {
         console.error('Failed to upload file: ', error);
         // Handle unsuccessful uploads
@@ -86,6 +94,7 @@ const Transcripts = props => {
         // For instance, get the download URL: https://firebasestorage.googleapis.com/...
         const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
         console.log('File available at', downloadURL);
+        await updateTranscript(id, { status: 'in-progress' });
       }
     );
   };
@@ -110,8 +119,7 @@ const Transcripts = props => {
       asyncUploadFile(newTranscript.id, item.file);
 
       newTranscript.update({
-        url: genUrl(newTranscript.id),
-        status: 'in-progress'
+        url: genUrl(newTranscript.id)
       });
     }
   };
@@ -133,6 +141,27 @@ const Transcripts = props => {
   const handleDelete = id => {
     deleteTranscript(id);
   };
+
+  // workaround for uploading cancellation - instead of doing this, maybe just have a progress bar and it dissappears...
+
+  // const updateUploadErrors = async item => {
+  //   const status = item.status;
+  //   const id = item.id;
+
+  //   // check for uploading (need to update storybook for this label to exist)
+  //   if (status !== 'error' || status !== 'complete') {
+  //     const path = `users/${ uid }/${ UPLOADFOLDER }/${ id }`;
+  //     try {
+  //       await props.firebase.storage.child(path).getDownloadURL();
+  //     } catch (e) {
+  //       await updateTranscript(id, { ...item, status: 'error' });
+  //     }
+  //   }
+  // };
+
+  // // items.forEach(i => {
+  // //   updateUploadErrors(i);
+  // // });
 
   return (
     <ItemsContainer
