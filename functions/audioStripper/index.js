@@ -1,8 +1,5 @@
-const storage = require("@google-cloud/storage");
-const path = require("path");
-const os = require("os");
 const fs = require("fs");
-const { convertToAudio } = require("@bbc/convert-to-audio");
+const { convertStreamToAudio } = require("@bbc/convert-to-audio");
 
 const cleanUp = files => {
   return files.forEach(f => fs.unlinkSync(f));
@@ -30,34 +27,38 @@ const handleAudioUpload = async (bucket, destPath, srcPath, metadata) => {
     console.log(`[COMPLETE] Uploaded audio file ${srcPath}`);
   } catch (err) {
     console.error(`[ERROR] Failed to upload audio file ${srcPath}: `, err);
+    throw err;
   }
 };
 
 exports.createHandler = async (admin, snap, bucketName, context) => {
   const { userId, itemId } = context.params;
+
   const srcPath = `users/${userId}/uploads/${itemId}`;
+  const destPath = `users/${userId}/audio/${itemId}`;
 
   const upload = snap.data();
   const storage = admin.storage();
   const bucket = storage.bucket(bucketName);
 
-  const tmpOutPath = path.join(os.tmpdir(), itemId);
-  const tmpAudioPath = path.join(os.tmpdir(), `${itemId}.wav`);
-
-  const metadata = {
+  const remoteReadStream = bucket.file(srcPath).createReadStream();
+  const remoteWriteStream = bucket.file(destPath).createWriteStream({
     metadata: {
-      userId: userId,
-      id: itemId,
-      folder: "audio",
-      originalName: upload.originalName
+      metadata: {
+        userId: userId,
+        id: itemId,
+        folder: "audio",
+        originalName: upload.originalName
+      },
+      contentType: "audio/wav"
     }
-  };
+  });
 
-  const destPath = `users/${userId}/audio/${itemId}`;
-
-  await downloadFile(bucket, tmpOutPath, srcPath);
-  await convertToAudio(tmpOutPath, tmpAudioPath);
-  await handleAudioUpload(bucket, destPath, tmpAudioPath, metadata);
-
-  return cleanUp([tmpAudioPath, tmpOutPath]);
+  try {
+    console.log(`[START] Streaming, transforming file ${srcPath} to audio`);
+    await convertStreamToAudio(remoteReadStream, remoteWriteStream);
+  } catch (e) {
+    console.error("[ERROR] Could not stream / transform audio file: ", e);
+  }
+  return console.log(`[COMPLETE] Uploaded audio file to ${destPath}`);
 };
