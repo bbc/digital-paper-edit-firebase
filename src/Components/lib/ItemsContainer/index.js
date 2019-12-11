@@ -5,9 +5,12 @@ import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 
 import { anyInText } from '../../../Util/in-text';
-import List from '@bbc/digital-paper-edit-react-components/List';
 import FormModal from '@bbc/digital-paper-edit-react-components/FormModal';
 import SearchBar from '@bbc/digital-paper-edit-react-components/SearchBar';
+
+import SimpleCard from '@bbc/digital-paper-edit-react-components/SimpleCard';
+import TranscriptCard from '@bbc/digital-paper-edit-react-components/TranscriptCard';
+import cuid from 'cuid';
 
 const initialFormState = {
   title: '',
@@ -72,7 +75,7 @@ const ItemsContainer = props => {
 
   const handleSearch = text => {
     const results = props.items.map(item => handleFilterDisplay(item, text));
-    setShowingItems(results);
+    setShowingItems(results.filter(item => item.display));
   };
 
   // generic
@@ -87,22 +90,34 @@ const ItemsContainer = props => {
     return () => {
       setShowingItems([]);
     };
-  }, [ props.items, showingItems ]);
+  }, [ props.items ]);
 
-  let searchEl;
-  let items;
+  const Cards = showingItems.map(item => {
+    const key = 'card-' + cuid();
 
-  if (showingItems.length > 0) {
-    items = (
-      <List
-        items={ showingItems }
-        handleEditItem={ handleEditItem }
-        handleDeleteItem={ handleDeleteItem }
-      />
-    );
-  } else {
-    items = <i>There are no {type}s, create a new one to get started.</i>;
-  }
+    if (type === 'Transcript') {
+      const progress = props.uploadTasks.get(item.id);
+
+      return (
+        <TranscriptCard
+          { ...item }
+          progress={ progress }
+          key={ key }
+          handleEditItem={ handleEditItem }
+          handleDeleteItem={ handleDeleteItem }
+        />
+      );
+    } else {
+      return (
+        <SimpleCard
+          { ...item }
+          key={ key }
+          handleEditItem={ handleEditItem }
+          handleDeleteItem={ handleDeleteItem }
+        />
+      );
+    }
+  });
 
   return (
     <>
@@ -122,8 +137,13 @@ const ItemsContainer = props => {
         </Col>
       </Row>
 
-      {showingItems.length > 0 ? <p>{showingItems.length}</p> : null}
-      {showingItems.length > 0 ? items : null}
+      <section style={ { height: '75vh', overflow: 'scroll' } }>
+        {showingItems.length > 0 ? (
+          Cards
+        ) : (
+          <i>There are no {type}s, create a new one to get started.</i>
+        )}
+      </section>
 
       <FormModal
         { ...formData }
@@ -141,11 +161,12 @@ ItemsContainer.propTypes = {
   handleSave: PropTypes.any,
   handleDelete: PropTypes.any,
   items: PropTypes.array.isRequired,
-  type: PropTypes.string
+  type: PropTypes.string,
+  uploadTasks: PropTypes.any
 };
 
 ItemsContainer.defaultProps = {
   type: 'Project'
 };
 
-export default ItemsContainer;
+export default React.memo(ItemsContainer);

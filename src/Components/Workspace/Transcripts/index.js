@@ -5,11 +5,14 @@ import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 
 const Transcripts = props => {
+  const TYPE = 'Transcript';
+  const UPLOADFOLDER = 'uploads';
+
   const [ loading, setIsLoading ] = useState(false);
   const [ items, setItems ] = useState([]);
   const [ uid, setUid ] = useState();
-  const TYPE = 'Transcript';
-  const UPLOADFOLDER = 'uploads';
+
+  const [ uploadTasks, setUploadTasks ] = useState(new Map());
 
   const Data = new Collection(
     props.firebase,
@@ -51,13 +54,73 @@ const Transcripts = props => {
     return () => {
       authListener();
     };
-  }, [ Data.collection, loading, props.firebase ]);
+  }, [ Data.collection, items, loading, props.firebase, uploadTasks ]);
+
+  // firestore
 
   const updateTranscript = async (id, item) => {
     await Data.putItem(id, item);
     item.display = true;
 
     return item;
+  };
+
+  const createTranscript = async item => {
+    const docRef = await Data.postItem(item);
+
+    return docRef;
+  };
+
+  const deleteTranscript = async id => {
+    try {
+      await Data.deleteItem(id);
+    } catch (e) {
+      console.error('Failed to delete item from collection: ', e.code_);
+    }
+    try {
+      await props.firebase.storage.child(`users/${ uid }/uploads/${ id }`).delete();
+      await props.firebase.storage.child(`users/${ uid }/audio/${ id }`).delete();
+    } catch (e) {
+      console.error('Failed to delete item in storage: ', e.code_);
+    }
+  };
+
+  const handleDelete = id => {
+    deleteTranscript(id);
+  };
+
+  // storage
+
+  const updateUploadTasksProgress = (id, progress) => {
+    const newUploading = new Map(uploadTasks); // shallow clone
+    newUploading.set(id, progress);
+
+    setUploadTasks(newUploading);
+  };
+
+  const handleUploadProgress = (id, snapshot) => {
+    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    updateUploadTasksProgress(id, progress);
+  };
+
+  const handleUploadError = async (id, error) => {
+    console.error('Failed to upload file: ', error);
+    const newTasks = new Map(uploadTasks); // shallow clone
+    newTasks.delete(id);
+    setUploadTasks(newTasks);
+
+    await updateTranscript(id, { status: 'error' });
+  };
+
+  const handleUploadComplete = async id => {
+    // const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+    // console.log('File available at', downloadURL);
+    console.log('file upload completed');
+    const newTasks = new Map(uploadTasks); // shallow clone
+    newTasks.delete(id);
+    setUploadTasks(newTasks);
+
+    await updateTranscript(id, { status: 'in-progress' });
   };
 
   const getUploadPath = id => {
@@ -81,29 +144,18 @@ const Transcripts = props => {
     uploadTask.on(
       'state_changed',
       snapshot => {
-        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log(progress);
+        handleUploadProgress(id, snapshot);
       },
       async error => {
-        console.error('Failed to upload file: ', error);
-        // Handle unsuccessful uploads
-        await updateTranscript(id, { status: 'error' });
+        await handleUploadError(id, error);
       },
       async () => {
-        // Handle successful uploads on complete
-        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-        console.log('File available at', downloadURL);
-        await updateTranscript(id, { status: 'in-progress' });
+        await handleUploadComplete(id);
       }
     );
   };
 
-  const createTranscript = async item => {
-    const docRef = await Data.postItem(item);
-
-    return docRef;
-  };
+  // general
 
   const handleSave = async item => {
     if (item.id) {
@@ -124,51 +176,13 @@ const Transcripts = props => {
     }
   };
 
-  const deleteTranscript = async id => {
-    try {
-      await Data.deleteItem(id);
-    } catch (e) {
-      console.error('Failed to delete item from collection: ', e.code_);
-    }
-    try {
-      await props.firebase.storage.child(`users/${ uid }/uploads/${ id }`).delete();
-      await props.firebase.storage.child(`users/${ uid }/audio/${ id }`).delete();
-    } catch (e) {
-      console.error('Failed to delete item in storage: ', e.code_);
-    }
-  };
-
-  const handleDelete = id => {
-    deleteTranscript(id);
-  };
-
-  // workaround for uploading cancellation - instead of doing this, maybe just have a progress bar and it dissappears...
-
-  // const updateUploadErrors = async item => {
-  //   const status = item.status;
-  //   const id = item.id;
-
-  //   // check for uploading (need to update storybook for this label to exist)
-  //   if (status !== 'error' || status !== 'complete') {
-  //     const path = `users/${ uid }/${ UPLOADFOLDER }/${ id }`;
-  //     try {
-  //       await props.firebase.storage.child(path).getDownloadURL();
-  //     } catch (e) {
-  //       await updateTranscript(id, { ...item, status: 'error' });
-  //     }
-  //   }
-  // };
-
-  // // items.forEach(i => {
-  // //   updateUploadErrors(i);
-  // // });
-
   return (
     <ItemsContainer
       type={ TYPE }
       items={ items }
       handleSave={ handleSave }
       handleDelete={ handleDelete }
+      uploadTasks={ uploadTasks }
     />
   );
 };
