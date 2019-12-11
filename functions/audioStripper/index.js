@@ -1,36 +1,6 @@
 const fs = require("fs");
 const { convertStreamToAudio } = require("@bbc/convert-to-audio");
 
-const cleanUp = files => {
-  return files.forEach(f => fs.unlinkSync(f));
-};
-
-const downloadFile = async (bucket, outputPath, srcPath) => {
-  console.log("[START] File downloading locally to", outputPath);
-  try {
-    await bucket.file(srcPath).download({ destination: outputPath });
-    console.log("[COMPLETE] File downloaded locally to", outputPath);
-  } catch (err) {
-    console.error(`[ERROR] Failed to download file ${srcPath}: `, err);
-    throw err;
-  }
-};
-
-const handleAudioUpload = async (bucket, destPath, srcPath, metadata) => {
-  console.log(`[START] Uploading audio file ${srcPath} to ${destPath}`);
-  try {
-    await bucket.upload(srcPath, {
-      destination: destPath,
-      metadata: metadata,
-      contentType: "audio/wav"
-    });
-    console.log(`[COMPLETE] Uploaded audio file ${srcPath}`);
-  } catch (err) {
-    console.error(`[ERROR] Failed to upload audio file ${srcPath}: `, err);
-    throw err;
-  }
-};
-
 exports.createHandler = async (admin, snap, bucketName, context) => {
   const { userId, itemId } = context.params;
 
