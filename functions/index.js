@@ -7,6 +7,7 @@ const bucketTrigger = functions.storage.bucket(bucketName).object();
 
 const inventoryChecker = require("./inventoryChecker");
 const audioStripper = require("./audioStripper");
+const awsUploader = require("./awsUploader");
 
 exports.onFinalize = bucketTrigger.onFinalize(obj =>
   inventoryChecker.finalizeHandler(obj, admin)
@@ -21,3 +22,9 @@ exports.onCreateUpload = functions.firestore
   .onCreate((snap, context) =>
     audioStripper.createHandler(admin, snap, bucketName, context)
   );
+
+exports.onCreateAudio = functions.firestore
+  .document("apps/digital-paper-edit/users/{userId}/audio/{itemId}")
+  .onCreate((snap, context) => {
+    awsUploader.createHandler(admin, snap, bucketName, context);
+  });
