@@ -16,13 +16,13 @@ exports.onDelete = bucketTrigger.onDelete(obj =>
   inventoryChecker.deleteHandler(obj, admin)
 );
 
-const runtimeOpts = {
+const maxRuntimeOpts = {
   timeoutSeconds: 540, // 9 minutes
   memory: "2GB"
 };
 
 exports.onCreateUpload = functions
-  .runWith(runtimeOpts)
+  .runWith(maxRuntimeOpts)
   .firestore.document("apps/digital-paper-edit/users/{userId}/uploads/{itemId}")
   .onCreate((snap, context) =>
     audioStripper.createHandler(admin, snap, bucketName, context)
