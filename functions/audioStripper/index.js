@@ -1,63 +1,96 @@
-const storage = require("@google-cloud/storage");
-const path = require("path");
-const os = require("os");
-const fs = require("fs");
-const { convertToAudio } = require("@bbc/convert-to-audio");
+const ffmpeg = require("fluent-ffmpeg");
 
-const cleanUp = files => {
-  return files.forEach(f => fs.unlinkSync(f));
+// Will NOT work for MP4 Streams
+// https://stackoverflow.com/questions/23002316/ffmpeg-pipe0-could-not-find-codec-parameters/40028894#40028894
+const convertStreamToAudio = (inputStream, outputStream) => {
+  return new Promise((resolve, reject) => {
+    ffmpeg(inputStream)
+      .noVideo()
+      .audioCodec("pcm_s16le")
+      .audioChannels(1)
+      .toFormat("wav")
+      .audioFrequency(16000)
+      .on("start", cmd => {
+        console.debug("Started " + cmd);
+      })
+      .on("codecData", data => {
+        console.debug(
+          "Input is " + data.audio + " audio " + "with " + data.video + " video"
+        );
+      })
+      .on("error", (err, stdout, stderr) => {
+        console.debug(err.message); //this will likely return "code=1" not really useful
+        console.debug("stdout:\n" + stdout);
+        console.debug("stderr:\n" + stderr); //this will contain more detailed debugging info
+        reject(err);
+      })
+      .on("progress", progress => {
+        console.debug(progress);
+        console.debug("Processing: " + progress.percent + "% done");
+      })
+      .on("end", (stdout, stderr) => {
+        console.debug(stdout, stderr);
+        console.debug("Transcoding succeeded !");
+        resolve();
+      })
+      .pipe(outputStream, { end: true });
+  });
 };
 
-const downloadFile = async (bucket, outputPath, srcPath) => {
-  console.log("[START] File downloading locally to", outputPath);
+const getUrl = async srcFile => {
+  // https://stackoverflow.com/questions/23002316/ffmpeg-pipe0-could-not-find-codec-parameters/40028894#40028894
   try {
-    await bucket.file(srcPath).download({ destination: outputPath });
-    console.log("[COMPLETE] File downloaded locally to", outputPath);
+    console.log(`[START] Getting signed URL`);
+    sourceUrl = await srcFile.getSignedUrl({
+      action: "read",
+      expires: Date.now() + 1000 * 60 * 9 // 9 minutes
+    });
+    console.log(`[COMPLETE] Signed URL: ${sourceUrl}`);
+    return sourceUrl;
   } catch (err) {
-    console.error(`[ERROR] Failed to download file ${srcPath}: `, err);
+    console.error("[ERROR] Could not get signed URL: ", err);
     throw err;
   }
 };
 
-const handleAudioUpload = async (bucket, destPath, srcPath, metadata) => {
-  console.log(`[START] Uploading audio file ${srcPath} to ${destPath}`);
-  try {
-    await bucket.upload(srcPath, {
-      destination: destPath,
-      metadata: metadata,
-      contentType: "audio/wav"
-    });
-    console.log(`[COMPLETE] Uploaded audio file ${srcPath}`);
-  } catch (err) {
-    console.error(`[ERROR] Failed to upload audio file ${srcPath}: `, err);
-  }
-};
-
-exports.createHandler = async (admin, snap, bucketName, context) => {
-  const { userId, itemId } = context.params;
-  const srcPath = `users/${userId}/uploads/${itemId}`;
-
-  const upload = snap.data();
-  const storage = admin.storage();
-  const bucket = storage.bucket(bucketName);
-
-  const tmpOutPath = path.join(os.tmpdir(), itemId);
-  const tmpAudioPath = path.join(os.tmpdir(), `${itemId}.wav`);
-
-  const metadata = {
+const getWriteStreamMetadata = (userId, itemId, originalName) => {
+  return {
     metadata: {
       userId: userId,
       id: itemId,
       folder: "audio",
-      originalName: upload.originalName
-    }
+      originalName: originalName
+    },
+    contentType: "audio/wav"
   };
+};
 
-  const destPath = `users/${userId}/audio/${itemId}`;
+exports.createHandler = async (admin, snap, bucketName, context) => {
+  const { userId, itemId } = context.params;
 
-  await downloadFile(bucket, tmpOutPath, srcPath);
-  await convertToAudio(tmpOutPath, tmpAudioPath);
-  await handleAudioUpload(bucket, destPath, tmpAudioPath, metadata);
+  const upload = snap.data();
+  const storage = admin.storage();
 
-  return cleanUp([tmpAudioPath, tmpOutPath]);
+  const bucket = storage.bucket(bucketName);
+
+  const srcFile = bucket.file(`users/${userId}/uploads/${itemId}`);
+  const outFile = bucket.file(`users/${userId}/audio/${itemId}`);
+
+  const writeStream = outFile.createWriteStream({
+    metadata: getWriteStreamMetadata(userId, itemId, upload.originalName)
+  });
+
+  try {
+    const sourceUrl = await getUrl(srcFile);
+    console.log(`[START] Streaming, transforming file ${sourceUrl} to audio`);
+    await convertStreamToAudio(sourceUrl[0], writeStream);
+  } catch (e) {
+    return console.error(
+      "[ERROR] Could not stream / transform audio file: ",
+      e
+    );
+  }
+  return console.log(
+    `[COMPLETE] Uploaded audio file for ${userId} to ${itemId}`
+  );
 };

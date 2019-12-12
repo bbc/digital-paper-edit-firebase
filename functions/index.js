@@ -7,6 +7,7 @@ const bucketTrigger = functions.storage.bucket(bucketName).object();
 
 const inventoryChecker = require("./inventoryChecker");
 const audioStripper = require("./audioStripper");
+
 const awsUploader = require("./awsUploader");
 
 exports.onFinalize = bucketTrigger.onFinalize(obj =>
@@ -17,14 +18,22 @@ exports.onDelete = bucketTrigger.onDelete(obj =>
   inventoryChecker.deleteHandler(obj, admin)
 );
 
-exports.onCreateUpload = functions.firestore
-  .document("apps/digital-paper-edit/users/{userId}/uploads/{itemId}")
-  .onCreate((snap, context) =>
-    audioStripper.createHandler(admin, snap, bucketName, context)
-  );
 
 exports.onCreateAudio = functions.firestore
   .document("apps/digital-paper-edit/users/{userId}/audio/{itemId}")
   .onCreate((snap, context) => {
     awsUploader.createHandler(admin, snap, bucketName, context);
   });
+
+const maxRuntimeOpts = {
+  timeoutSeconds: 540, // 9 minutes
+  memory: "2GB"
+};
+
+exports.onCreateUpload = functions
+  .runWith(maxRuntimeOpts)
+  .firestore.document("apps/digital-paper-edit/users/{userId}/uploads/{itemId}")
+  .onCreate((snap, context) =>
+    audioStripper.createHandler(admin, snap, bucketName, context)
+  );
+
