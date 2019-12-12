@@ -1010,10 +1010,10 @@
     smpte-timecode "^1.2.3"
     uuid "^3.3.2"
 
-"@bbc/digital-paper-edit-react-components@^1.2.19":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@bbc/digital-paper-edit-react-components/-/digital-paper-edit-react-components-1.3.1.tgz#4635ff48fe56e052e09a3cc0b2d0a1253c374c77"
-  integrity sha512-3nISldKzWWOpuRiJ3hY9RfzUu9K5RJO/M9QmR5tc0aWgpuKGReIzhNJQHPBnUAqpAZijskd2Pk47RMK/q+ZDiA==
+"@bbc/digital-paper-edit-react-components@^1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@bbc/digital-paper-edit-react-components/-/digital-paper-edit-react-components-1.3.2.tgz#d431f06964f8083cba94bda835d5985b7439e358"
+  integrity sha512-V/6HYjV0rQd5659jANrhhYcLGFeZae3tIwDUkjIQMRahM3PXwN7kCclk4xavdDnllPV4K13SMIModFGStvqrCg==
   dependencies:
     "@bbc/react-transcript-editor" "^1.0.4"
     "@fortawesome/fontawesome-svg-core" "^1.2.19"

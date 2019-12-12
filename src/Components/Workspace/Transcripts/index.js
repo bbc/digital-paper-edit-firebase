@@ -139,7 +139,6 @@ const Transcripts = props => {
       }
     };
     const uploadTask = props.firebase.storage.child(path).put(file, metadata);
-    await updateTranscript(id, { status: 'uploading' });
 
     uploadTask.on(
       'state_changed',
@@ -164,7 +163,7 @@ const Transcripts = props => {
       const newTranscript = await createTranscript({
         title: item.title,
         description: item.description ? item.description : '',
-        status: '',
+        status: 'uploading',
         projectId: props.projectId
       });
 
