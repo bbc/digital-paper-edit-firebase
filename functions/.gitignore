@@ -1,3 +1,4 @@
 node_modules/
 docs/guides/example/input/*
 docs/guides/example/output/*
+.runtimeconfig.json

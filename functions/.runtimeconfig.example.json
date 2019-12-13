@@ -1,0 +1,11 @@
+{
+  "aws": {
+    "bucket": "int-digital-paper-edit-audio",
+    "key": "",
+    "region": "eu-west-1",
+    "secret": ""
+  },
+  "storage": {
+    "bucket": "dev-digital-paper-edit"
+  }
+}
