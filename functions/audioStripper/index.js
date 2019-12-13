@@ -1,4 +1,5 @@
 const ffmpeg = require("fluent-ffmpeg");
+const { getUrl } = require("../utils");
 
 // Will NOT work for MP4 Streams
 // https://stackoverflow.com/questions/23002316/ffmpeg-pipe0-could-not-find-codec-parameters/40028894#40028894
@@ -37,22 +38,6 @@ const convertStreamToAudio = (inputStream, outputStream) => {
   });
 };
 
-const getUrl = async srcFile => {
-  // https://stackoverflow.com/questions/23002316/ffmpeg-pipe0-could-not-find-codec-parameters/40028894#40028894
-  try {
-    console.log(`[START] Getting signed URL`);
-    sourceUrl = await srcFile.getSignedUrl({
-      action: "read",
-      expires: Date.now() + 1000 * 60 * 9 // 9 minutes
-    });
-    console.log(`[COMPLETE] Signed URL: ${sourceUrl}`);
-    return sourceUrl;
-  } catch (err) {
-    console.error("[ERROR] Could not get signed URL: ", err);
-    throw err;
-  }
-};
-
 const getWriteStreamMetadata = (userId, itemId, originalName) => {
   return {
     metadata: {
@@ -65,13 +50,9 @@ const getWriteStreamMetadata = (userId, itemId, originalName) => {
   };
 };
 
-exports.createHandler = async (admin, snap, bucketName, context) => {
+exports.createHandler = async (snap, bucket, context) => {
   const { userId, itemId } = context.params;
-
   const upload = snap.data();
-  const storage = admin.storage();
-
-  const bucket = storage.bucket(bucketName);
 
   const srcFile = bucket.file(`users/${userId}/uploads/${itemId}`);
   const outFile = bucket.file(`users/${userId}/audio/${itemId}`);
