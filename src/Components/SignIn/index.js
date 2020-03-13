@@ -5,32 +5,31 @@ import { withFirebase } from '../Firebase';
 import * as ROUTES from '../../constants/routes';
 const SignInPage = () => (
   <div>
-    <h1>SignIn</h1>
+    <h2>Sign In</h2>
     <SignInForm />
   </div>
 );
 
 const SignInFormBase = props => {
+
   const [ email, setEmail ] = useState('');
   const [ password, setPassword ] = useState('');
   const [ error, setError ] = useState();
 
-  // TODO: IF signed in, forward always to somewhere else
   const onSubmit = async event => {
+    // Prevent form from reloading
+    event.preventDefault();
+
     try {
       await props.firebase.doSignInWithEmailAndPassword(email, password);
-      setEmail('');
-      setPassword('');
-      setError(null);
       props.history.push(ROUTES.PROJECTS);
     } catch (err) {
       setError(err);
+      console.error(err);
     }
-    event.preventDefault();
   };
 
   const onChange = event => {
-    console.log(event.target);
     if (event.target.name === 'password') {
       setPassword(event.target.value);
     } else {
@@ -65,6 +64,7 @@ const SignInFormBase = props => {
   );
 };
 
+// HOC with router and firebase
 const SignInForm = compose(withRouter, withFirebase)(SignInFormBase);
 
 export default SignInPage;

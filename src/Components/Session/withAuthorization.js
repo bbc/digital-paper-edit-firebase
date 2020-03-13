@@ -6,6 +6,7 @@ import AuthUserContext from './context';
 import { withFirebase } from '../Firebase';
 import * as ROUTES from '../../constants/routes';
 
+// with Authorization called before each route
 const withAuthorization = condition => Component => {
   const WithAuthorization = props => {
     useEffect(() => {

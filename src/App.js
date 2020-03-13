@@ -35,16 +35,30 @@ const App = props => {
     );
   }
 
+  const signIn = () => {
+    if (authUser) {
+      return (
+        <>
+          <p>Signed in as: {authUser.email}</p>
+          <SignOutButton />
+          <Routes authUser={ authUser } />
+        </>
+      );
+    } else {
+      return (
+        <>
+          <p>Please sign in - request a user and password</p>
+          <Routes />
+        </>
+      );
+    }
+  };
+
   return (
     <>
+      <h1> Digital Paper Edit </h1>
       {offlineWarning}
-      {authUser ? (
-        <p>Signed in as: {authUser.email}</p>
-      ) : (
-        <a href="#/signin">Please sign in </a>
-      )}
-      {authUser ? <SignOutButton /> : null}
-      <Routes />
+      {signIn()}
     </>
   );
 };
