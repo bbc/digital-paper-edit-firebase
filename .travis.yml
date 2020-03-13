@@ -2,7 +2,7 @@ language: node_js
 node_js:
   - '10'
 script:
-  - CI=false yarn deploy:dev:hosting
+  - CI=false yarn build
 
 deploy:
   provider: firebase
