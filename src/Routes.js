@@ -3,7 +3,7 @@ import Projects from './Components/Projects/index.js';
 import Workspace from './Components/Workspace';
 import TranscriptEditor from './Components/Workspace/Transcripts/TranscriptEditor.js';
 import PaperEditor from './Components/PaperEditor';
-import { Switch, Route, HashRouter, Redirect } from 'react-router-dom';
+import { Switch, Route, HashRouter } from 'react-router-dom';
 import SignIn from './Components/SignIn';
 import * as ROUTES from './constants/routes';
 
@@ -16,11 +16,10 @@ const PageNotFound = () => {
   );
 };
 
-const Routes = (props) => {
-  const [ loggedIn, setLoggedIn ] = useState(!!props.authUser);
+const Routes = ({ authUser }) => {
 
   const landingRoute = () => {
-    if (loggedIn) {
+    if (!!authUser) {
       return <Route exact path={ ROUTES.LANDING } component={ Projects } />;
     } else {
       return <Route exact path={ ROUTES.LANDING } component={ SignIn } />;
