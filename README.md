@@ -8,7 +8,7 @@ See [intro](./docs/intro.md) for more info on the project. And [user journey](./
 
 ### Fork: API and Client
 
-A fork of the [client](https://github.com/bbc/digital-paper-edit-client) and [API](https://github.com/bbc/digital-paper-edit-api) is still being developed in the open, in **separate forks: [client](https://github.com/pietrop/digital-paper-edit-client) and [API](https://github.com/pietrop/digital-paper-edit-api)**, thanks to @pietrop. 
+A fork of the [client](https://github.com/bbc/digital-paper-edit-client) and [API](https://github.com/bbc/digital-paper-edit-api) is still being developed in the open, in **separate forks: [client](https://github.com/pietrop/digital-paper-edit-client) and [API](https://github.com/pietrop/digital-paper-edit-api)**, thanks to @pietrop.
 
 We don't want the opensource collaboration to stop, so we will be pulling in changes from the forks. If there's a valuable feature that we haven't yet implemented from the fork, please open an issue in **[this repo](https://github.com/bbc/digital-paper-edit-firebase)** or get in touch with us!
 
@@ -31,7 +31,6 @@ These dependencies (non-exhaustive) they might've been forked also. In this case
 
 For understanding the approach see [this PR](https://github.com/bbc/digital-paper-edit-client/pull/94).
 
-
 ### Current project board
 
 - [~~BBC News Labs - Digital Paper Edit - Sprint Board~~](https://github.com/orgs/bbc/projects/47)
@@ -39,7 +38,6 @@ For understanding the approach see [this PR](https://github.com/bbc/digital-pape
 
 The project is divided into [concurrent milestones as described here](https://github.com/bbc/digital-paper-edit-client/milestones) with UX being an overarching milestone that cuts across these different parts.
 See [UX Approach](./docs/guides/ux-approach.md) in docs guides for more information on the UX development process.
-
 
 ## Project Architecture
 
@@ -56,50 +54,72 @@ The projects use [npm semantic versioning](https://docs.npmjs.com/about-semantic
 
 ## Setup
 
-Optional step to setup [nvm](https://github.com/nvm-sh/nvm) to use node version 10, otherwise just use node version 10
-
-```sh
-nvm use || nvm install`
-```
-
-in root of project
-
-```sh
-npm install
-```
+This project uses `yarn` `>v1.19.1` instead of `npm`. You can install it from [here](https://classic.yarnpkg.com/en/docs/install/#mac-stable)
 
 ## Configuration
 
-[`.env`](./.env) contains environment config for the React client side app. You can copy over the `.env.example` to start.
-`REACT_APP_NAME` App name is used in browser title and navbar component.
+[`.env`](./.env) contains environment variables setting up against the `dev` environment. You can copy over the `.env.example` to start.
+`REACT_APP_NAME` is used in browser title and navbar component.
 
-## Development
+```bash
+REACT_APP_NAME="digital-paper-edit"
+REACT_APP_NODE_ENV="development"
+REACT_APP_PROTOTYPE_BY="BBC News Labs"
+REACT_APP_PROTOTYPE_BY_LINK="http://bbcnewslabs.co.uk"
+```
 
-<!-- `cd` into the individual repository inside [`./packages`](./packages) and npm start, or see respective README and package.json for how deal with each. -->
+### Firebase specific configuration
 
-You must setup the Firebase credentials in order to do development of the project as mentioned in above Configuration section. Firebase can be free, but some parts of the app may not work.
+[This doc from Firebase is handy to understand the variables](https://firebase.google.com/docs/web/setup)
+
+```js
+let firebaseConfig = {
+  apiKey: "api-key",
+  authDomain: "project-id.firebaseapp.com",
+  databaseURL: "https://project-id.firebaseio.com",
+  projectId: "project-id",
+  storageBucket: "project-id.appspot.com",
+  messagingSenderId: "sender-id",
+  appId: "app-id",
+  measurementId: "G-measurement-id",
+};
+
+```
+
+## Local Development
+
+You must setup the Firebase credentials in order to develop the project - as mentioned in above [section](#Firebase-specific-configuration). If you are BBC staff, please sign into the corporate GCP account. Firebase can be free, but some parts of the app may not work.
 In root of the project (`cd digital-paper-edit-firebase`):
 
 ```sh
-npm run start
+yarn start
 ```
 
-This will start two servers: proxy (`3000`) and Firebase server (`4000`). You should have an entry point app running in port `3000`.
+which maps to `"run-p --race dev:firebase dev:react",`
 
-## Production
+This will start two servers: proxy (`3000`) and Firebase server (`4000`). You should have an entry point app running in port `3000`. Note that this is accessing real data, rather than a dummy one.
 
-See Configuration step above and configure `firebase.json`, `.firebaserc` to change the sitename and environment.
+```js
+{
+    "dev:firebase": "firebase serve -p 4000",
+    "dev:react": "cross-env REACT_APP_NODE_ENV=development react-scripts start",
+}
+```
+
+## Production and Deployment
+
+See Configuration step above and configure `firebase.json`, `.firebaserc` to change the sitename and environment. The deployment will be done via [`Travis CI`](https://travis-ci.org/github/bbc/digital-paper-edit-firebase)
 
 To deploy to development environment:
 
 ```sh
-npm run deploy:dev:hosting
+yarn deploy:dev:hosting
 ```
 
 To deploy to production environment:
 
 ```sh
-npm run deploy:prod:hosting
+yarn deploy:prod:hosting
 ```
 
 Both steps will remove the build folder, rebuild and deploy, using `firebase cli tools`. You must ensure that Firebase is installed globally (`npm i -g firebase-tools`).
@@ -144,7 +164,7 @@ We are using [this template for ADR](https://gist.github.com/iaincollins/92923cc
 ## Build
 
 ```sh
-npm run build
+yarn build
 ```
 
 Build of react client side will be in `build`
@@ -178,18 +198,6 @@ npm run test:watch
 
 On commit this repo uses the [.travis.yml](./.travis.yml) config tu run the automated test on [travis CI](https://travis-ci.org/bbc/react-transcript-editor). -->
 
-## Deployment
-
-```
-npm run publish:public
-```
-
-<!-- See README for individual packages for more details -->
-
-for more info on Create React app deployment:
-
-> See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) guidelines and [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) guidelines.
@@ -202,4 +210,4 @@ See [LICENCE](./LICENCE.md)
 
 ## Legal Disclaimer
 
-_Despite using React and DraftJs, the BBC is not promoting any Facebook products or other commercial interest._
+_Despite using React and Firebase, the BBC is not promoting any Facebook products or other commercial interest._

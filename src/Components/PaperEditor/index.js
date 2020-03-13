@@ -31,7 +31,7 @@ class PaperEditor extends Component {
 
   componentDidMount = async () => {
     // const api = this.context;
-    const api = Collection('paperedits');
+    const api = new Collection('paperedits');
     const json = await api.getItem(this.state.papereditId); // this needs to change
 
     this.setState({
