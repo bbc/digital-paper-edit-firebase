@@ -3,11 +3,16 @@ import { withRouter } from 'react-router-dom';
 import { compose } from 'recompose';
 import { withFirebase } from '../Firebase';
 import * as ROUTES from '../../constants/routes';
+import Form from 'react-bootstrap/Form';
+import Col from 'react-bootstrap/Col';
+import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
+
 const SignInPage = () => (
-  <div>
+  <Container style={ { marginBottom: '5em', marginTop: '1em' } }>
     <h2>Sign In</h2>
     <SignInForm />
-  </div>
+  </Container>
 );
 
 const SignInFormBase = props => {
@@ -30,37 +35,39 @@ const SignInFormBase = props => {
   };
 
   const onChange = event => {
-    if (event.target.name === 'password') {
-      setPassword(event.target.value);
-    } else {
+    if (event.target.id === 'email') {
       setEmail(event.target.value);
     }
+    if (event.target.id === 'password') {
+      setPassword(event.target.value);
+    };
   };
 
   const isInvalid = password === '' || email === '';
 
   return (
-    <form onSubmit={ onSubmit }>
-      <input
-        name="email"
-        value={ email }
-        onChange={ onChange }
-        type="text"
-        placeholder="Email Address"
-      />
-      <input
-        name="password"
-        value={ password }
-        onChange={ onChange }
-        type="password"
-        placeholder="Password"
-      />
-      <button disabled={ isInvalid } type="submit">
-        Sign In
-      </button>
-
+    <Form onSubmit={ onSubmit }>
+      <Form.Row>
+        <Col>
+          <Form.Group controlId="email" onChange={ onChange } >
+            <Form.Label>Email address</Form.Label>
+            <Form.Control value={ email } type="email" placeholder="Enter email" />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId="password" onChange={ onChange } >
+            <Form.Label>Password</Form.Label>
+            <Form.Control value={ password } type="password" placeholder="Password" />
+          </Form.Group>
+        </Col>
+      </Form.Row>
+      <Button
+        disabled={ isInvalid }
+        variant="primary" type="submit">
+          Sign in
+      </Button>
       {error && <p>{error.message}</p>}
-    </form>
+    </Form>
   );
 };
 

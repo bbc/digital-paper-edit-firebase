@@ -21,7 +21,7 @@ const PaperEdits = props => {
   useEffect(() => {
     const getPaperEdits = async () => {
       try {
-        Data.collection.onSnapshot(snapshot => {
+        Data.collectionRef.onSnapshot(snapshot => {
           const paperEdits = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });

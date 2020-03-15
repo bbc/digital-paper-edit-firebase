@@ -1,7 +1,7 @@
 class Collection {
   constructor(firebase, name) {
     const db = firebase.db;
-    this.collection = db.collection(name);
+    this.collectionRef = db.collection(name);
     this.firestore = firebase.firestore;
     this.name = name;
     this.snapshot = [];
@@ -9,7 +9,7 @@ class Collection {
   getServerTimestamp = () => this.firestore.FieldValue.serverTimestamp();
 
   getCollection = async () => {
-    const querySnapshot = await this.collection.get();
+    const querySnapshot = await this.collectionRef.get();
     const docs = querySnapshot.docs;
 
     return docs.map(doc => {
@@ -21,7 +21,7 @@ class Collection {
   };
 
   getItem = async id => {
-    const document = this.collection.doc(id);
+    const document = this.collectionRef.doc(id);
     const item = await document.get();
 
     return item.data();
@@ -29,7 +29,7 @@ class Collection {
 
   postItem = async data => {
     try {
-      const docRef = await this.collection.add({
+      const docRef = await this.collectionRef.add({
         ...data,
         created: this.getServerTimestamp()
       });
@@ -43,7 +43,7 @@ class Collection {
 
   setItem = async (id, data) => {
     try {
-      await this.collection
+      await this.collectionRef
         .doc(id)
         .set({ ...data, created: this.getServerTimestamp() });
       console.log('Document written with ID: ', id);
@@ -53,20 +53,20 @@ class Collection {
   };
 
   putItem = async (id, data) => {
-    await this.collection.doc(id).update({
+    await this.collectionRef.doc(id).update({
       ...data,
       updated: this.getServerTimestamp()
     });
   };
 
   deleteItem = async id => {
-    await this.collection.doc(id).delete();
+    await this.collectionRef.doc(id).delete();
   };
 
-  userRef = userId => this.collection.where('users', 'array-contains', userId);
+  userRef = userId => this.collectionRef.where('users', 'array-contains', userId);
   user = async userId => await this.userRef(userId).get();
 
-  projectRef = projectId => this.collection.where('projectId', '==', projectId);
+  projectRef = projectId => this.collectionRef.where('projectId', '==', projectId);
   project = async projectId => await this.userRef(projectId).get();
 }
 

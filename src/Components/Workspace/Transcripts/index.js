@@ -26,7 +26,7 @@ const Transcripts = props => {
   useEffect(() => {
     const getTranscripts = async () => {
       try {
-        Data.collection.onSnapshot(snapshot => {
+        Data.collectionRef.onSnapshot(snapshot => {
           const transcripts = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });
@@ -54,7 +54,7 @@ const Transcripts = props => {
     return () => {
       authListener();
     };
-  }, [ Data.collection, items, loading, props.firebase, uploadTasks ]);
+  }, [ Data.collectionRef, items, loading, props.firebase, uploadTasks ]);
 
   // firestore
 

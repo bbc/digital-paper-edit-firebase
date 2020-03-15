@@ -35,30 +35,34 @@ const App = props => {
     );
   }
 
-  const signIn = () => {
-    if (authUser) {
-      return (
-        <>
+  let AppContainer;
+
+  if (authUser) {
+    AppContainer = (
+      <>
+        <Container style={ { marginBottom: '2em', marginTop: '1em' } }>
+          <h1> Digital Paper Edit </h1>
           <p>Signed in as: {authUser.email}</p>
           <SignOutButton />
-          <Routes authUser={ authUser } />
-        </>
-      );
-    } else {
-      return (
-        <>
-          <p>Please sign in - request a user and password</p>
-          <Routes />
-        </>
-      );
-    }
-  };
+        </Container>
+        <Routes authUser={ authUser } />
+      </>
+    );
+  } else {
+    AppContainer = (
+      <>
+        <Container style={ { marginBottom: '2em', marginTop: '1em' } }>
+          <h1> Digital Paper Edit </h1>
+          <p>Please <a href="/">sign in</a> - please request a user and password</p>
+        </Container>
+        <Routes />
+      </>
+    );
+  }
 
   return (
     <>
-      <h1> Digital Paper Edit </h1>
-      {offlineWarning}
-      {signIn()}
+      {AppContainer}
     </>
   );
 };

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import Projects from './Components/Projects/index.js';
 import Workspace from './Components/Workspace';
@@ -45,6 +46,10 @@ const Routes = ({ authUser }) => {
       </Switch>
     </HashRouter>
   );
+};
+
+Routes.propTypes = {
+  authUser: PropTypes.any
 };
 
 export default Routes;
