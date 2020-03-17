@@ -1,20 +1,25 @@
 language: node_js
 node_js:
-  - '10'
+- '10'
 cache:
   directories:
-    - node_modules
+  - node_modules
 before_script:
-  - yarn install
+- yarn install
 script:
-  - CI=false yarn build
-
+- CI=false yarn build
 deploy:
   provider: firebase
   edge:
     branch: master
   token:
-    secure: "cEpLS+5f3V1CZ24Tr7U+9p0ajX9jReRUEXfmAiXn4Pe4Cl4C7zLeoSRlPc/id0ux3VjhSFArkrhA2VYOUoyk+lkZgxhnP5yRxS/6E0vye5Y5eot36HHBuynFTPKv+JLJfaD9d0MX6CBoxZoU7kkXt+GDx5tvATHfmrXWEyETmAc7qKpinlQk9HWBFEouxlbzrY01pQiNLHf9+BFTaYwlqutLuy24i6cARdi+fXdaQyzFw2BMlQK1AHBhxdOIB96l8/eUvC89AE/uISP8+4lTNFMTAn8anOv+oUwa5hdxh5GdmjCj/AqdwyPThiTu1wNd7Uk/VPSHsG0lpmbCy7rr5d783+2qC0SG0KdX2NOkPqgWPSOVmO44suCtD2j9Mh5xOrs9Kib9VwSsqqKqItv/EX7BJyzS3ixA8CrSlLaqo6mGLreWkzTdDv19ArU1YfSIdUOwrybq5zpaooQnyNfgP7sT3cNcreBqI8tvhU+GDI/aWDgxwAqPEyEsWqSPSfvQuXda5BJAf6LyRIKIzJTtVRfnXI7AMeHYV7+m3vTcrIh5XXGXj+mMYTU+vliuqLNADmuqdepeIZ/Y6b2UNRKQu6jB5jYCftY0YJH8SHlDU2skevqEYjw0KwMP461uyLBnB26ydmkxx3ptz56jqL5odAoSzK3bwiaXYJ5UlrBVaS8="
-  message: "this is an automatic deployment to dev by travis - CI as a result of pushing to master"
-  project: "dev"
-  only: "hosting:digital-paper-edit-dev"
+    secure: cEpLS+5f3V1CZ24Tr7U+9p0ajX9jReRUEXfmAiXn4Pe4Cl4C7zLeoSRlPc/id0ux3VjhSFArkrhA2VYOUoyk+lkZgxhnP5yRxS/6E0vye5Y5eot36HHBuynFTPKv+JLJfaD9d0MX6CBoxZoU7kkXt+GDx5tvATHfmrXWEyETmAc7qKpinlQk9HWBFEouxlbzrY01pQiNLHf9+BFTaYwlqutLuy24i6cARdi+fXdaQyzFw2BMlQK1AHBhxdOIB96l8/eUvC89AE/uISP8+4lTNFMTAn8anOv+oUwa5hdxh5GdmjCj/AqdwyPThiTu1wNd7Uk/VPSHsG0lpmbCy7rr5d783+2qC0SG0KdX2NOkPqgWPSOVmO44suCtD2j9Mh5xOrs9Kib9VwSsqqKqItv/EX7BJyzS3ixA8CrSlLaqo6mGLreWkzTdDv19ArU1YfSIdUOwrybq5zpaooQnyNfgP7sT3cNcreBqI8tvhU+GDI/aWDgxwAqPEyEsWqSPSfvQuXda5BJAf6LyRIKIzJTtVRfnXI7AMeHYV7+m3vTcrIh5XXGXj+mMYTU+vliuqLNADmuqdepeIZ/Y6b2UNRKQu6jB5jYCftY0YJH8SHlDU2skevqEYjw0KwMP461uyLBnB26ydmkxx3ptz56jqL5odAoSzK3bwiaXYJ5UlrBVaS8=
+  message: this is an automatic deployment to dev by travis - CI as a result of pushing
+    to master
+  project: dev
+  only: hosting:digital-paper-edit-dev
+env:
+  secure: OLPkM3ebcLv7a5JGC0gatbppCfFaXHCYeL2oCdhs3lJSLgTTxyldU7dCl1IJDTyjjj0BYjIVFa0/wHd/C1qKt/uDlZ36s2W+QPcHRBIU7MaPawnvFrB2dUXMYeth0vBt3V3bX3t3Pw4PyAHt7eUeKRMAxAVlykspb+IGTOLSFo5VjgHklMgzi7eMqTwpD7CgxfBQR8zFrmFH5okvH+mqmEskG3Zrco30WS+ez9EMZ5UxQMaLEved+hPl8sWBKPJ6OJZ1r6AQe1a7Rl4lfvEdRWqW/0agmsYS/BTNjzEK8+0Z+9ayKcj9J5uy+6tMv5qZrYr+xtH5wZo5iTfLhQkauFF1bva7/rQ/wk5JMLxaE21zNgTuFjt0oxSkIYo7qIJw9tLwUiWr0E3N39NedK8y2S+Pcv6A3Dabg6GrcM0d20Tp5ma/WAMI3H9uR7xQq5OgCJuwkf6uZLY7/pnZFxZN5V0R9frRvJF44WHBbDrF9AUDTvZVGwbC686SSorqx5rgoIcFUoBsuPCSLC9lfg+WO9xHT+qhCaEQr1Id2ivp3nRqjcDpIrgk3+x+sLpkTz9AuwjdDtBlnnU2zfvqSzIm1MiOiPDtHziNTZ8XcVkQIcVzyRd1TfJsaf7zW8r2xAdj1xdfNjlyzpSdSA6IXdH0MiuZj+9OaD4+SVhpRUHRkg8=
+before_install:
+- openssl aes-256-cbc -K $encrypted_3c84dcdc6bbe_key -iv $encrypted_3c84dcdc6bbe_iv
+  -in .env.enc -out .env -d
