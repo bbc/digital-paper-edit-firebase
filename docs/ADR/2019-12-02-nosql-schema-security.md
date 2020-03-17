@@ -3,6 +3,7 @@
 - Status: accepted
 - Deciders: Eimi
 - Date: 2019-12-02
+- Updated: 2020-03-17
 
 Technical Story: Related to #4. Needing to rethink the design of the database schema so that we can balance ease of security implementation and easy of use.
 
@@ -57,7 +58,10 @@ A security rule like below will be able to test authentication and membership of
 
 ```js
 function isOnProject() {
-    return request.auth.uid in get(/databases/$(database)/documents/projects/$(pid)).data.users;
+  return (
+    request.auth.uid in
+    get(/databases/$(database) / documents / projects / $(pid)).data.users
+  );
 }
 ```
 
@@ -69,9 +73,143 @@ The `uploads` subcollection has been added to the `users` for security and conve
 | --------------------------- | --------------------------- |
 | `users/{id}/uploads/{upId}` | `users/{id}/uploads/{upId}` |
 
-To keep consistency, we also use the same `id` for `transcript` and `uploads`
+To keep consistency, we also use the same `id` for `transcript` and `uploads` in Firestore
 
-| Firestore                              | Firestore                     |
-| -------------------------------------- | ----------------------------- |
-| `projects/{id}/{transcripts}/{itemId}` | `users/{id}/uploads/{itemId}` |
+| Firestore                            | Firestore                     |
+| ------------------------------------ | ----------------------------- |
+| `projects/{id}/transcripts/{itemId}` | `users/{id}/uploads/{itemId}` |
 
+## Other schemas
+
+Related to #23, #24, #25.
+The structure for projects should be as follows:
+
+| Firestore                                              |
+| ------------------------------------------------------ |
+| `projects/{id}/transcripts/{tr_id}`                    |
+| `projects/{id}/paperedits/{pe_id}`                     |
+| `projects/{id}/labels/{l_id}`                          |
+| `projects/{id}/transcripts/{tr_id}/annotations/{a_id}` |
+
+### Collections
+
+#### Projects Collection
+
+A document contains:
+
+| field       | type           |
+| ----------- | -------------- |
+| id          | string         |
+| title       | string         |
+| description | string         |
+| updated     | timestamp      |
+| url         | string         |
+| users       | array (string) |
+| paperedits  | collection     |
+| transcripts | collection     |
+| labels      | collection     |
+
+#### PaperEdits Collection
+
+A document contains:
+
+| field       | type        |
+| ----------- | ----------- |
+| id          | string      |
+| projectId   | string      |
+| title       | string      |
+| description | string      |
+| created     | timestamp   |
+| updated     | timestamp   |
+| url         | string      |
+| elements    | array (map) |
+
+##### elements
+
+###### Title, Note, Voice Over element
+
+| field | type   |
+| ----- | ------ |
+| id    | string |
+| index | number |
+| type  | string |
+| text  | string |
+
+###### Paper Cut element
+
+| field        | type   |
+| ------------ | ------ |
+| id           | string |
+| transcriptId | string |
+| index        | number |
+| type         | string |
+| start        | number |
+| end          | number |
+
+Infer `words` and `paragraphs` from `transcript` collection using `transcriptId`, `start` and `end` time.
+
+#### Transcripts Collection
+
+A document contains:
+
+| field       | type        |
+| ----------- | ----------- |
+| id          | string      |
+| projectId   | string      |
+| title       | string      |
+| description | string      |
+| clipTitle   | string      |
+| clipUrl     | string      |
+| status      | string      |
+| created     | timestamp   |
+| updated     | timestamp   |
+| url         | string      |
+| words       | array (map) |
+| paragraphs  | array (map) |
+| annotations | collection  |
+
+The `url` is for the `react transcript editor` interface.
+
+Words (map)
+
+| field | type   |
+| ----- | ------ |
+| start | number |
+| end   | number |
+| text  | string |
+
+Paragraphs (map)
+
+| field   | type   |
+| ------- | ------ |
+| id      | number |
+| start   | number |
+| end     | number |
+| speaker | string |
+
+##### Annotation Collection
+
+A document contains:
+
+| field        | type   |
+| ------------ | ------ |
+| id           | string |
+| projectId    | string |
+| transcriptId | string |
+| labelId      | string |
+| start        | number |
+| end          | number |
+| note         | string |
+
+#### Labels Collection
+
+A document contains:
+
+| field       | type   |
+| ----------- | ------ |
+| id          | string |
+| projectId   | string |
+| label       | string |
+| description | string |
+| value       | string |
+| color       | string |
