@@ -34,13 +34,12 @@ const SignInFormBase = props => {
     }
   };
 
-  const onChange = event => {
-    if (event.target.id === 'email') {
-      setEmail(event.target.value);
-    }
-    if (event.target.id === 'password') {
-      setPassword(event.target.value);
-    };
+  const onPasswordChange = event => {
+    setPassword(event.target.value);
+  };
+
+  const onEmailChange = event => {
+    setEmail(event.target.value);
   };
 
   const isInvalid = password === '' || email === '';
@@ -49,15 +48,15 @@ const SignInFormBase = props => {
     <Form onSubmit={ onSubmit }>
       <Form.Row>
         <Col>
-          <Form.Group controlId="email" onChange={ onChange } >
+          <Form.Group controlId="email" >
             <Form.Label>Email address</Form.Label>
-            <Form.Control value={ email } type="email" placeholder="Enter email" />
+            <Form.Control value={ email } onChange={ onEmailChange } type="email" placeholder="Enter email" />
           </Form.Group>
         </Col>
         <Col>
-          <Form.Group controlId="password" onChange={ onChange } >
+          <Form.Group controlId="password" >
             <Form.Label>Password</Form.Label>
-            <Form.Control value={ password } type="password" placeholder="Password" />
+            <Form.Control value={ password } onChange={ onPasswordChange } type="password" placeholder="Password" />
           </Form.Group>
         </Col>
       </Form.Row>

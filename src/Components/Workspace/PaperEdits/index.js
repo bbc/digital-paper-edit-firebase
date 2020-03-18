@@ -7,7 +7,7 @@ import { withAuthorization } from '../../Session';
 const PaperEdits = props => {
   const TYPE = 'Paper Edit';
 
-  const Data = new Collection(
+  const PaperEditsCollection = new Collection(
     props.firebase,
     `/projects/${ props.projectId }/paperedits`
   );
@@ -21,7 +21,7 @@ const PaperEdits = props => {
   useEffect(() => {
     const getPaperEdits = async () => {
       try {
-        Data.collectionRef.onSnapshot(snapshot => {
+        PaperEditsCollection.collectionRef.onSnapshot(snapshot => {
           const paperEdits = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });
@@ -38,11 +38,11 @@ const PaperEdits = props => {
     }
 
     return () => {};
-  }, [ Data, loading, items, props.projectId ]);
+  }, [ PaperEditsCollection, loading, items, props.projectId ]);
 
   const createPaperEdit = async item => {
     const paperEdit = { ...item, projectId: props.projectId };
-    const docRef = await Data.postItem(paperEdit);
+    const docRef = await PaperEditsCollection.postItem(paperEdit);
 
     item.url = genUrl(docRef.id);
 
@@ -56,7 +56,7 @@ const PaperEdits = props => {
   };
 
   const updatePaperEdit = async (id, item) => {
-    await Data.putItem(id, item);
+    await PaperEditsCollection.putItem(id, item);
     item.display = true;
   };
 
@@ -70,7 +70,7 @@ const PaperEdits = props => {
 
   const deletePaperEdit = async id => {
     try {
-      await Data.deleteItem(id);
+      await PaperEditsCollection.deleteItem(id);
     } catch (e) {
       console.error('Failed to delete item:', e);
     }

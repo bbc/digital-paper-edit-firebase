@@ -14,7 +14,7 @@ const Transcripts = props => {
 
   const [ uploadTasks, setUploadTasks ] = useState(new Map());
 
-  const Data = new Collection(
+  const TranscriptsCollection = new Collection(
     props.firebase,
     `/projects/${ props.projectId }/transcripts`
   );
@@ -26,7 +26,7 @@ const Transcripts = props => {
   useEffect(() => {
     const getTranscripts = async () => {
       try {
-        Data.collectionRef.onSnapshot(snapshot => {
+        TranscriptsCollection.collectionRef.onSnapshot(snapshot => {
           const transcripts = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });
@@ -54,26 +54,26 @@ const Transcripts = props => {
     return () => {
       authListener();
     };
-  }, [ Data.collectionRef, items, loading, props.firebase, uploadTasks ]);
+  }, [ TranscriptsCollection.collectionRef, items, loading, props.firebase, uploadTasks ]);
 
   // firestore
 
   const updateTranscript = async (id, item) => {
-    await Data.putItem(id, item);
+    await TranscriptsCollection.putItem(id, item);
     item.display = true;
 
     return item;
   };
 
   const createTranscript = async item => {
-    const docRef = await Data.postItem(item);
+    const docRef = await TranscriptsCollection.postItem(item);
 
     return docRef;
   };
 
   const deleteTranscript = async id => {
     try {
-      await Data.deleteItem(id);
+      await TranscriptsCollection.deleteItem(id);
     } catch (e) {
       console.error('Failed to delete item from collection: ', e.code_);
     }
