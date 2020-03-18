@@ -67,7 +67,7 @@ const PaperEditor = (props) => {
     getTranscripts();
 
     return () => {};
-  }, [ PaperEdits, Projects, Transcripts ]);
+  }, [ PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
@@ -230,8 +230,8 @@ const PaperEditor = (props) => {
         </div>
 
         <Row>
-          {/* {transcriptsColumn(TranscriptEl)} */}
-          {/* {programmeScriptColumn(ProgrammeScriptEl)} */}
+          {transcriptsColumn(TranscriptEl)}
+          {programmeScriptColumn(ProgrammeScriptEl)}
         </Row>
       </Container>
     </Container>
@@ -241,6 +241,7 @@ const PaperEditor = (props) => {
 PaperEditor.propTypes = {
   match: PropTypes.any,
   videoHeight: PropTypes.any,
+  firebase: PropTypes.any,
   labelsOptions: PropTypes.any
 };
 

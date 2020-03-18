@@ -11,6 +11,21 @@ In order for this to work, you have to have a local development build of `@bbc/d
 
 The build process uses a Webpack configuration file called [`webpack.dev.config.js`](https://github.com/bbc/digital-paper-edit-storybook/blob/master/webpack.dev.config.js) in the Storybook repository. This is important because you can only have one React installed in your dependency tree. The config helps to point the React Context to point at this repository's node modules instead of its own. For more information on this, see [Webpack's document on resolving dependencies](https://webpack.js.org/configuration/resolve/). If your relative path is different, you need to change it so that the path is correct.
 
+See [here](https://reactjs.org/warnings/invalid-hook-call-warning.html) for trouble shooting and [here](https://github.com/facebook/react/issues/13991)
+
+You can check if there's duplicated React libraries this way:
+```js
+// Add this in node_modules/react-dom/index.js
+window.React1 = require('react');
+
+// Add this in your component file
+require('react-dom');
+window.React2 = require('react');
+console.log(window.React1 === window.React2);
+```
+
+Make sure to reload both the thing that's using the library and the build of the development webpack.
+
 ```js
 {
   resolve: {
