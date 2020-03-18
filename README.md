@@ -42,7 +42,7 @@ See [UX Approach](./docs/guides/ux-approach.md) in docs guides for more informat
 ## Project Architecture
 
 This is a simplified version of the [`bbc/digital-paper-edit-client`](https://github.com/bbc/digital-paper-edit-client) application, using Firebase.
-There are many moving parts in this project, but Firebase is self-contained. If you want to see all the projects you can also look at them as a list [here](https://github.com/topics/digital-paper-edit). Most React Components are developed, maintained and imported from [`bbc/digital-paper-edit-storybook`](https://github.com/bbc/digital-paper-edit-storybook). There is a [Storybook demo website](https://bbc.github.io/digital-paper-edit-storybook/) in the repo that you access to view the components.
+There are many moving parts in this project, but Firebase is self-contained. If you want to see all the projects you can also look at them as a list [here](https://github.com/topics/digital-paper-edit). Most React Components are developed, maintained and imported from [`bbc/digital-paper-edit-storybook`](https://github.com/bbc/digital-paper-edit-storybook). There is a [Storybook demo website](https://bbc.github.io/digital-paper-edit-storybook/) in the repo that you access to view the components.If you want to develop with a local version of the React Components, see [here](https://github.com/bbc/digital-paper-edit-firebase/blob/master/docs/guides/npm-link.md).
 
 See docs in ADR for an understanding of the architectural decisions made. If you'd like some information on Firebase, please read [Firebase ADR](./docs/ADR/2019-11-05-firebase.md) and the [Modular Architecture ADR for more info on the implementation](./docs/ADR/2019-05-09-modular-architecture.md)
 
@@ -106,6 +106,10 @@ This will start two servers: proxy (`3000`) and Firebase server (`4000`). You sh
     "dev:react": "cross-env REACT_APP_NODE_ENV=development react-scripts start",
 }
 ```
+
+### Local version of React Components (DPE-Storybook)
+
+If you want to develop with a local version of the React Components, see [here](https://github.com/bbc/digital-paper-edit-firebase/blob/master/docs/guides/npm-link.md).
 
 ## Production and Deployment
 
