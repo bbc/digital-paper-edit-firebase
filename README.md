@@ -85,10 +85,11 @@ let firebaseConfig = {
 };
 
 ```
+If you do change this and you want Travis to run deployment, you will need to encrypt it using Travis CLI's `encrypt-file` feature and recommit `.env.enc`.
 
 ## Local Development
 
-You must setup the Firebase credentials in order to develop the project - as mentioned in above [section](#Firebase-specific-configuration). If you are BBC staff, please sign into the corporate GCP account. Firebase can be free, but some parts of the app may not work.
+You must setup the Firebase credentials in order to develop the project - as mentioned in above [section](#Firebase-specific-configuration). If you are BBC staff, please sign into the corporate GCP account. Firebase can be free, but some parts of the app may not work. 
 In root of the project (`cd digital-paper-edit-firebase`):
 
 ```sh
@@ -97,7 +98,7 @@ yarn start
 
 which maps to `"run-p --race dev:firebase dev:react",`
 
-This will start two servers: proxy (`3000`) and Firebase server (`4000`). You should have an entry point app running in port `3000`. Note that this is accessing real data, rather than a dummy one.
+This will start two servers: proxy (`3000`) and Firebase server (`4000`). You should have an entry point app running in port `3000`. **Note that this is accessing real data, rather than a dummy one.** We are trying to resolve this in [#31](https://github.com/bbc/digital-paper-edit-firebase/issues/31)
 
 ```js
 {
