@@ -26,13 +26,13 @@ const WorkspaceView = props => {
   const projects = new Collection(props.firebase, PROJECTS);
   const id = props.match.params.projectId;
   const [ active, setActive ] = useState('transcripts');
-  const [ name, setName ] = useState('Project Name');
+  const [ title, setTitle ] = useState('Project Title');
 
   useEffect(() => {
     const getProjectName = async () => {
       try {
         const doc = await projects.getItem(id);
-        setName(doc.title);
+        setTitle(doc.title);
       } catch (e) {
         console.error('Could not get Project Id: ', id, e);
       }
@@ -48,7 +48,7 @@ const WorkspaceView = props => {
       <Container style={ { marginBottom: '5em', marginTop: '1em' } }>
         <Row>
           <Col sm={ 12 }>
-            <Breadcrumb items={ genBreadcrumb(name) } />
+            <Breadcrumb items={ genBreadcrumb(title) } />
           </Col>
         </Row>
 

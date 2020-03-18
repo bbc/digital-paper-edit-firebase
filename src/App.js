@@ -5,6 +5,8 @@ import Container from 'react-bootstrap/Container';
 import Routes from './Routes';
 import SignOutButton from './Components/SignOut';
 import { withAuthentication } from './Components/Session';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
 const App = props => {
   let offlineWarning = null;
@@ -40,10 +42,19 @@ const App = props => {
   if (authUser) {
     AppContainer = (
       <>
-        <Container style={ { marginBottom: '2em', marginTop: '1em' } }>
-          <h1> Digital Paper Edit </h1>
-          <p>Signed in as: {authUser.email}</p>
-          <SignOutButton />
+        {offlineWarning}
+        <Container style={ { marginBottom: '1em', marginTop: '1em' } }>
+          <Row>
+            <Col>
+              <h1> Digital Paper Edit </h1>
+            </Col>
+            <Col xs={ 12 } sm={ 3 }>
+              <p>Signed in as: {authUser.email}</p>
+            </Col>
+            <Col xs={ 12 } sm={ 2 }>
+              <SignOutButton />
+            </Col>
+          </Row>
         </Container>
         <Routes authUser={ authUser } />
       </>
