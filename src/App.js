@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap-css-only/css/bootstrap.css';
-import CustomAlert from '@bbc/digital-paper-edit-react-components/CustomAlert';
+import CustomAlert from '@bbc/digital-paper-edit-storybook/CustomAlert';
 import Container from 'react-bootstrap/Container';
 import Routes from './Routes';
 import SignOutButton from './Components/SignOut';

@@ -7,8 +7,7 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Button from 'react-bootstrap/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleUp, faAngleDown } from '@fortawesome/free-solid-svg-icons';
-import Breadcrumb from '@bbc/digital-paper-edit-react-components/Breadcrumb';
-
+import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 import Transcripts from './Transcripts';
 import ProgrammeScript from './ProgrammeScript';
 import PropTypes from 'prop-types';
