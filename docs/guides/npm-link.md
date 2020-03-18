@@ -37,7 +37,7 @@ You can generate a dev build in digital-paper-edit-storybook by running `yarn de
 
 ## Link
 
-You can replace the yarn commands with npm and it should just work as is. If it doesn't try removing the node_modules directory.
+You can replace the yarn commands with npm and it should just work as is. Make sure that you've copied over the `package.json` file, otherwise it won't work.
 
-1. In root of `digital-paper-edit-storybook` repository, run `yarn link`
+1. In the **directory: `dist`** of `digital-paper-edit-storybook` repository, run `yarn link`
 2. In root of this repository, run `yarn link @bbc/digital-paper-edit-storybook`
