@@ -58,16 +58,13 @@ const Projects = props => {
   };
 
   useEffect(() => {
-    let projectSubscription = true;
     const getUserProjects = async () => {
       try {
         collection.userRef(uid).onSnapshot(snapshot => {
           const projects = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });
-          if (projectSubscription) {
-            setItems(projects);
-          }
+          setItems(projects);
         });
       } catch (error) {
         console.error('Error getting documents: ', error);
@@ -90,7 +87,6 @@ const Projects = props => {
 
     return () => {
       authListener();
-      projectSubscription = false;
     };
   }, [ collection, items, loading, props.firebase, uid ]);
 

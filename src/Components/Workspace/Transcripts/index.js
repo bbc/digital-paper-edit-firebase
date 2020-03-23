@@ -24,16 +24,13 @@ const Transcripts = props => {
   };
 
   useEffect(() => {
-    let transcriptSubscription = true;
     const getTranscripts = async () => {
       try {
         TranscriptsCollection.collectionRef.onSnapshot(snapshot => {
           const transcripts = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });
-          if (transcriptSubscription) {
-            setItems(transcripts);
-          }
+          setItems(transcripts);
         });
       } catch (error) {
         console.error('Error getting documents: ', error);
@@ -55,7 +52,6 @@ const Transcripts = props => {
     }
 
     return () => {
-      transcriptSubscription = false;
       authListener();
     };
   }, [ TranscriptsCollection.collectionRef, items, loading, props.firebase, uploadTasks ]);
