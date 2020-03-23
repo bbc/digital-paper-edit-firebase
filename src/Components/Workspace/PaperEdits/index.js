@@ -19,13 +19,16 @@ const PaperEdits = props => {
   };
 
   useEffect(() => {
+    let paperEditSubscription = true;
     const getPaperEdits = async () => {
       try {
         PaperEditsCollection.collectionRef.onSnapshot(snapshot => {
           const paperEdits = snapshot.docs.map(doc => {
             return { ...doc.data(), id: doc.id, display: true };
           });
-          setItems(paperEdits);
+          if (paperEditSubscription) {
+            setItems(paperEdits);
+          }
         });
       } catch (error) {
         console.error('Error getting documents: ', error);
@@ -37,7 +40,9 @@ const PaperEdits = props => {
       setIsLoading(true);
     }
 
-    return () => {};
+    return () => {
+      paperEditSubscription = false;
+    };
   }, [ PaperEditsCollection, loading, items, props.projectId ]);
 
   const createPaperEdit = async item => {
