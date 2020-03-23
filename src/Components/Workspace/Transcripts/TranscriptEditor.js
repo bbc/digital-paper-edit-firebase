@@ -36,21 +36,17 @@ const TranscriptEditor = props => {
   const ProjectsCollection = new Collection(props.firebase, '/projects');
 
   useEffect(() => {
-    let transcriptSubscription = true;
-    let projectSubscription = true;
     const getTranscript = async () => {
       try {
         const data = await TranscriptsCollection.getItem(transcriptId);
-        if (transcriptSubscription) {
-          setMediaUrl(data.clipUrl); // change data field to mediaUrl, remove mediaTitle
-          setMediaType('video'); // change to data.mediaType
-          setTranscriptData({
-            paragraphs: data.paragraphs,
-            words: data.words
-          });
+        setMediaUrl(data.clipUrl); // change data field to mediaUrl, remove mediaTitle
+        setMediaType('video'); // change to data.mediaType
+        setTranscriptData({
+          paragraphs: data.paragraphs,
+          words: data.words
+        });
 
-          setTranscriptTitle(data.title);
-        }
+        setTranscriptTitle(data.title);
       } catch (error) {
         console.error('Error getting documents: ', error);
       }
@@ -59,9 +55,7 @@ const TranscriptEditor = props => {
     const getProject = async () => {
       try {
         const data = await ProjectsCollection.getItem(projectId);
-        if (projectSubscription) {
-          setProjectTitle(data.title);
-        }
+        setProjectTitle(data.title);
       } catch (error) {
         console.error('Error getting documents: ', error);
       }
@@ -74,10 +68,7 @@ const TranscriptEditor = props => {
       getProject();
     }
 
-    return () => {
-      transcriptSubscription = false;
-      projectSubscription = false;
-    };
+    return () => {};
   },
   [ ProjectsCollection, TranscriptsCollection, projectId, projectTitle, transcriptData, transcriptId ]);
 

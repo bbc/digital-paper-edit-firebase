@@ -11,10 +11,8 @@ import * as ROUTES from '../../constants/routes';
 const withAuthorization = condition => Component => {
 
   const WithAuthorization = props => {
-    const isMounted = useRef(null);
 
     useEffect(() => {
-      isMounted.current = true;
       const listener = props.firebase.onAuthUserListener(
         authUser => {
           if (!condition(authUser)) {
@@ -26,13 +24,12 @@ const withAuthorization = condition => Component => {
 
       return () => {
         listener();
-        isMounted.current = false;
       };
     }, [ props.firebase, props.history ]);
 
     return (
       <AuthUserContext.Consumer>
-        {authUser => (condition(authUser) && isMounted.current ? <Component { ...props } /> : null)}
+        {authUser => (condition(authUser) ? <Component { ...props } /> : null)}
       </AuthUserContext.Consumer>
     );
   };
