@@ -39,8 +39,8 @@ const TranscriptEditor = props => {
     const getTranscript = async () => {
       try {
         const data = await TranscriptsCollection.getItem(transcriptId);
-        setMediaUrl(data.clipUrl); // change data field to mediaUrl, remove mediaTitle
-        setMediaType('video'); // change to data.mediaType
+        setMediaUrl(data.media.url);
+        setMediaType(data.media.type);
         setTranscriptData({
           paragraphs: data.paragraphs,
           words: data.words
