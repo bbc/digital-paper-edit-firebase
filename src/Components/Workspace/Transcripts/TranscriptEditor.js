@@ -36,17 +36,21 @@ const TranscriptEditor = props => {
   const ProjectsCollection = new Collection(props.firebase, '/projects');
 
   useEffect(() => {
+    let transcriptSubscription = true;
+    let projectSubscription = true;
     const getTranscript = async () => {
       try {
         const data = await TranscriptsCollection.getItem(transcriptId);
-        setMediaUrl(data.clipUrl); // change data field to mediaUrl, remove mediaTitle
-        setMediaType('video'); // change to data.mediaType
-        setTranscriptData({
-          paragraphs: data.paragraphs,
-          words: data.words
-        });
+        if (transcriptSubscription) {
+          setMediaUrl(data.clipUrl); // change data field to mediaUrl, remove mediaTitle
+          setMediaType('video'); // change to data.mediaType
+          setTranscriptData({
+            paragraphs: data.paragraphs,
+            words: data.words
+          });
 
-        setTranscriptTitle(data.title);
+          setTranscriptTitle(data.title);
+        }
       } catch (error) {
         console.error('Error getting documents: ', error);
       }
@@ -55,7 +59,9 @@ const TranscriptEditor = props => {
     const getProject = async () => {
       try {
         const data = await ProjectsCollection.getItem(projectId);
-        setProjectTitle(data.title);
+        if (projectSubscription) {
+          setProjectTitle(data.title);
+        }
       } catch (error) {
         console.error('Error getting documents: ', error);
       }
@@ -68,7 +74,12 @@ const TranscriptEditor = props => {
       getProject();
     }
 
-  }, [ ProjectsCollection, TranscriptsCollection, projectId, projectTitle, transcriptData, transcriptId ]);
+    return () => {
+      transcriptSubscription = false;
+      projectSubscription = false;
+    };
+  },
+  [ ProjectsCollection, TranscriptsCollection, projectId, projectTitle, transcriptData, transcriptId ]);
 
   const updateTranscript = async (id, item) => {
     await TranscriptsCollection.putItem(id, item);
@@ -76,7 +87,7 @@ const TranscriptEditor = props => {
     return item;
   };
 
-  const saveToServer = async () => {
+  const saveButtonHandler = async () => {
     // TODO: add Api call to save content of
     alert('save to server');
 
@@ -149,7 +160,7 @@ const TranscriptEditor = props => {
           <Col xs={ 12 } sm={ 1 } md={ 1 } ld={ 1 } xl={ 1 }>
             <Button
               variant="outline-secondary"
-              onClick={ saveToServer }
+              onClick={ saveButtonHandler }
               size="lg"
               block
             >
