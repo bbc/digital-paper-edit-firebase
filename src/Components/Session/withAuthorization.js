@@ -9,7 +9,9 @@ import * as ROUTES from '../../constants/routes';
 
 // with Authorization called before each route
 const withAuthorization = condition => Component => {
+
   const WithAuthorization = props => {
+
     useEffect(() => {
       const listener = props.firebase.onAuthUserListener(
         authUser => {

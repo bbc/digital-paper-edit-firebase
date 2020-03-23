@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Breadcrumb from '@bbc/digital-paper-edit-react-components/Breadcrumb';
+import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 import CustomFooter from '../lib/CustomFooter';
 import ItemsContainer from '../lib/ItemsContainer';
 import Collection from '../Firebase/Collection';

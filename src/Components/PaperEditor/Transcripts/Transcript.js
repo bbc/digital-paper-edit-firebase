@@ -13,7 +13,7 @@ import LabelsList from './LabelsList/index.js';
 import onlyCallOnce from '../../../Util/only-call-once/index.js';
 import getTimeFromUserWordsSelection from './get-user-selection.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import SearchBar from '@bbc/digital-paper-edit-react-components/SearchBar';
+import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
 
 /**
  * Makes list of unique speakers
