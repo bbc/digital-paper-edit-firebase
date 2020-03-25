@@ -158,8 +158,7 @@ A document contains:
 | projectId   | string      |
 | title       | string      |
 | description | string      |
-| clipTitle   | string      |
-| clipUrl     | string      |
+| media       | map         |
 | status      | string      |
 | created     | timestamp   |
 | updated     | timestamp   |
@@ -170,7 +169,15 @@ A document contains:
 
 The `url` is for the `react transcript editor` interface.
 
-Words (map)
+**Media (map)**
+| field | type |
+| ----- | ------ |
+| url | string |
+| type | string |
+
+Type is either "video" or "audio"
+
+**Words (map)**
 
 | field | type   |
 | ----- | ------ |
@@ -178,7 +185,7 @@ Words (map)
 | end   | number |
 | text  | string |
 
-Paragraphs (map)
+**Paragraphs (map)**
 
 | field   | type   |
 | ------- | ------ |

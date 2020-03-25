@@ -21,7 +21,7 @@ When manually adding changes to the changes from a fork - there are challenges o
 ```javascript
 [
   ("@bbc/aes31-adl-composer": "^1.0.1"),
-  ("@bbc/digital-paper-edit-react-components": "^1.3.2"),
+  ("@bbc/digital-paper-edit-storybook": "^1.3.2"),
   ("@bbc/fcpx-xml-composer": "^1.0.0"),
   ("@bbc/react-transcript-editor": "^1.4.0")
 ];
@@ -42,7 +42,7 @@ See [UX Approach](./docs/guides/ux-approach.md) in docs guides for more informat
 ## Project Architecture
 
 This is a simplified version of the [`bbc/digital-paper-edit-client`](https://github.com/bbc/digital-paper-edit-client) application, using Firebase.
-There are many moving parts in this project, but Firebase is self-contained. If you want to see all the projects you can also look at them as a list [here](https://github.com/topics/digital-paper-edit). Most React Components are developed, maintained and imported from [`bbc/digital-paper-edit-react-components`](https://github.com/bbc/digital-paper-edit-react-components). There is a [Storybook demo website](https://bbc.github.io/digital-paper-edit-storybook/) in the repo that you access to view the components. If you want to develop with a local version of the React Components, see [here](https://github.com/bbc/digital-paper-edit-firebase/blob/master/docs/guides/npm-link.md).
+There are many moving parts in this project, but Firebase is self-contained. If you want to see all the projects you can also look at them as a list [here](https://github.com/topics/digital-paper-edit). Most React Components are developed, maintained and imported from [`bbc/digital-paper-edit-storybook`](https://github.com/bbc/digital-paper-edit-storybook). There is a [Storybook demo website](https://bbc.github.io/digital-paper-edit-storybook/) in the repo that you access to view the components.If you want to develop with a local version of the React Components, see [here](https://github.com/bbc/digital-paper-edit-firebase/blob/master/docs/guides/npm-link.md).
 
 See docs in ADR for an understanding of the architectural decisions made. If you'd like some information on Firebase, please read [Firebase ADR](./docs/ADR/2019-11-05-firebase.md) and the [Modular Architecture ADR for more info on the implementation](./docs/ADR/2019-05-09-modular-architecture.md)
 
@@ -81,15 +81,15 @@ let firebaseConfig = {
   storageBucket: "project-id.appspot.com",
   messagingSenderId: "sender-id",
   appId: "app-id",
-  measurementId: "G-measurement-id",
+  measurementId: "G-measurement-id"
 };
-
 ```
+
 If you do change this and you want Travis to run deployment, you will need to encrypt it using Travis CLI's `encrypt-file` feature and recommit `.env.enc`.
 
 ## Local Development
 
-You must setup the Firebase credentials in order to develop the project - as mentioned in above [section](#Firebase-specific-configuration). If you are BBC staff, please sign into the corporate GCP account. Firebase can be free, but some parts of the app may not work. 
+You must setup the Firebase credentials in order to develop the project - as mentioned in above [section](#Firebase-specific-configuration). If you are BBC staff, please sign into the corporate GCP account. Firebase can be free, but some parts of the app may not work.
 In root of the project (`cd digital-paper-edit-firebase`):
 
 ```sh
@@ -108,6 +108,7 @@ This will start two servers: proxy (`3000`) and Firebase server (`4000`). You sh
 ```
 
 ### Local version of React Components (DPE-Storybook)
+
 If you want to develop with a local version of the React Components, see [here](https://github.com/bbc/digital-paper-edit-firebase/blob/master/docs/guides/npm-link.md).
 
 ## Production and Deployment

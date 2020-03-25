@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import { withAuthorization } from '../../Session';
 // import './index.module.css';
 // import styles from './Transcript.module.css';
 // TODO: perhaps import TranscriptEditor on componentDidMount(?) to defer the load for later
@@ -8,45 +9,76 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
-// import { Redirect } from 'react-router-dom';
 
-import CustomAlert from '@bbc/digital-paper-edit-react-components/CustomAlert';
-import Breadcrumb from '@bbc/digital-paper-edit-react-components/Breadcrumb';
+import Collection from '../../Firebase/Collection';
 
-class TranscriptEditor extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      projectId: this.props.match.params.projectId,
-      transcriptId: this.props.match.params.transcriptId,
-      transcriptJson: null,
-      mediaUrl: null,
-      projectTitle: '',
-      transcriptTitle: '',
-      savedNotification: null,
-      mediaType: 'video'
-    };
-    this.transcriptEditorRef = React.createRef();
-  }
+import CustomAlert from '@bbc/digital-paper-edit-storybook/CustomAlert';
+import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 
-  componentDidMount = () => {
-    const api = this.context;
-    api
-      .getTranscript(this.state.projectId, this.state.transcriptId)
-      // TODO: add error handling
-      .then(json => {
-        this.setState({
-          projectTitle: json.projectTitle,
-          transcriptTitle: json.transcriptTitle,
-          transcriptJson: json.transcript,
-          mediaUrl: json.url,
-          mediaType: json.mediaType
+const TranscriptEditor = props => {
+  const projectId = props.match.params.projectId;
+  const transcriptId = props.match.params.transcriptId;
+
+  const [ transcriptData, setTranscriptData ] = useState();
+  const [ mediaUrl, setMediaUrl ] = useState('');
+  const [ projectTitle, setProjectTitle ] = useState('');
+  const [ transcriptTitle, setTranscriptTitle ] = useState('');
+  const [ savedNotification, setSavedNotification ] = useState();
+  const [ mediaType, setMediaType ] = useState('video');
+
+  const transcriptEditorRef = useRef();
+
+  const TranscriptsCollection = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/transcripts`
+  );
+
+  const ProjectsCollection = new Collection(props.firebase, '/projects');
+
+  useEffect(() => {
+    const getTranscript = async () => {
+      try {
+        const data = await TranscriptsCollection.getItem(transcriptId);
+        setMediaUrl(data.media.url);
+        setMediaType(data.media.type);
+        setTranscriptData({
+          paragraphs: data.paragraphs,
+          words: data.words
         });
-      });
+
+        setTranscriptTitle(data.title);
+      } catch (error) {
+        console.error('Error getting documents: ', error);
+      }
+    };
+
+    const getProject = async () => {
+      try {
+        const data = await ProjectsCollection.getItem(projectId);
+        setProjectTitle(data.title);
+      } catch (error) {
+        console.error('Error getting documents: ', error);
+      }
+    };
+
+    if (!transcriptData) {
+      getTranscript();
+    }
+    if (!projectTitle) {
+      getProject();
+    }
+
+    return () => {};
+  },
+  [ ProjectsCollection, TranscriptsCollection, projectId, projectTitle, transcriptData, transcriptId ]);
+
+  const updateTranscript = async (id, item) => {
+    await TranscriptsCollection.putItem(id, item);
+
+    return item;
   };
 
-  saveToServer = () => {
-    const api = this.context;
+  const saveButtonHandler = async () => {
     // TODO: add Api call to save content of
     alert('save to server');
 
@@ -60,140 +92,93 @@ class TranscriptEditor extends Component {
     // Other option is to export as `txtspeakertimecodes` or `txt` and reallign server side using Aeneas
     //
     // TranscriptEditor - export options: txtspeakertimecodes - draftjs - txt - digitalpaperedit
-    const { data } = this.transcriptEditorRef.current.getEditorContent(
+    const { data } = transcriptEditorRef.current.getEditorContent(
       'digitalpaperedit'
     );
-    data.title = this.state.transcriptTitle;
-    data.transcriptTitle = this.state.transcriptTitle;
-    const queryParamsOptions = false;
-    api
-      .updateTranscript(
-        this.state.projectId,
-        this.state.transcriptId,
-        queryParamsOptions,
-        data
-      )
-      .then(response => {
-        if (response.ok) {
-          // show message or redirect
-          // this.setState({ redirect: true, newProjectId: response.projectId });
-          this.setState({
-            savedNotification: (
-              <CustomAlert
-                dismissable={ true }
-                variant={ 'success' }
-                heading={ 'Transcript saved' }
-                message={
-                  <p>
-                    Transcript: <b>{this.state.transcriptTitle}</b> has been
-                    saved
-                  </p>
-                }
-              />
-            )
-          });
+
+    try {
+      await updateTranscript(transcriptId, data);
+      setSavedNotification(
+        <CustomAlert
+          dismissable={ true }
+          variant='success'
+          heading='Transcript saved'
+          message=
+            { <p>Transcript: <b>{transcriptTitle}</b> has been saved</p> }
+        />
+      );
+    } catch (error) {
+      console.error('error saving transcript:: ', error);
+      setSavedNotification(<CustomAlert
+        dismissable={ true }
+        variant='danger'
+        heading='Error saving transcript'
+        message={
+          <p>
+            There was an error trying to save this transcript: <b>{transcriptTitle}</b>
+          </p>
         }
-      })
-      .catch(e => {
-        console.error('error saving transcript:: ', e);
-        this.setState({
-          savedNotification: (
-            <CustomAlert
-              dismissable={ true }
-              variant={ 'danger' }
-              heading={ 'Error saving transcript' }
-              message={
-                <p>
-                  There was an error trying to save this transcript:{' '}
-                  <b>{this.state.transcriptTitle}</b>
-                </p>
-              }
-            />
-          )
-        });
-      });
+      />);
+    }
   };
 
-  // redirectToAnnotatePage = () => {
-  //   // this.state.projectId this.state.transcriptId
-  //   this.setState({
-  //     redirect: true
-  //   });
-  // }
-
-  // renderRedirect = () => {
-  //   if (this.state.redirect) {
-  //     return <Redirect to={ `/projects/${ this.state.projectId }/transcripts/${ this.state.newTranscriptId }/annotate` } />;
-  //   }
-  // }
-
-  render() {
-    return (
-      <>
-        {/* {this.renderRedirect()} */}
-        <Container style={ { marginBottom: '5em' } } fluid>
-          <br />
-          <Row>
-            <Col sm={ 12 } md={ 11 } ld={ 11 } xl={ 11 }>
-              <Breadcrumb
-                items={ [
-                  {
-                    name: 'Projects',
-                    link: '/projects'
-                  },
-                  {
-                    name: `Project: ${ this.state.projectTitle }`,
-                    link: `/projects/${ this.state.projectId }`
-                  },
-                  {
-                    name: 'Transcripts'
-                  },
-                  {
-                    name: `${ this.state.transcriptTitle }`
-                  },
-                  {
-                    name: 'Correct'
-                  }
-                ] }
-              />
-            </Col>
-            {/* <Col xs={ 12 } sm={ 2 } md={ 2 } ld={ 2 } xl={ 2 }>
-              <Button variant="outline-secondary" onClick={ this.redirectToAnnotatePage } size="lg" block>
-              Annotate
-              </Button>
-              <br/>
-            </Col> */}
-            <Col xs={ 12 } sm={ 1 } md={ 1 } ld={ 1 } xl={ 1 }>
-              <Button
-                variant="outline-secondary"
-                onClick={ this.saveToServer }
-                size="lg"
-                block
-              >
-                Save
-              </Button>
-              <br />
-            </Col>
-          </Row>
-          {this.state.savedNotification}
-          {this.state.transcriptJson && (
-            <ReactTranscriptEditor
-              transcriptData={ this.state.transcriptJson } // Transcript json
-              // TODO: move url server side
-              mediaUrl={ this.state.mediaUrl } // string url to media file - audio or video
-              isEditable={ true } // se to true if you want to be able to edit the text
-              sttJsonType={ 'digitalpaperedit' } // the type of STT Json transcript supported.
-              //  TODO: check if name has changed in latest version
-              title={ this.state.transcriptTitle }
-              // fileName={ this.state.projectTitle }// optional*
-              ref={ this.transcriptEditorRef }
-              mediaType={ this.state.mediaType }
+  return (
+    <>
+      <Container style={ { marginBottom: '5em' } } fluid>
+        <br />
+        <Row>
+          <Col sm={ 12 } md={ 11 } ld={ 11 } xl={ 11 }>
+            <Breadcrumb
+              items={ [
+                {
+                  name: 'Projects',
+                  link: '/projects'
+                },
+                {
+                  name: `Project: ${ projectTitle }`,
+                  link: `/projects/${ projectId }`
+                },
+                {
+                  name: `Transcript: ${ transcriptTitle }`
+                },
+                {
+                  name: 'Correct'
+                }
+              ] }
             />
-          )}
-        </Container>
-      </>
-    );
-  }
-}
+          </Col>
 
-export default TranscriptEditor;
+          <Col xs={ 12 } sm={ 1 } md={ 1 } ld={ 1 } xl={ 1 }>
+            <Button
+              variant="outline-secondary"
+              onClick={ saveButtonHandler }
+              size="lg"
+              block
+            >
+              Save
+            </Button>
+            <br />
+          </Col>
+        </Row>
+        {savedNotification}
+        {transcriptData && (
+          <ReactTranscriptEditor
+            transcriptData={ transcriptData } // Transcript json
+            // TODO: move url server side
+            mediaUrl={ mediaUrl } // string url to media file - audio or video
+            isEditable={ true } // se to true if you want to be able to edit the text
+            sttJsonType={ 'digitalpaperedit' } // the type of STT Json transcript supported.
+            //  TODO: check if name has changed in latest version
+            title={ transcriptTitle }
+            // fileName={ this.state.projectTitle }// optional*
+            ref={ transcriptEditorRef }
+            mediaType={ mediaType }
+          />
+        )}
+      </Container>
+    </>
+  );
+};
+
+const condition = authUser => !!authUser;
+export default withAuthorization(condition)(TranscriptEditor);

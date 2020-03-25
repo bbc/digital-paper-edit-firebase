@@ -7,7 +7,7 @@ import Col from 'react-bootstrap/Col';
 import CustomFooter from '../lib/CustomFooter';
 import Transcripts from './Transcripts';
 import PaperEdits from './PaperEdits';
-import Breadcrumb from '@bbc/digital-paper-edit-react-components/Breadcrumb';
+import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 import Collection from '../Firebase/Collection';
 import { PROJECTS } from '../../constants/routes';
 import { withAuthorization } from '../Session';

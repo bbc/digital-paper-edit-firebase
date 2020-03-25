@@ -5,11 +5,11 @@ import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 
 import { anyInText } from '../../../Util/in-text';
-import FormModal from '@bbc/digital-paper-edit-react-components/FormModal';
-import SearchBar from '@bbc/digital-paper-edit-react-components/SearchBar';
+import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
+import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
 
-import SimpleCard from '@bbc/digital-paper-edit-react-components/SimpleCard';
-import TranscriptCard from '@bbc/digital-paper-edit-react-components/TranscriptCard';
+import SimpleCard from '@bbc/digital-paper-edit-storybook/SimpleCard';
+import TranscriptCard from '@bbc/digital-paper-edit-storybook/TranscriptCard';
 import cuid from 'cuid';
 
 const initialFormState = {

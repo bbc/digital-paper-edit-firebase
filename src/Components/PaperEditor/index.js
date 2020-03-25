@@ -7,8 +7,7 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Button from 'react-bootstrap/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleUp, faAngleDown } from '@fortawesome/free-solid-svg-icons';
-import Breadcrumb from '@bbc/digital-paper-edit-react-components/Breadcrumb';
-
+import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 import Transcripts from './Transcripts';
 import ProgrammeScript from './ProgrammeScript';
 import PropTypes from 'prop-types';
@@ -68,7 +67,7 @@ const PaperEditor = (props) => {
     getTranscripts();
 
     return () => {};
-  }, [ PaperEdits, Projects, Transcripts ]);
+  }, [ PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
@@ -231,8 +230,8 @@ const PaperEditor = (props) => {
         </div>
 
         <Row>
-          {/* {transcriptsColumn(TranscriptEl)} */}
-          {/* {programmeScriptColumn(ProgrammeScriptEl)} */}
+          {transcriptsColumn(TranscriptEl)}
+          {programmeScriptColumn(ProgrammeScriptEl)}
         </Row>
       </Container>
     </Container>
@@ -242,6 +241,7 @@ const PaperEditor = (props) => {
 PaperEditor.propTypes = {
   match: PropTypes.any,
   videoHeight: PropTypes.any,
+  firebase: PropTypes.any,
   labelsOptions: PropTypes.any
 };
 
