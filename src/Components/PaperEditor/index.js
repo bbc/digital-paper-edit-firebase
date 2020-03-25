@@ -8,7 +8,7 @@ import Button from 'react-bootstrap/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleUp, faAngleDown } from '@fortawesome/free-solid-svg-icons';
 import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
-import Transcripts from './Transcripts';
+// import Transcripts from './Transcripts';
 import ProgrammeScript from './ProgrammeScript';
 import PropTypes from 'prop-types';
 import Collection from '../Firebase/Collection';
@@ -126,18 +126,18 @@ const PaperEditor = (props) => {
     />
   );
 
-  let TranscriptEl = <>
+  const TranscriptEl = <>
     <br />
     <br />
     <i>No Transcripts, create a transcript to get started</i>
   </>;
 
   if (transcripts) {
-    TranscriptEl = <Transcripts
-      projectId={ projectId }
-      transcripts={ transcripts }
-      labelsOptions={ labelsOptions }
-    />;
+    // TranscriptEl = <Transcripts
+    //   projectId={ projectId }
+    //   transcripts={ transcripts }
+    //   labelsOptions={ labelsOptions }
+    // />;
   }
 
   let ProgrammeScriptEl = null;
@@ -230,7 +230,7 @@ const PaperEditor = (props) => {
         </div>
 
         <Row>
-          {transcriptsColumn(TranscriptEl)}
+          {/* {transcriptsColumn(TranscriptEl)} */}
           {programmeScriptColumn(ProgrammeScriptEl)}
         </Row>
       </Container>
