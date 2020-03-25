@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Nav from 'react-bootstrap/Nav';
@@ -8,81 +8,90 @@ import {
   faClock,
   faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
-
-import Transcript from './Transcript.js';
+import PropTypes from 'prop-types';
 import cuid from 'cuid';
 
-class Transcripts extends Component {
-  // eslint-disable-next-line class-methods-use-this
-  render() {
-    const transcriptsElNav = this.props.transcripts.map((transcript, index) => {
-      return (
-        <Nav.Item key={ cuid() }>
-          <Nav.Link
-            disabled={ transcript.status !== 'done' ? true : false }
-            // title={ transcript.status !== 'done' ? transcript.status : transcript.title }
-            eventKey={ transcript.id }
-          >
-            {transcript.status === 'in-progress' ? (
-              <FontAwesomeIcon icon={ faClock } />
-            ) : (
-              ''
-            )}
-            {transcript.status === 'error' ? (
-              <FontAwesomeIcon icon={ faExclamationTriangle } />
-            ) : (
-              ''
-            )}
-            {`  ${ transcript.transcriptTitle }`}
-          </Nav.Link>
-        </Nav.Item>
-      );
-    });
-    const transcriptsElTab = this.props.transcripts.map((transcript, index) => {
-      return (
-        <Tab.Pane key={ cuid() } eventKey={ transcript.id }>
-          <Transcript
-            projectId={ this.props.projectId }
-            transcriptId={ transcript.id }
-            labelsOptions={ this.props.labelsOptions }
-            title={ transcript.transcriptTitle }
-            transcript={ transcript.transcript }
-            mediaType={ transcript.mediaType }
-            url={ transcript.url }
-          />
-        </Tab.Pane>
-      );
-    });
+import Transcript from './Transcript.js';
 
+const Transcripts = ({ transcripts, projectId, labelsOptions }) => {
+  const getStatusIcon = (status) => {
+    if (status === 'in-progress') {
+      return <FontAwesomeIcon icon={ faClock } />;
+    } else if (status === 'error') {
+      return <FontAwesomeIcon icon={ faExclamationTriangle } />;
+    } else {
+      return '';
+    }
+  };
+
+  const getTranscriptNav = (transcript) => {
     return (
-      <>
-        <Tab.Container
-          defaultActiveKey={
-            this.props.transcripts[0] ? this.props.transcripts[0].id : 'first'
-          }
+      <Nav.Item key={ cuid() }>
+        <Nav.Link
+          disabled={ transcript.status !== 'done' ? true : false }
+          eventKey={ transcript.id }
         >
-          <Row>
-            <Col sm={ 3 }>
-              <h2
-                className={ [ 'text-truncate', 'text-muted' ].join(' ') }
-                // className={ 'text-truncate' }
-                title={ 'Transcripts' }
-              >
-                Transcripts
-              </h2>
-              <hr />
-              <Nav variant="pills" className="flex-column">
-                {transcriptsElNav}
-              </Nav>
-            </Col>
-            <Col sm={ 9 }>
-              <Tab.Content>{transcriptsElTab}</Tab.Content>
-            </Col>
-          </Row>
-        </Tab.Container>
-      </>
+          {getStatusIcon(transcript.status)}
+          {`  ${ transcript.transcriptTitle }`}
+        </Nav.Link>
+      </Nav.Item>
     );
-  }
-}
+  };
+
+  const getTranscriptTab = ({ id, transcript, mediaType, transcriptTitle, url }) => {
+    return (
+      <Tab.Pane key={ cuid() } eventKey={ id }>
+        <Transcript
+          projectId={ projectId }
+          transcriptId={ id }
+          labelsOptions={ labelsOptions }
+          title={ transcriptTitle }
+          transcript={ transcript }
+          mediaType={ mediaType }
+          url={ url }
+        />
+      </Tab.Pane>
+    );
+  };
+
+  const transcriptsElNav = transcripts.map(transcript => getTranscriptNav(transcript));
+  const transcriptsElTab = transcripts.map(transcript => getTranscriptTab(transcript));
+
+  return (
+    <>
+      <Tab.Container
+        defaultActiveKey={
+          transcripts[0] ? transcripts[0].id : 'first'
+        }
+      >
+        <Row>
+          <Col sm={ 3 }>
+            <h2
+              className={ [ 'text-truncate', 'text-muted' ].join(' ') }
+              title={ 'Transcripts' }
+            >
+              Transcripts
+            </h2>
+            <hr />
+            <Nav variant="pills" className="flex-column">
+              {transcriptsElNav}
+            </Nav>
+          </Col>
+          <Col sm={ 9 }>
+            <Tab.Content>
+              {transcriptsElTab}
+            </Tab.Content>
+          </Col>
+        </Row>
+      </Tab.Container>
+    </>
+  );
+};
+
+Transcripts.propTypes = {
+  labelsOptions: PropTypes.any,
+  projectId: PropTypes.any,
+  transcripts: PropTypes.any
+};
 
 export default Transcripts;

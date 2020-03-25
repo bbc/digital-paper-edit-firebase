@@ -3,68 +3,74 @@ import { withRouter } from 'react-router-dom';
 import { compose } from 'recompose';
 import { withFirebase } from '../Firebase';
 import * as ROUTES from '../../constants/routes';
+import Form from 'react-bootstrap/Form';
+import Col from 'react-bootstrap/Col';
+import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
+
 const SignInPage = () => (
-  <div>
-    <h1>SignIn</h1>
+  <Container style={ { marginBottom: '5em', marginTop: '1em' } }>
+    <h2>Sign In</h2>
     <SignInForm />
-  </div>
+  </Container>
 );
 
 const SignInFormBase = props => {
+
   const [ email, setEmail ] = useState('');
   const [ password, setPassword ] = useState('');
   const [ error, setError ] = useState();
 
-  // TODO: IF signed in, forward always to somewhere else
   const onSubmit = async event => {
+    // Prevent form from reloading
+    event.preventDefault();
+
     try {
       await props.firebase.doSignInWithEmailAndPassword(email, password);
-      setEmail('');
-      setPassword('');
-      setError(null);
       props.history.push(ROUTES.PROJECTS);
     } catch (err) {
       setError(err);
+      console.error(err);
     }
-    event.preventDefault();
   };
 
-  const onChange = event => {
-    console.log(event.target);
-    if (event.target.name === 'password') {
-      setPassword(event.target.value);
-    } else {
-      setEmail(event.target.value);
-    }
+  const onPasswordChange = event => {
+    setPassword(event.target.value);
+  };
+
+  const onEmailChange = event => {
+    setEmail(event.target.value);
   };
 
   const isInvalid = password === '' || email === '';
 
   return (
-    <form onSubmit={ onSubmit }>
-      <input
-        name="email"
-        value={ email }
-        onChange={ onChange }
-        type="text"
-        placeholder="Email Address"
-      />
-      <input
-        name="password"
-        value={ password }
-        onChange={ onChange }
-        type="password"
-        placeholder="Password"
-      />
-      <button disabled={ isInvalid } type="submit">
-        Sign In
-      </button>
-
+    <Form onSubmit={ onSubmit }>
+      <Form.Row>
+        <Col>
+          <Form.Group controlId="email" >
+            <Form.Label>Email address</Form.Label>
+            <Form.Control value={ email } onChange={ onEmailChange } type="email" placeholder="Enter email" />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId="password" >
+            <Form.Label>Password</Form.Label>
+            <Form.Control value={ password } onChange={ onPasswordChange } type="password" placeholder="Password" />
+          </Form.Group>
+        </Col>
+      </Form.Row>
+      <Button
+        disabled={ isInvalid }
+        variant="primary" type="submit">
+          Sign in
+      </Button>
       {error && <p>{error.message}</p>}
-    </form>
+    </Form>
   );
 };
 
+// HOC with router and firebase
 const SignInForm = compose(withRouter, withFirebase)(SignInFormBase);
 
 export default SignInPage;

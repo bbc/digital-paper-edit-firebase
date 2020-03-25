@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import Projects from './Components/Projects/index.js';
 import Workspace from './Components/Workspace';
@@ -16,15 +17,23 @@ const PageNotFound = () => {
   );
 };
 
-const Routes = () => {
+const Routes = ({ authUser }) => {
+
+  const landingRoute = () => {
+    if (!!authUser) {
+      return <Route exact path={ ROUTES.LANDING } component={ Projects } />;
+    } else {
+      return <Route exact path={ ROUTES.LANDING } component={ SignIn } />;
+    }
+  };
+
   return (
     <HashRouter basename="/">
       <Switch>
-        <Route exact path={ ROUTES.LANDING }></Route>
+        {landingRoute()}
         <Route exact path={ ROUTES.SIGN_IN } component={ SignIn } />
         <Route exact path={ ROUTES.PROJECTS } component={ Projects } />
         <Route exact path={ ROUTES.WORKSPACE } component={ Workspace } />
-
         <Route exact path={ ROUTES.PAPER_EDITOR } component={ PaperEditor } />
 
         <Route
@@ -37,6 +46,10 @@ const Routes = () => {
       </Switch>
     </HashRouter>
   );
+};
+
+Routes.propTypes = {
+  authUser: PropTypes.any
 };
 
 export default Routes;

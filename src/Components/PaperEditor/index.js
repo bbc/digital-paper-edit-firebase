@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
+import { withAuthorization } from '../Session';
 import Container from 'react-bootstrap/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
@@ -8,214 +9,241 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleUp, faAngleDown } from '@fortawesome/free-solid-svg-icons';
 import Breadcrumb from '@bbc/digital-paper-edit-react-components/Breadcrumb';
 
-import Transcripts from './Transcripts/index.js';
+import Transcripts from './Transcripts';
 import ProgrammeScript from './ProgrammeScript';
 import PropTypes from 'prop-types';
 import Collection from '../Firebase/Collection';
 
-class PaperEditor extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      projectId: this.props.match.params.projectId,
-      papereditId: this.props.match.params.papereditId,
-      projectTitle: '',
-      programmeTitle: '',
-      transcripts: null,
-      labelsOptions: [],
-      isTranscriptsShown: true,
-      isProgramScriptShown: true,
-      videoHeight: '10em'
+const PaperEditor = (props) => {
+  const projectId = props.match.params.projectId;
+  const papereditId = props.match.params.papereditId;
+  const videoHeight = props.videoHeight; //('10em');
+  const labelsOptions = props.labelsOptions; //[]
+
+  const [ projectTitle, setProjectTitle ] = useState('');
+  const [ paperEditTitle, setPaperEditTitle ] = useState('');
+
+  const [ transcripts, setTranscripts ] = useState(null);
+
+  const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
+  const [ isProgramScriptShown, setIsProgramScriptShown ] = useState(true);
+
+  const Projects = new Collection(props.firebase, 'projects');
+  const PaperEdits = new Collection(props.firebase,
+    `/projects/${ projectId }/paperedits`);
+  const Transcriptions = new Collection(props.firebase,
+    `/projects/${ projectId }/transcripts`);
+
+  useEffect(() => {
+    const getProject = async () => {
+      try {
+        const project = await Projects.getItem(projectId);
+        setProjectTitle(project.title);
+      } catch (e) {
+        console.error('Could not get Project Id: ', papereditId, e);
+      }
     };
-  }
+    const getPaperEdit = async () => {
+      try {
+        const paperEdit = await PaperEdits.getItem(papereditId);
+        setPaperEditTitle(paperEdit.title);
+      } catch (e) {
+        console.error('Could not get PaperEdit Id: ', papereditId, e);
+      }
+    };
+    const getTranscripts = async () => {
+      try {
+        Transcriptions.collectionRef.onSnapshot(snapshot => {
+          setTranscripts(snapshot.docs.map(doc => {
+            return { ...doc.data(), id: doc.id, display: true };
+          }));
+        });
+      } catch (error) {
+        console.error('Error getting documents: ', error);
+      }
+    };
 
-  componentDidMount = async () => {
-    // const api = this.context;
-    const api = Collection('paperedits');
-    const json = await api.getItem(this.state.papereditId); // this needs to change
+    getProject();
+    getPaperEdit();
+    getTranscripts();
 
-    this.setState({
-      programmeTitle: json.programmeScript.title,
-      projectTitle: json.project.title,
-      transcripts: json.transcripts,
-      labelsOptions: json.labels
-    });
-    // api
-    //   .getProgrammeScriptAndTranscripts(
-    //     this.state.projectId,
-    //     this.state.papereditId
-    //   )
-    //   .then(json => {
-    //     this.setState({
-    //       programmeTitle: json.programmeScript.title,
-    //       projectTitle: json.project.title,
-    //       transcripts: json.transcripts,
-    //       labelsOptions: json.labels
-    //     });
-    //   });
-  };
+    return () => {};
+  }, [ PaperEdits, Projects, Transcripts ]);
 
-  toggleTranscripts = () => {
-    if (this.state.isProgramScriptShown) {
-      this.setState(state => {
-        return {
-          isTranscriptsShown: !state.isTranscriptsShown
-        };
-      });
+  const toggleTranscripts = () => {
+    if (isProgramScriptShown) {
+      setIsTranscriptsShown(!isTranscriptsShown);
     }
   };
 
-  toggleProgramScript = () => {
-    if (this.state.isTranscriptsShown) {
-      this.setState(state => {
-        return {
-          isProgramScriptShown: !state.isProgramScriptShown
-        };
-      });
+  const toggleProgramScript = () => {
+    if (isTranscriptsShown) {
+      setIsProgramScriptShown(!isProgramScriptShown);
     }
   };
 
-  render() {
+  const toggleButton = (text, isShown, toggle) => {
+    let variant, icon, actionText;
+
+    if (isShown) {
+      variant = 'secondary';
+      icon = faAngleDown;
+      actionText = 'hide';
+    } else {
+      variant = 'outline-secondary';
+      icon = faAngleUp;
+      actionText = 'show';
+    }
+
+    const Icon = <FontAwesomeIcon icon={ icon }/>;
+
     return (
-      <Container style={ { marginBottom: '5em' } } fluid>
-        <br />
-        <Row>
-          <Col sm={ 12 }>
-            <Breadcrumb
-              items={ [
-                {
-                  name: 'Projects',
-                  link: '/projects'
-                },
-                {
-                  name: `Project: ${ this.state.projectTitle }`,
-                  link: `/projects/${ this.state.projectId }`
-                },
-                {
-                  name: 'PaperEdits'
-                },
-                {
-                  name: `${ this.state.programmeTitle }`
-                }
-              ] }
-            />
-          </Col>
-        </Row>
-
-        <Container fluid={ true }>
-          <div className="d-flex flex-column">
-            <ButtonGroup size="sm" className="mt-12">
-              <Button
-                onClick={ this.toggleTranscripts }
-                variant={
-                  this.state.isTranscriptsShown
-                    ? 'secondary'
-                    : 'outline-secondary'
-                }
-              >
-                Transcripts{' '}
-                <FontAwesomeIcon
-                  icon={ this.state.isTranscriptsShown ? faAngleDown : faAngleUp }
-                />{' '}
-                {this.state.isTranscriptsShown ? 'hide' : 'show'}
-              </Button>
-              <Button
-                onClick={ this.toggleProgramScript }
-                variant={
-                  this.state.isProgramScriptShown
-                    ? 'secondary'
-                    : 'outline-secondary'
-                }
-              >
-                Program Script{' '}
-                <FontAwesomeIcon
-                  icon={
-                    this.state.isProgramScriptShown ? faAngleDown : faAngleUp
-                  }
-                />{' '}
-                {this.state.isProgramScriptShown ? 'hide' : 'show'}
-              </Button>
-            </ButtonGroup>
-          </div>
-
-          <Row>
-            <Col
-              xs={ { span: 12, offset: 0 } }
-              sm={ {
-                span: this.state.isProgramScriptShown ? 7 : 12,
-                offset: this.state.isProgramScriptShown ? 0 : 0
-              } }
-              md={ {
-                span: this.state.isProgramScriptShown ? 7 : 12,
-                offset: this.state.isProgramScriptShown ? 0 : 0
-              } }
-              lg={ {
-                span: this.state.isProgramScriptShown ? 7 : 10,
-                offset: this.state.isProgramScriptShown ? 0 : 1
-              } }
-              xl={ {
-                span: this.state.isProgramScriptShown ? 7 : 10,
-                offset: this.state.isProgramScriptShown ? 0 : 1
-              } }
-              style={ {
-                display: this.state.isTranscriptsShown ? 'block' : 'none'
-              } }
-            >
-              {this.state.transcripts ? (
-                <Transcripts
-                  projectId={ this.state.projectId }
-                  transcripts={ this.state.transcripts }
-                  labelsOptions={ this.state.labelsOptions }
-                />
-              ) : (
-                <>
-                  <br />
-                  <br />
-                  <i>No Transcripts, create a transcript to get started</i>
-                </>
-              )}
-            </Col>
-            <Col
-              xs={ { span: 12, offset: 0 } }
-              sm={ {
-                span: this.state.isTranscriptsShown ? 5 : 12,
-                offset: this.state.isTranscriptsShown ? 0 : 0
-              } }
-              md={ {
-                span: this.state.isTranscriptsShown ? 5 : 12,
-                offset: this.state.isTranscriptsShown ? 0 : 0
-              } }
-              lg={ {
-                span: this.state.isTranscriptsShown ? 5 : 10,
-                offset: this.state.isTranscriptsShown ? 0 : 1
-              } }
-              xl={ {
-                span: this.state.isTranscriptsShown ? 5 : 8,
-                offset: this.state.isTranscriptsShown ? 0 : 2
-              } }
-              style={ {
-                display: this.state.isProgramScriptShown ? 'block' : 'none'
-              } }
-            >
-              {this.state.transcripts ? (
-                <ProgrammeScript
-                  projectId={ this.state.projectId }
-                  papereditId={ this.state.papereditId }
-                  transcripts={ this.state.transcripts }
-                  videoHeight={ this.props.videoHeight }
-                />
-              ) : null}
-            </Col>
-          </Row>
-        </Container>
-      </Container>
+      <Button
+        onClick={ toggle() }
+        variant={ variant }>
+        {text} {Icon} {actionText}
+      </Button>
     );
+  };
+
+  const breadcrumb = (
+    <Breadcrumb
+      items={ [
+        {
+          name: 'Projects',
+          link: '/projects'
+        },
+        {
+          name: `Project: ${ projectTitle }`,
+          link: `/projects/${ projectId }`
+        },
+        {
+          name: 'PaperEdits'
+        },
+        {
+          name: `${ paperEditTitle }`
+        }
+      ] }
+    />
+  );
+
+  let TranscriptEl = <>
+    <br />
+    <br />
+    <i>No Transcripts, create a transcript to get started</i>
+  </>;
+
+  if (transcripts) {
+    TranscriptEl = <Transcripts
+      projectId={ projectId }
+      transcripts={ transcripts }
+      labelsOptions={ labelsOptions }
+    />;
   }
-}
+
+  let ProgrammeScriptEl = null;
+  if (transcripts) {
+    ProgrammeScriptEl = <ProgrammeScript
+      projectId={ projectId }
+      papereditId={ papereditId }
+      transcripts={ transcripts }
+      videoHeight={ videoHeight }
+    />;
+  }
+
+  const transcriptsColumn = (el) => {
+    const display = isTranscriptsShown ? 'block' : 'none';
+    if (isProgramScriptShown) {
+      return (
+        <Col
+          xs={ { span: 12, offset: 0 } }
+          sm={ { span:  7, offset: 0 } }
+          md={ { span: 7, offset: 0 } }
+          lg={ { span: 7, offset: 0 } }
+          xl={ { span: 7, offset: 0 } }
+          style={ { display: { display } } }
+        >
+          {el}
+        </Col>
+      );
+    } else {
+      return (
+        <Col
+          xs={ { span: 12, offset: 0 } }
+          sm={ { span:  12, offset: 0 } }
+          md={ { span: 12, offset: 0 } }
+          lg={ { span: 10, offset: 1 } }
+          xl={ { span: 10, offset: 1 } }
+          style={ { display: { display } } }
+        >
+          {el}
+        </Col>
+      );
+    }
+  };
+
+  const programmeScriptColumn = (el) => {
+    const display = isTranscriptsShown ? 'block' : 'none';
+    if (isProgramScriptShown) {
+      return (
+        <Col
+          xs={ { span: 12, offset: 0 } }
+          sm={ { span:  5, offset: 0 } }
+          md={ { span: 5, offset: 0 } }
+          lg={ { span: 5, offset: 0 } }
+          xl={ { span: 5, offset: 0 } }
+          style={ { display: { display } } }
+        >
+          {el}
+        </Col>
+      );
+    } else {
+      return (
+        <Col
+          xs={ { span: 12, offset: 0 } }
+          sm={ { span:  12, offset: 0 } }
+          md={ { span: 12, offset: 0 } }
+          lg={ { span: 10, offset: 1 } }
+          xl={ { span: 8, offset: 2 } }
+          style={ { display: { display } } }
+        >
+          {el}
+        </Col>
+      );
+    }
+  };
+
+  return (
+    <Container style={ { marginBottom: '5em' } } fluid>
+      <br />
+      <Row>
+        <Col sm={ 12 }>
+          {breadcrumb}
+        </Col>
+      </Row>
+
+      <Container fluid={ true }>
+        <div className="d-flex flex-column">
+          <ButtonGroup size="sm" className="mt-12">
+            {toggleButton('Transcripts', isTranscriptsShown, toggleTranscripts)}
+            {toggleButton('Program Script', isProgramScriptShown, toggleProgramScript)}
+          </ButtonGroup>
+        </div>
+
+        <Row>
+          {/* {transcriptsColumn(TranscriptEl)} */}
+          {/* {programmeScriptColumn(ProgrammeScriptEl)} */}
+        </Row>
+      </Container>
+    </Container>
+  );
+};
 
 PaperEditor.propTypes = {
   match: PropTypes.any,
-  videoHeight: PropTypes.any
+  videoHeight: PropTypes.any,
+  labelsOptions: PropTypes.any
 };
 
-export default PaperEditor;
+const condition = authUser => !!authUser;
+export default withAuthorization(condition)(PaperEditor);

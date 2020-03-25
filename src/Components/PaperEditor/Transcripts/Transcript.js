@@ -1,22 +1,19 @@
 /* eslint-disable no-undef */
-import React, { Component } from "react";
-import Card from "react-bootstrap/Card";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import Dropdown from "react-bootstrap/Dropdown";
-import Button from "react-bootstrap/Button";
-import ButtonGroup from "react-bootstrap/ButtonGroup";
-import DropdownButton from "react-bootstrap/DropdownButton";
-// import Card from 'react-bootstrap/Card';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHighlighter, faCog } from "@fortawesome/free-solid-svg-icons";
-import SearchBar from "./SearchBar/index.js";
-import Paragraphs from "./Paragraphs/index.js";
-import LabelsList from "./LabelsList/index.js";
-import onlyCallOnce from "../../../Util/only-call-once/index.js";
-import getTimeFromUserWordsSelection from "./get-user-selection.js";
-
-// import Paragraph from './Paragraph.js';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import Card from 'react-bootstrap/Card';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Dropdown from 'react-bootstrap/Dropdown';
+import Button from 'react-bootstrap/Button';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import Paragraphs from './Paragraphs/index.js';
+import LabelsList from './LabelsList/index.js';
+import onlyCallOnce from '../../../Util/only-call-once/index.js';
+import getTimeFromUserWordsSelection from './get-user-selection.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import SearchBar from '@bbc/digital-paper-edit-react-components/SearchBar';
 
 /**
  * Makes list of unique speakers
@@ -150,7 +147,7 @@ class Transcript extends Component {
     });
   };
 
-  handleSearch = (e, searchPreferences) => {
+  handleSearch = (e) => {
     // TODO: debounce to optimise
     if (e.target.value !== "") {
       const searchString = e.target.value;
@@ -258,7 +255,7 @@ class Transcript extends Component {
         this.props.transcriptId,
         annotationId
       )
-      .then(json => {
+      .then(() => {
         this.setState({
           annotations: deepCloneOfNestedObjectNewAnnotationsSet
         });
@@ -538,5 +535,15 @@ class Transcript extends Component {
     );
   }
 }
+
+Transcript.propTypes = {
+  labelsOptions: PropTypes.any,
+  mediaType: PropTypes.any,
+  projectId: PropTypes.any,
+  title: PropTypes.any,
+  transcript: PropTypes.any,
+  transcriptId: PropTypes.any,
+  url: PropTypes.any
+};
 
 export default Transcript;
