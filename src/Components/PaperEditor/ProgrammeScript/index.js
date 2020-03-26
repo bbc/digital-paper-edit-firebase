@@ -81,516 +81,515 @@ const ProgrammeScript = props => {
 
   const PaperEditsCollection = new Collection(
     props.firebase,
-    `/projects/${ projectId }/paperEdits/`
+    `/projects/${ projectId }/paperedits`
   );
 
   useEffect(() => {
     const getPaperEdit = async () => {
       try {
-        await PaperEditsCollection.getItem(papereditsId)
-          .then(doc => {
-            if (!doc.exists) {
-              console.log('No such document!');
-            } else {
-              console.log('Doc data: ', doc.data());
-              const paperEditProgrammeScript = doc.programmeScript;
-              paperEditProgrammeScript.elements.push({
-                type: 'insert',
-                text: 'Insert point to add selection'
-              });
-              updateProgrammeScript(paperEditProgrammeScript);
-              toggleResetPreview(true);
-            };
-          });
+        const data = await PaperEditsCollection.getItem(papereditsId);
+        const paperEditProgrammeScript = data.elements;
+        paperEditProgrammeScript.push({
+          type: 'insert',
+          text: 'Insert point to add selection'
+        });
+        updateProgrammeScript(paperEditProgrammeScript);
+        toggleResetPreview(true);
       } catch (error) {
         console.error('Error getting paper edits: ', error);
-      }
-    };
+      };};
 
-    // }
+    if (!programmeScript) {
+      getPaperEdit();
+    }
 
-    // componentDidMount = () => {
-    //   const api = this.context;
-    //   api
-    //     .getPaperEdit(this.props.projectId, this.props.papereditId)
-    //     .then(json => {
-    //       const programmeScript = json.programmeScript;
-    //       // Adding an insert point at the end of the list
-    //       programmeScript.elements.push({
-    //         type: 'insert',
-    //         text: 'Insert Point to add selection'
-    //       });
-    //       this.setState({
-    //         programmeScript: programmeScript,
-    //         resetPreview: true
-    //       });
-    //     });
-    //   this.updateVideoContextWidth();
-    //   window.addEventListener('resize', this.updateVideoContextWidth);
-    // };
+    return () => { };
+  },
 
-    // componentWillUnmount() {
-    //   window.removeEventListener('resize', this.updateVideoContextWidth);
-    // }
+  [ PaperEditsCollection, papereditsId, programmeScript ] );
 
-    // componentDidUpdate() {
-    //   if (this.state.resetPreview) {
-    //     this.handleUpdatePreview();
-    //   }
-    // }
+  // componentDidMount = () => {
+  //   const api = this.context;
+  //   api
+  //     .getPaperEdit(this.props.projectId, this.props.papereditId)
+  //     .then(json => {
+  //       const programmeScript = json.programmeScript;
+  //       // Adding an insert point at the end of the list
+  //       programmeScript.elements.push({
+  //         type: 'insert',
+  //         text: 'Insert Point to add selection'
+  //       });
+  //       this.setState({
+  //         programmeScript: programmeScript,
+  //         resetPreview: true
+  //       });
+  //     });
+  //   this.updateVideoContextWidth();
+  //   window.addEventListener('resize', this.updateVideoContextWidth);
+  // };
 
-    // // TODO: save to server
-    // handleReorder = list => {
-    //   this.setState(({ programmeScript }) => {
-    //     programmeScript.elements = list;
+  // componentWillUnmount() {
+  //   window.removeEventListener('resize', this.updateVideoContextWidth);
+  // }
 
-    //     return {
-    //       programmeScript: programmeScript,
-    //       resetPreview: true
-    //     };
-    //   });
-    // };
+  // componentDidUpdate() {
+  //   if (this.state.resetPreview) {
+  //     this.handleUpdatePreview();
+  //   }
+  // }
 
-    // // TODO: save to server
-    // handleDelete = i => {
-    //   // TODO: add a prompt, like are you shure you want to delete, confirm etc..?
-    //   // alert('handle delete');
-    //   this.setState(({ programmeScript }) => {
-    //     const index = i;
-    //     const list = programmeScript.elements;
-    //     list.splice(index, 1);
-    //     programmeScript.elements = list;
+  // // TODO: save to server
+  // handleReorder = list => {
+  //   this.setState(({ programmeScript }) => {
+  //     programmeScript.elements = list;
 
-    //     return {
-    //       programmeScript: programmeScript,
-    //       resetPreview: true
-    //     };
-    //   });
-    // };
+  //     return {
+  //       programmeScript: programmeScript,
+  //       resetPreview: true
+  //     };
+  //   });
+  // };
 
-    // handleEdit = i => {
-    //   const { programmeScript } = this.state;
-    //   const elements = programmeScript.elements;
-    //   const currentElement = elements[i];
-    //   const newText = prompt('Edit', currentElement.text);
-    //   if (newText) {
-    //     currentElement.text = newText;
-    //     elements[i] = currentElement;
-    //     programmeScript.elements = elements;
-    //     // TODO: save to server
-    //     this.setState({
-    //       programmeScript: programmeScript,
-    //       resetPreview: true
-    //     });
-    //     // TODO: consider using set state function to avoid race condition? if needed?
-    //     // this.setState(({ programmeScript }) => {
-    //     //   return {
-    //     //     programmeScript: programmeScript
-    //     //   };
-    //     // });
-    //   }
-    // };
+  // // TODO: save to server
+  // handleDelete = i => {
+  //   // TODO: add a prompt, like are you shure you want to delete, confirm etc..?
+  //   // alert('handle delete');
+  //   this.setState(({ programmeScript }) => {
+  //     const index = i;
+  //     const list = programmeScript.elements;
+  //     list.splice(index, 1);
+  //     programmeScript.elements = list;
 
-    // handleAddTranscriptElementToProgrammeScript = elementType => {
-    //   const { programmeScript } = this.state;
-    //   const elements = this.state.programmeScript.elements;
-    //   // TODO: refactor - with helper functions
-    //   if (
-    //     elementType === 'title' ||
-    //     elementType === 'note' ||
-    //     elementType === 'voice-over'
-    //   ) {
-    //     const text = prompt(
-    //       'Add some text for a section title',
-    //       'Some place holder text'
-    //     );
+  //     return {
+  //       programmeScript: programmeScript,
+  //       resetPreview: true
+  //     };
+  //   });
+  // };
 
-    //     const indexOfInsertPoint = this.getIndexPositionOfInsertPoint();
-    //     const newElement = {
-    //       id: cuid(),
-    //       index: elements.length,
-    //       type: elementType,
-    //       text: text
-    //     };
-    //     elements.splice(indexOfInsertPoint, 0, newElement);
-    //     programmeScript.elements = elements;
-    //     // TODO: save to server
-    //     this.setState({
-    //       programmeScript: programmeScript,
-    //       resetPreview: true
-    //     });
-    //   }
-    // };
+  // handleEdit = i => {
+  //   const { programmeScript } = this.state;
+  //   const elements = programmeScript.elements;
+  //   const currentElement = elements[i];
+  //   const newText = prompt('Edit', currentElement.text);
+  //   if (newText) {
+  //     currentElement.text = newText;
+  //     elements[i] = currentElement;
+  //     programmeScript.elements = elements;
+  //     // TODO: save to server
+  //     this.setState({
+  //       programmeScript: programmeScript,
+  //       resetPreview: true
+  //     });
+  //     // TODO: consider using set state function to avoid race condition? if needed?
+  //     // this.setState(({ programmeScript }) => {
+  //     //   return {
+  //     //     programmeScript: programmeScript
+  //     //   };
+  //     // });
+  //   }
+  // };
 
-    // getIndexPositionOfInsertPoint = () => {
-    //   const { programmeScript } = this.state;
-    //   const elements = programmeScript.elements;
-    //   // find insert point in list,
-    //   const insertPointElement = elements.find(el => {
-    //     return el.type === 'insert';
-    //   });
-    //   // get insertpoint index
-    //   const indexOfInsertPoint = elements.indexOf(insertPointElement);
+  // handleAddTranscriptElementToProgrammeScript = elementType => {
+  //   const { programmeScript } = this.state;
+  //   const elements = this.state.programmeScript.elements;
+  //   // TODO: refactor - with helper functions
+  //   if (
+  //     elementType === 'title' ||
+  //     elementType === 'note' ||
+  //     elementType === 'voice-over'
+  //   ) {
+  //     const text = prompt(
+  //       'Add some text for a section title',
+  //       'Some place holder text'
+  //     );
 
-    //   return indexOfInsertPoint;
-    // };
+  //     const indexOfInsertPoint = this.getIndexPositionOfInsertPoint();
+  //     const newElement = {
+  //       id: cuid(),
+  //       index: elements.length,
+  //       type: elementType,
+  //       text: text
+  //     };
+  //     elements.splice(indexOfInsertPoint, 0, newElement);
+  //     programmeScript.elements = elements;
+  //     // TODO: save to server
+  //     this.setState({
+  //       programmeScript: programmeScript,
+  //       resetPreview: true
+  //     });
+  //   }
+  // };
 
-    // // TODO: save to server
-    // // TODO: needs to handle when selection spans across multiple paragraphs
-    // handleAddTranscriptSelectionToProgrammeScript = () => {
-    //   const result = getDataFromUserWordsSelection();
-    //   if (result) {
-    //     // result.words
-    //     // TODO: if there's just one speaker in selection do following
-    //     // if it's multiple split list of words into multiple groups
-    //     // and add a papercut for each to the programme script
-    //     const { programmeScript } = this.state;
-    //     const elements = programmeScript.elements;
-    //     // TODO: insert at insert point
+  // getIndexPositionOfInsertPoint = () => {
+  //   const { programmeScript } = this.state;
+  //   const elements = programmeScript.elements;
+  //   // find insert point in list,
+  //   const insertPointElement = elements.find(el => {
+  //     return el.type === 'insert';
+  //   });
+  //   // get insertpoint index
+  //   const indexOfInsertPoint = elements.indexOf(insertPointElement);
 
-    //     const indexOfInsertPoint = this.getIndexPositionOfInsertPoint();
-    //     let newElement;
-    //     if (isOneParagraph(result.words)) {
-    //       // create new element
-    //       // TODO: Create new element could be refactored into helper function
-    //       newElement = {
-    //         id: cuid(),
-    //         index: elements.length,
-    //         type: 'paper-cut',
-    //         start: result.start,
-    //         end: result.end,
-    //         speaker: result.speaker,
-    //         words: result.words,
-    //         transcriptId: result.transcriptId,
-    //         labelId: []
-    //       };
-    //     } else {
-    //       const paragraphs = divideWordsSelectionsIntoParagraphs(result.words);
-    //       paragraphs.reverse().forEach(paragraph => {
-    //         newElement = {
-    //           id: cuid(),
-    //           index: elements.length,
-    //           type: 'paper-cut',
-    //           start: paragraph[0].start,
-    //           end: paragraph[paragraph.length - 1].end,
-    //           speaker: paragraph[0].speaker,
-    //           words: paragraph,
-    //           transcriptId: paragraph[0].transcriptId,
-    //           // TODO: ignoring labels for now
-    //           labelId: []
-    //         };
-    //       });
-    //     }
-    //     // add element just above of insert point
-    //     elements.splice(indexOfInsertPoint, 0, newElement);
-    //     programmeScript.elements = elements;
-    //     // TODO: save to server
-    //     this.setState({
-    //       programmeScript: programmeScript,
-    //       resetPreview: true
-    //     });
-    //   } else {
-    //     alert(
-    //       'Select some text in the transcript to add to the programme script'
-    //     );
-    //     console.log('nothing selected');
-    //   }
-    // };
+  //   return indexOfInsertPoint;
+  // };
 
-    // /**
-    //  * Helper function to create json EDL for other EDL/ADL/FPCX export
-    //  */
-    // getSequenceJsonEDL = () => {
-    //   const edlSq = {
-    //     title: this.state.programmeScript.title,
-    //     events: []
-    //   };
+  // // TODO: save to server
+  // // TODO: needs to handle when selection spans across multiple paragraphs
+  // handleAddTranscriptSelectionToProgrammeScript = () => {
+  //   const result = getDataFromUserWordsSelection();
+  //   if (result) {
+  //     // result.words
+  //     // TODO: if there's just one speaker in selection do following
+  //     // if it's multiple split list of words into multiple groups
+  //     // and add a papercut for each to the programme script
+  //     const { programmeScript } = this.state;
+  //     const elements = programmeScript.elements;
+  //     // TODO: insert at insert point
 
-    //   const programmeScriptPaperCuts = this.state.programmeScript.elements
-    //     .map(element => {
-    //       if (element.type === 'paper-cut') {
-    //         // Get clipName for current transcript
-    //         const currentTranscript = this.props.transcripts.find(tr => {
-    //           return tr.id === element.transcriptId;
-    //         });
+  //     const indexOfInsertPoint = this.getIndexPositionOfInsertPoint();
+  //     let newElement;
+  //     if (isOneParagraph(result.words)) {
+  //       // create new element
+  //       // TODO: Create new element could be refactored into helper function
+  //       newElement = {
+  //         id: cuid(),
+  //         index: elements.length,
+  //         type: 'paper-cut',
+  //         start: result.start,
+  //         end: result.end,
+  //         speaker: result.speaker,
+  //         words: result.words,
+  //         transcriptId: result.transcriptId,
+  //         labelId: []
+  //       };
+  //     } else {
+  //       const paragraphs = divideWordsSelectionsIntoParagraphs(result.words);
+  //       paragraphs.reverse().forEach(paragraph => {
+  //         newElement = {
+  //           id: cuid(),
+  //           index: elements.length,
+  //           type: 'paper-cut',
+  //           start: paragraph[0].start,
+  //           end: paragraph[paragraph.length - 1].end,
+  //           speaker: paragraph[0].speaker,
+  //           words: paragraph,
+  //           transcriptId: paragraph[0].transcriptId,
+  //           // TODO: ignoring labels for now
+  //           labelId: []
+  //         };
+  //       });
+  //     }
+  //     // add element just above of insert point
+  //     elements.splice(indexOfInsertPoint, 0, newElement);
+  //     programmeScript.elements = elements;
+  //     // TODO: save to server
+  //     this.setState({
+  //       programmeScript: programmeScript,
+  //       resetPreview: true
+  //     });
+  //   } else {
+  //     alert(
+  //       'Select some text in the transcript to add to the programme script'
+  //     );
+  //     console.log('nothing selected');
+  //   }
+  // };
 
-    //         const result = {
-    //           startTime: element.start,
-    //           endTime: element.end,
-    //           reelName: currentTranscript.metadata
-    //             ? currentTranscript.metadata.reelName
-    //             : defaultReelName,
-    //           clipName: `${ currentTranscript.clipName }`,
-    //           // TODO: frameRate should be pulled from the clips in the sequence
-    //           // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
-    //           // but again frameRate should not be hard coded
-    //           fps: currentTranscript.metadata
-    //             ? currentTranscript.metadata.fps
-    //             : defaultFps,
-    //           // TODO: if there is an offset this should added here, for now hard coding 0
-    //           offset: currentTranscript.metadata
-    //             ? currentTranscript.metadata.timecode
-    //             : defaultTimecodeOffset,
-    //           sampleRate: currentTranscript.metadata
-    //             ? currentTranscript.metadata.sampleRate
-    //             : defaultSampleRate
-    //         };
+  // /**
+  //  * Helper function to create json EDL for other EDL/ADL/FPCX export
+  //  */
+  // getSequenceJsonEDL = () => {
+  //   const edlSq = {
+  //     title: this.state.programmeScript.title,
+  //     events: []
+  //   };
 
-    //         return result;
-    //       }
+  //   const programmeScriptPaperCuts = this.state.programmeScript.elements
+  //     .map(element => {
+  //       if (element.type === 'paper-cut') {
+  //         // Get clipName for current transcript
+  //         const currentTranscript = this.props.transcripts.find(tr => {
+  //           return tr.id === element.transcriptId;
+  //         });
 
-    //       return null;
-    //     })
-    //     .filter(el => {
-    //       return el !== null;
-    //     });
-    //   // adding ids to EDL
-    //   const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
-    //     (el, index) => {
-    //       el.id = index + 1;
+  //         const result = {
+  //           startTime: element.start,
+  //           endTime: element.end,
+  //           reelName: currentTranscript.metadata
+  //             ? currentTranscript.metadata.reelName
+  //             : defaultReelName,
+  //           clipName: `${ currentTranscript.clipName }`,
+  //           // TODO: frameRate should be pulled from the clips in the sequence
+  //           // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
+  //           // but again frameRate should not be hard coded
+  //           fps: currentTranscript.metadata
+  //             ? currentTranscript.metadata.fps
+  //             : defaultFps,
+  //           // TODO: if there is an offset this should added here, for now hard coding 0
+  //           offset: currentTranscript.metadata
+  //             ? currentTranscript.metadata.timecode
+  //             : defaultTimecodeOffset,
+  //           sampleRate: currentTranscript.metadata
+  //             ? currentTranscript.metadata.sampleRate
+  //             : defaultSampleRate
+  //         };
 
-    //       return el;
-    //     }
-    //   );
-    //   edlSq.events.push(...programmeScriptPaperCutsWithId);
+  //         return result;
+  //       }
 
-    //   return edlSq;
-    // };
+  //       return null;
+  //     })
+  //     .filter(el => {
+  //       return el !== null;
+  //     });
+  //   // adding ids to EDL
+  //   const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
+  //     (el, index) => {
+  //       el.id = index + 1;
 
-    // // https://www.npmjs.com/package/downloadjs
-    // // https://www.npmjs.com/package/edl_composer
-    // handleExportEDL = () => {
-    //   const edlSq = this.getSequenceJsonEDL();
-    //   const edl = new EDL(edlSq);
-    //   console.log(edl.compose());
-    //   downloadjs(
-    //     edl.compose(),
-    //     `${ this.state.programmeScript.title }.edl`,
-    //     'text/plain'
-    //   );
-    // };
+  //       return el;
+  //     }
+  //   );
+  //   edlSq.events.push(...programmeScriptPaperCutsWithId);
 
-    // handleExportADL = () => {
-    //   // alert('this function has not been implemented yet');
-    //   const edlSq = this.getSequenceJsonEDL();
-    //   const firstElement = edlSq.events[0];
-    //   // const result = generateADL(edlSq);
-    //   const result = generateADL({
-    //     projectOriginator: 'Digital Paper Edit',
-    //     // TODO: it be good to change sequence for the ADL to be same schema
-    //     // as the one for EDL and FCPX - for now just adjusting
-    //     edits: edlSq.events.map(event => {
-    //       return {
-    //         start: event.startTime,
-    //         end: event.endTime,
-    //         clipName: event.clipName,
-    //         // TODO: could add a label if present
-    //         label: ''
-    //       };
-    //     }),
-    //     sampleRate: firstElement.sampleRate,
-    //     frameRate: firstElement.fps,
-    //     projectName: edlSq.title
-    //   });
-    //   downloadjs(result, `${ this.state.programmeScript.title }.adl`, 'text/plain');
-    // };
+  //   return edlSq;
+  // };
 
-    // handleExportFCPX = () => {
-    //   // alert('this function has not been implemented yet');
-    //   const edlSq = this.getSequenceJsonEDL();
-    //   console.log(edlSq);
-    //   const result = jsonToFCPX(edlSq);
-    //   downloadjs(
-    //     result,
-    //     `${ this.state.programmeScript.title }.fcpxml`,
-    //     'text/plain'
-    //   );
-    // };
+  // // https://www.npmjs.com/package/downloadjs
+  // // https://www.npmjs.com/package/edl_composer
+  // handleExportEDL = () => {
+  //   const edlSq = this.getSequenceJsonEDL();
+  //   const edl = new EDL(edlSq);
+  //   console.log(edl.compose());
+  //   downloadjs(
+  //     edl.compose(),
+  //     `${ this.state.programmeScript.title }.edl`,
+  //     'text/plain'
+  //   );
+  // };
 
-    // getProgrammeScriptJson = () => {
-    //   // alert('this function has not been implemented yet');
-    //   const edlSq = {
-    //     title: this.state.programmeScript.title,
-    //     events: []
-    //   };
+  // handleExportADL = () => {
+  //   // alert('this function has not been implemented yet');
+  //   const edlSq = this.getSequenceJsonEDL();
+  //   const firstElement = edlSq.events[0];
+  //   // const result = generateADL(edlSq);
+  //   const result = generateADL({
+  //     projectOriginator: 'Digital Paper Edit',
+  //     // TODO: it be good to change sequence for the ADL to be same schema
+  //     // as the one for EDL and FCPX - for now just adjusting
+  //     edits: edlSq.events.map(event => {
+  //       return {
+  //         start: event.startTime,
+  //         end: event.endTime,
+  //         clipName: event.clipName,
+  //         // TODO: could add a label if present
+  //         label: ''
+  //       };
+  //     }),
+  //     sampleRate: firstElement.sampleRate,
+  //     frameRate: firstElement.fps,
+  //     projectName: edlSq.title
+  //   });
+  //   downloadjs(result, `${ this.state.programmeScript.title }.adl`, 'text/plain');
+  // };
 
-    //   const programmeScriptPaperCuts = this.state.programmeScript.elements
-    //     .map(element => {
-    //       if (element.type === 'paper-cut') {
-    //         console.log('paper-cut::', element);
-    //         // Get clipName for current transcript
-    //         const currentTranscript = this.props.transcripts.find(tr => {
-    //           return tr.id === element.transcriptId;
-    //         });
+  // handleExportFCPX = () => {
+  //   // alert('this function has not been implemented yet');
+  //   const edlSq = this.getSequenceJsonEDL();
+  //   console.log(edlSq);
+  //   const result = jsonToFCPX(edlSq);
+  //   downloadjs(
+  //     result,
+  //     `${ this.state.programmeScript.title }.fcpxml`,
+  //     'text/plain'
+  //   );
+  // };
 
-    //         const result = {
-    //           ...element,
-    //           startTime: element.start,
-    //           endTime: element.end,
-    //           reelName: currentTranscript.metadata
-    //             ? currentTranscript.metadata.reelName
-    //             : defaultReelName,
-    //           clipName: `${ currentTranscript.clipName }`,
-    //           // TODO: frameRate should be pulled from the clips in the sequence
-    //           // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
-    //           // but again frameRate should not be hard coded
-    //           fps: currentTranscript.metadata
-    //             ? currentTranscript.metadata.fps
-    //             : defaultFps,
-    //           sampleRate: currentTranscript.metadata
-    //             ? currentTranscript.metadata.sampleRate
-    //             : defaultSampleRate,
-    //           offset: currentTranscript.metadata
-    //             ? currentTranscript.metadata.timecode
-    //             : defaultTimecodeOffset
-    //         };
+  // getProgrammeScriptJson = () => {
+  //   // alert('this function has not been implemented yet');
+  //   const edlSq = {
+  //     title: this.state.programmeScript.title,
+  //     events: []
+  //   };
 
-    //         return result;
-    //       } else {
-    //         return element;
-    //       }
-    //     })
-    //     .filter(el => {
-    //       return el !== null;
-    //     });
-    //   // adding ids to EDL
-    //   const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
-    //     (el, index) => {
-    //       el.id = index + 1;
+  //   const programmeScriptPaperCuts = this.state.programmeScript.elements
+  //     .map(element => {
+  //       if (element.type === 'paper-cut') {
+  //         console.log('paper-cut::', element);
+  //         // Get clipName for current transcript
+  //         const currentTranscript = this.props.transcripts.find(tr => {
+  //           return tr.id === element.transcriptId;
+  //         });
 
-    //       return el;
-    //     }
-    //   );
-    //   edlSq.events.push(...programmeScriptPaperCutsWithId);
-    //   console.log(edlSq);
+  //         const result = {
+  //           ...element,
+  //           startTime: element.start,
+  //           endTime: element.end,
+  //           reelName: currentTranscript.metadata
+  //             ? currentTranscript.metadata.reelName
+  //             : defaultReelName,
+  //           clipName: `${ currentTranscript.clipName }`,
+  //           // TODO: frameRate should be pulled from the clips in the sequence
+  //           // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
+  //           // but again frameRate should not be hard coded
+  //           fps: currentTranscript.metadata
+  //             ? currentTranscript.metadata.fps
+  //             : defaultFps,
+  //           sampleRate: currentTranscript.metadata
+  //             ? currentTranscript.metadata.sampleRate
+  //             : defaultSampleRate,
+  //           offset: currentTranscript.metadata
+  //             ? currentTranscript.metadata.timecode
+  //             : defaultTimecodeOffset
+  //         };
 
-    //   return edlSq;
-    // };
+  //         return result;
+  //       } else {
+  //         return element;
+  //       }
+  //     })
+  //     .filter(el => {
+  //       return el !== null;
+  //     });
+  //   // adding ids to EDL
+  //   const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
+  //     (el, index) => {
+  //       el.id = index + 1;
 
-    // programmeScriptJsonToText = edlsqJson => {
-    //   const title = `# ${ edlsqJson.title }\n\n`;
-    //   const body = edlsqJson.events.map(event => {
-    //     if (event.type === 'title') {
-    //       return `## ${ event.text }`;
-    //     } else if (event.type === 'voice-over') {
-    //       return `_${ event.text }_`;
-    //     } else if (event.type === 'note') {
-    //       return `[ ${ event.text }]`;
-    //     } else if (event.type === 'paper-cut') {
-    //       return `${ timecodes.fromSeconds(
-    //         event.startTime
-    //       ) }\t${ timecodes.fromSeconds(event.endTime) }\t${ event.speaker }\t-\t${
-    //         event.clipName
-    //       }     \n${ event.words
-    //         .map(word => {
-    //           return word.text;
-    //         })
-    //         .join(' ') }`;
-    //     }
+  //       return el;
+  //     }
+  //   );
+  //   edlSq.events.push(...programmeScriptPaperCutsWithId);
+  //   console.log(edlSq);
 
-    //     return null;
-    //   });
+  //   return edlSq;
+  // };
 
-    //   return `${ title }${ body.join('\n\n') }`;
-    // };
+  // programmeScriptJsonToText = edlsqJson => {
+  //   const title = `# ${ edlsqJson.title }\n\n`;
+  //   const body = edlsqJson.events.map(event => {
+  //     if (event.type === 'title') {
+  //       return `## ${ event.text }`;
+  //     } else if (event.type === 'voice-over') {
+  //       return `_${ event.text }_`;
+  //     } else if (event.type === 'note') {
+  //       return `[ ${ event.text }]`;
+  //     } else if (event.type === 'paper-cut') {
+  //       return `${ timecodes.fromSeconds(
+  //         event.startTime
+  //       ) }\t${ timecodes.fromSeconds(event.endTime) }\t${ event.speaker }\t-\t${
+  //         event.clipName
+  //       }     \n${ event.words
+  //         .map(word => {
+  //           return word.text;
+  //         })
+  //         .join(' ') }`;
+  //     }
 
-    // handleExportJson = () => {
-    //   const programmeScriptJson = this.getProgrammeScriptJson();
-    //   const programmeScriptText = JSON.stringify(programmeScriptJson, null, 2);
-    //   downloadjs(
-    //     programmeScriptText,
-    //     `${ this.state.programmeScript.title }.json`,
-    //     'text/plain'
-    //   );
-    // };
+  //     return null;
+  //   });
 
-    // handleExportTxt = () => {
-    //   const programmeScriptJson = this.getProgrammeScriptJson();
-    //   const programmeScriptText = this.programmeScriptJsonToText(
-    //     programmeScriptJson
-    //   );
-    //   downloadjs(
-    //     programmeScriptText,
-    //     `${ this.state.programmeScript.title }.txt`,
-    //     'text/plain'
-    //   );
-    // };
+  //   return `${ title }${ body.join('\n\n') }`;
+  // };
 
-    // handleUpdatePreview = () => {
-    //   const playlist = this.getPlayList();
-    //   // Workaround to mound and unmount the `PreviewCanvas` component
-    //   // to update the playlist
-    //   this.setState(
-    //     {
-    //       resetPreview: true
-    //     },
-    //     () => {
-    //       this.setState({
-    //         resetPreview: false,
-    //         playlist: playlist
-    //       });
-    //     }
-    //   );
-    //   this.setState({
-    //     playlist: playlist
-    //   });
-    // };
+  // handleExportJson = () => {
+  //   const programmeScriptJson = this.getProgrammeScriptJson();
+  //   const programmeScriptText = JSON.stringify(programmeScriptJson, null, 2);
+  //   downloadjs(
+  //     programmeScriptText,
+  //     `${ this.state.programmeScript.title }.json`,
+  //     'text/plain'
+  //   );
+  // };
 
-    // handleDoubleClickOnProgrammeScript = e => {
-    //   if (e.target.className === 'words') {
-    //     const wordCurrentTime = e.target.dataset.start;
-    //     // TODO: set current time in preview canvas
-    //     // Video context probably needs more info like, which clip/track in the sequence?
-    //     // investigate how to set currentTime in video context
-    //     console.log('wordCurrentTime::', wordCurrentTime);
-    //   }
-    // };
+  // handleExportTxt = () => {
+  //   const programmeScriptJson = this.getProgrammeScriptJson();
+  //   const programmeScriptText = this.programmeScriptJsonToText(
+  //     programmeScriptJson
+  //   );
+  //   downloadjs(
+  //     programmeScriptText,
+  //     `${ this.state.programmeScript.title }.txt`,
+  //     'text/plain'
+  //   );
+  // };
 
-    // handleSaveProgrammeScript = () => {
-    //   const api = this.context;
-    //   const { programmeScript } = this.state;
-    //   if (programmeScript) {
-    //     const elements = programmeScript.elements;
-    //     // finding an removing insert point before saving to server
-    //     // find insert point in list,
-    //     const insertPointElement = elements.find(el => {
-    //       return el.type === 'insert';
-    //     });
-    //     if (insertPointElement) {
-    //       // get insertpoint index
-    //       const indexOfInsertPoint = elements.indexOf(insertPointElement);
-    //       elements.splice(indexOfInsertPoint, 1);
-    //     }
+  // handleUpdatePreview = () => {
+  //   const playlist = this.getPlayList();
+  //   // Workaround to mound and unmount the `PreviewCanvas` component
+  //   // to update the playlist
+  //   this.setState(
+  //     {
+  //       resetPreview: true
+  //     },
+  //     () => {
+  //       this.setState({
+  //         resetPreview: false,
+  //         playlist: playlist
+  //       });
+  //     }
+  //   );
+  //   this.setState({
+  //     playlist: playlist
+  //   });
+  // };
 
-    //     programmeScript.elements = elements;
-    //     api
-    //       .updatePaperEdit(
-    //         this.props.projectId,
-    //         this.props.papereditId,
-    //         programmeScript
-    //       )
-    //       .then(json => {
-    //         if (json.status === 'ok') {
-    //           alert('saved programme script');
-    //         }
-    //         // const programmeScript = json.programmeScript;
-    //         // Adding an insert point at the end of the list
-    //         // programmeScript.elements.push({ type: 'insert-point', text: 'Insert Point to add selection' });
-    //         // this.setState({
-    //         //   programmeScript: programmeScript
-    //         // }
-    //         // TODO: figure out how to update preview
-    //         // , () => {
-    //         //   this.handleUpdatePreview();
-    //         // }
-    //         // );
-    //       });
-    //   }
-    // };
+  // handleDoubleClickOnProgrammeScript = e => {
+  //   if (e.target.className === 'words') {
+  //     const wordCurrentTime = e.target.dataset.start;
+  //     // TODO: set current time in preview canvas
+  //     // Video context probably needs more info like, which clip/track in the sequence?
+  //     // investigate how to set currentTime in video context
+  //     console.log('wordCurrentTime::', wordCurrentTime);
+  //   }
+  // };
 
-    // // information around progressbar in the playlist object
-    // render() {
-  });
+  // handleSaveProgrammeScript = () => {
+  //   const api = this.context;
+  //   const { programmeScript } = this.state;
+  //   if (programmeScript) {
+  //     const elements = programmeScript.elements;
+  //     // finding an removing insert point before saving to server
+  //     // find insert point in list,
+  //     const insertPointElement = elements.find(el => {
+  //       return el.type === 'insert';
+  //     });
+  //     if (insertPointElement) {
+  //       // get insertpoint index
+  //       const indexOfInsertPoint = elements.indexOf(insertPointElement);
+  //       elements.splice(indexOfInsertPoint, 1);
+  //     }
+
+  //     programmeScript.elements = elements;
+  //     api
+  //       .updatePaperEdit(
+  //         this.props.projectId,
+  //         this.props.papereditId,
+  //         programmeScript
+  //       )
+  //       .then(json => {
+  //         if (json.status === 'ok') {
+  //           alert('saved programme script');
+  //         }
+  //         // const programmeScript = json.programmeScript;
+  //         // Adding an insert point at the end of the list
+  //         // programmeScript.elements.push({ type: 'insert-point', text: 'Insert Point to add selection' });
+  //         // this.setState({
+  //         //   programmeScript: programmeScript
+  //         // }
+  //         // TODO: figure out how to update preview
+  //         // , () => {
+  //         //   this.handleUpdatePreview();
+  //         // }
+  //         // );
+  //       });
+  //   }
+  // };
+
+  // // information around progressbar in the playlist object
+  // render() {
+  // });
 
   return (
     <>
