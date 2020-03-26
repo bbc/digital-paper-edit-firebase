@@ -84,8 +84,10 @@ const ProgrammeScript = props => {
     const getPaperEdit = async () => {
       try {
         const data = await PaperEditsCollection.getItem(papereditsId);
-        const paperEditProgrammeScript = data.elements;
-        paperEditProgrammeScript.push({
+        const paperEditProgrammeScript = {};
+        paperEditProgrammeScript.title = data.title;
+        paperEditProgrammeScript.elements = data.elements;
+        paperEditProgrammeScript.elements.push({
           type: 'insert',
           text: 'Insert point to add selection'
         });
