@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { useRef, useState, useEffect } from 'react';
 import { withAuthorization } from '../../Session';
 // import './index.module.css';
@@ -79,7 +80,6 @@ const TranscriptEditor = props => {
   };
 
   const saveButtonHandler = async () => {
-    // TODO: add Api call to save content of
     alert('save to server');
 
     // TODO: decide how to deal with transcript corrections
@@ -178,6 +178,11 @@ const TranscriptEditor = props => {
       </Container>
     </>
   );
+};
+
+TranscriptEditor.propTypes = {
+  firebase: PropTypes.any,
+  match: PropTypes.any
 };
 
 const condition = authUser => !!authUser;
