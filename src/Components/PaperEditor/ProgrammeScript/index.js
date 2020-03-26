@@ -42,6 +42,7 @@ const ProgrammeScript = props => {
   const transcripts = props.transcripts;
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
+  const cardRef = React.createRef();
 
   const [ programmeScript, updateProgrammeScript ] = useState(null);
   const [ resetPreview, toggleResetPreview ] = useState(false);
@@ -49,7 +50,7 @@ const ProgrammeScript = props => {
   const [ playlist, updatePlaylist ] = useState();
 
   const updateVideoContextWidth = () => {
-    const recalcWidth = this.card.offsetWidth - 10;
+    const recalcWidth = cardRef.offsetWidth - 10;
     updateWidth(recalcWidth);
   };
 
@@ -102,31 +103,13 @@ const ProgrammeScript = props => {
     if (!programmeScript) {
       getPaperEdit();
     }
+    updateVideoContextWidth();
+    window.addEventListener('resize', updateVideoContextWidth);
 
     return () => { };
   },
 
   [ PaperEditsCollection, papereditsId, programmeScript ] );
-
-  // componentDidMount = () => {
-  //   const api = this.context;
-  //   api
-  //     .getPaperEdit(this.props.projectId, this.props.papereditId)
-  //     .then(json => {
-  //       const programmeScript = json.programmeScript;
-  //       // Adding an insert point at the end of the list
-  //       programmeScript.elements.push({
-  //         type: 'insert',
-  //         text: 'Insert Point to add selection'
-  //       });
-  //       this.setState({
-  //         programmeScript: programmeScript,
-  //         resetPreview: true
-  //       });
-  //     });
-  //   this.updateVideoContextWidth();
-  //   window.addEventListener('resize', this.updateVideoContextWidth);
-  // };
 
   // componentWillUnmount() {
   //   window.removeEventListener('resize', this.updateVideoContextWidth);
