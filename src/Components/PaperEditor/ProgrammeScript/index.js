@@ -42,17 +42,12 @@ const ProgrammeScript = props => {
   const transcripts = props.transcripts;
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
-  const cardRef = React.createRef();
+  const previewCardRef = useRef(null);
 
   const [ programmeScript, updateProgrammeScript ] = useState(null);
   const [ resetPreview, toggleResetPreview ] = useState(false);
   const [ width, updateWidth ] = useState(150);
   const [ playlist, updatePlaylist ] = useState();
-
-  const updateVideoContextWidth = () => {
-    const recalcWidth = cardRef.offsetWidth - 10;
-    updateWidth(recalcWidth);
-  };
 
   const getTranscript = transcriptId => {
     return transcripts.find(tr => tr.id === transcriptId);
@@ -100,16 +95,22 @@ const ProgrammeScript = props => {
         console.error('Error getting paper edits: ', error);
       };};
 
+    const updateVideoContextWidth = () => {
+      const recalcWidth = previewCardRef.current.offsetWidth - 10;
+      updateWidth(recalcWidth);
+    };
+
     if (!programmeScript) {
       getPaperEdit();
     }
-    updateVideoContextWidth();
+
+    // TODO: I'm not sure we can reference window like this - we might need to create another ref?
     window.addEventListener('resize', updateVideoContextWidth);
 
-    return () => { };
+    return () => { }; // TODO: Not sure what this syntax is - could this be why we keep re-rendering?
   },
 
-  [ PaperEditsCollection, papereditsId, programmeScript ] );
+  [ PaperEditsCollection, previewCardRef.offsetWidth, papereditsId, programmeScript ] );
 
   // componentWillUnmount() {
   //   window.removeEventListener('resize', this.updateVideoContextWidth);
@@ -584,7 +585,16 @@ const ProgrammeScript = props => {
       >
         {programmeScript ? programmeScript.title : ''}
       </h2>
-
+      <Card>
+        <Card.Header ref={ previewCardRef }>
+          {!resetPreview ? (
+            <PreviewCanvas
+              width={ width }
+              playlist={ playlist }
+            />
+          ) : null}
+        </Card.Header>
+      </Card>
     </>
   );
 };
