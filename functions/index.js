@@ -12,15 +12,15 @@ const bucketName = config.storage.bucket;
 const bucketTrigger = functions.storage.bucket(bucketName).object();
 const bucket = admin.storage().bucket(bucketName);
 
-exports.onFinalize = bucketTrigger.onFinalize(obj =>
+exports.onFinalizeUpdateFirestore = bucketTrigger.onFinalize(obj =>
   inventoryChecker.finalizeHandler(obj, admin)
 );
 
-exports.onDelete = bucketTrigger.onDelete(obj =>
+exports.onDeleteUpdateFirestore = bucketTrigger.onDelete(obj =>
   inventoryChecker.deleteHandler(obj, admin)
 );
 
-exports.onCreateAudio = functions.firestore
+exports.onCreateAudioUploadToAWS = functions.firestore
   .document("apps/digital-paper-edit/users/{userId}/audio/{itemId}")
   .onCreate((snap, context) => {
     awsUploader.createHandler(admin, snap, bucket, config.aws, context);
@@ -31,7 +31,7 @@ const maxRuntimeOpts = {
   memory: "2GB"
 };
 
-exports.onCreateUpload = functions
+exports.onCreateUploadStripAndUploadAudio = functions
   .runWith(maxRuntimeOpts)
   .firestore.document("apps/digital-paper-edit/users/{userId}/uploads/{itemId}")
   .onCreate((snap, context) =>
