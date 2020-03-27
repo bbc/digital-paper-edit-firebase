@@ -1,21 +1,19 @@
 const AWS = require("aws-sdk");
 const stream = require("stream");
+const { getAudioDurationInSeconds } = require('get-audio-duration')
 
-const uploadS3Stream = ({ AWSConfig, Key }) => {
+const uploadS3Stream = ({ AWSConfig, Key, Metadata }) => {
   const Bucket = AWSConfig.bucket;
   const s3 = new AWS.S3({
     region: AWSConfig.region,
     accessKeyId: AWSConfig.key,
-    secretAccessKey: AWSConfig.secret
+    secretAccessKey: AWSConfig.secret,
   });
   const pass = new stream.PassThrough();
-  // const metadata = {
-  //   'duration': 60, // figure this out
-  // }
 
   return {
     writeStream: pass,
-    uploadPromise: s3.upload({ Bucket, Key, Body: pass }).promise()
+    uploadPromise: s3.upload({ Bucket, Key, Body: pass, Metadata }).promise()
   };
 };
 
@@ -24,13 +22,25 @@ exports.createHandler = async (admin, snap, bucket, aws, context) => {
   const srcPath = `users/${userId}/audio/${itemId}`;
   const destPath = "dpe/" + srcPath + ".wav"
   const readStream = bucket.file(srcPath).createReadStream();
+  let duration = 0;
+
+  console.log("[START] Calculate audio duration");
+  try {
+    duration = await getAudioDurationInSeconds(readStream);
+    console.log(`[COMPLETE] Successfully calculated duration: ${duration}`);
+  } catch (err) {
+    console.error(`[ERROR] Failed to compute duration of ${srcPath}:`, err);
+  }
 
   console.log("[START] Upload to S3");
-
   try {
+    const metadata = {
+      'duration': duration
+    }
     const { writeStream, uploadPromise } = uploadS3Stream({
       AWSConfig: aws,
-      Key: destPath
+      Key: destPath,
+      Metadata: metadata
     });
 
     readStream.pipe(writeStream);
