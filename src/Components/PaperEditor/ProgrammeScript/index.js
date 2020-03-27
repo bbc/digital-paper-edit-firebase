@@ -44,7 +44,6 @@ const ProgrammeScript = (props) => {
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
   const previewCardRef = useRef(null);
-  const programmeScriptRef = useRef(null);
 
   const [ programmeScript, updateProgrammeScript ] = useState(null);
   const [ resetPreview, toggleResetPreview ] = useState(false);
@@ -86,7 +85,6 @@ const ProgrammeScript = (props) => {
     const getPaperEdit = async () => {
       try {
         const data = await PaperEditsCollection.getItem('ekUGmH6WhnwFnjr0tATO');
-        console.log('data', data);
         const paperEditProgrammeScript = {};
         paperEditProgrammeScript.title = data.title;
         paperEditProgrammeScript.elements = data.elements;
@@ -111,12 +109,6 @@ const ProgrammeScript = (props) => {
     if (!programmeScript) {
       getPaperEdit();
     }
-
-    if (programmeScriptRef.current) {
-      console.log('psrc', programmeScriptRef.current);
-    }
-    // TODO: SAVE
-
   },
 
   [ PaperEditsCollection, previewCardRef.offsetWidth, papereditsId, programmeScript, resetPreview, props.programmeScript ] );
@@ -193,6 +185,10 @@ const ProgrammeScript = (props) => {
 
     }
   };
+
+  // /**
+  //  * Helper function to create json EDL for other EDL/ADL/FPCX export
+  //  */
 
   const getSequenceJsonEDL = () => {
     const edlSq = {
@@ -356,66 +352,6 @@ const ProgrammeScript = (props) => {
   //   }
   // };
 
-  // /**
-  //  * Helper function to create json EDL for other EDL/ADL/FPCX export
-  //  */
-  // getSequenceJsonEDL = () => {
-  //   const edlSq = {
-  //     title: this.state.programmeScript.title,
-  //     events: []
-  //   };
-
-  //   const programmeScriptPaperCuts = this.state.programmeScript.elements
-  //     .map(element => {
-  //       if (element.type === 'paper-cut') {
-  //         // Get clipName for current transcript
-  //         const currentTranscript = this.props.transcripts.find(tr => {
-  //           return tr.id === element.transcriptId;
-  //         });
-
-  //         const result = {
-  //           startTime: element.start,
-  //           endTime: element.end,
-  //           reelName: currentTranscript.metadata
-  //             ? currentTranscript.metadata.reelName
-  //             : defaultReelName,
-  //           clipName: `${ currentTranscript.clipName }`,
-  //           // TODO: frameRate should be pulled from the clips in the sequence
-  //           // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
-  //           // but again frameRate should not be hard coded
-  //           fps: currentTranscript.metadata
-  //             ? currentTranscript.metadata.fps
-  //             : defaultFps,
-  //           // TODO: if there is an offset this should added here, for now hard coding 0
-  //           offset: currentTranscript.metadata
-  //             ? currentTranscript.metadata.timecode
-  //             : defaultTimecodeOffset,
-  //           sampleRate: currentTranscript.metadata
-  //             ? currentTranscript.metadata.sampleRate
-  //             : defaultSampleRate
-  //         };
-
-  //         return result;
-  //       }
-
-  //       return null;
-  //     })
-  //     .filter(el => {
-  //       return el !== null;
-  //     });
-  //   // adding ids to EDL
-  //   const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
-  //     (el, index) => {
-  //       el.id = index + 1;
-
-  //       return el;
-  //     }
-  //   );
-  //   edlSq.events.push(...programmeScriptPaperCutsWithId);
-
-  //   return edlSq;
-  // };
-
   // // https://www.npmjs.com/package/downloadjs
   // // https://www.npmjs.com/package/edl_composer
   const handleExportEDL = () => {
@@ -528,32 +464,33 @@ const ProgrammeScript = (props) => {
     return edlSq;
   };
 
-  // const programmeScriptJsonToText = edlsqJson => {
-  //   const title = `# ${ edlsqJson.title }\n\n`;
-  //   const body = edlsqJson.events.map(event => {
-  //     if (event.type === 'title') {
-  //       return `## ${ event.text }`;
-  //     } else if (event.type === 'voice-over') {
-  //       return `_${ event.text }_`;
-  //     } else if (event.type === 'note') {
-  //       return `[ ${ event.text }]`;
-  //     } else if (event.type === 'paper-cut') {
-  //       return `${ timecodes.fromSeconds(
-  //         event.startTime
-  //       ) }\t${ timecodes.fromSeconds(event.endTime) }\t${ event.speaker }\t-\t${
-  //         event.clipName
-  //       }     \n${ event.words
-  //         // .map(word => {
-  //         //   return word.text;
-  //         // })
-  //         .join(' ') }`;
-  //     }
+  const programmeScriptJsonToText = edlsqJson => {
+    const title = `# ${ edlsqJson.title }\n\n`;
+    const body = edlsqJson.events.map(event => {
+      console.log('EDL events', event);
+      if (event.type === 'title') {
+        return `## ${ event.text }`;
+      } else if (event.type === 'voice-over') {
+        return `_${ event.text }_`;
+      } else if (event.type === 'note') {
+        return `[ ${ event.text }]`;
+      } else if (event.type === 'paper-cut') {
+        return `${ timecodes.fromSeconds(
+          event.startTime
+        ) }\t${ timecodes.fromSeconds(event.endTime) }\t${ event.speaker }\t-\t${
+          event.clipName
+        }     \n${ event.words
+          .map(word => {
+            return word.text;
+          })
+          .join(' ') }`;
+      }
 
-  //     return null;
-  //   });
+      return null;
+    });
 
-  //   return `${ title }${ body.join('\n\n') }`;
-  // };
+    return `${ title }${ body.join('\n\n') }`;
+  };
 
   const handleExportJson = () => {
     const programmeScriptJson = getProgrammeScriptJson();
@@ -565,17 +502,18 @@ const ProgrammeScript = (props) => {
     );
   };
 
-  // const handleExportTxt = () => {
-  //   const programmeScriptJson = getProgrammeScriptJson();
-  //   const programmeScriptText = programmeScriptJsonToText(
-  //     programmeScriptJson
-  //   );
-  //   downloadjs(
-  //     programmeScriptText,
-  //     `${ programmeScript.title }.txt`,
-  //     'text/plain'
-  //   );
-  // };
+  const handleExportTxt = () => {
+    const programmeScriptJson = getProgrammeScriptJson();
+    const programmeScriptText = programmeScriptJsonToText(
+      programmeScriptJson
+    );
+    console.log('Programme Script Text: ', programmeScriptText);
+    downloadjs(
+      programmeScriptText,
+      `${ programmeScript.title }.txt`,
+      'text/plain'
+    );
+  };
 
   // handleDoubleClickOnProgrammeScript = e => {
   //   if (e.target.className === 'words') {
@@ -730,7 +668,7 @@ const ProgrammeScript = (props) => {
                   </Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item
-                    // onClick={ handleExportTxt }
+                    onClick={ handleExportTxt }
                     title="export Text, export the programme script as a text version"
                   >
               Text File <FontAwesomeIcon icon={ faInfoCircle } />
