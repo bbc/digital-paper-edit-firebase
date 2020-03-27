@@ -56,8 +56,6 @@ const ProgrammeScript = (props) => {
   const getPlayList = () => {
     let startTime = 0;
 
-    console.log('PSEEEE', programmeScript.elements);
-
     return programmeScript.elements
       .filter(element => element.type === 'paper-cut')
       .map(element => {
@@ -113,29 +111,82 @@ const ProgrammeScript = (props) => {
     }
 
     // TODO: SAVE
-    const handleReorder = (list) => {
-      const tempScript = programmeScript;
-      tempScript.elements = list;
-
-      updateProgrammeScript(tempScript);
-      toggleResetPreview(true);
-    };
-
-    const handleDelete = (i) => {
-    // TODO: add a prompt, like are you shure you want to delete, confirm etc..?
-    // alert('handle delete');
-      const tempScript = programmeScript;
-      const index = i;
-      const list = tempScript.elements;
-      list.splice(index, i);
-      updateProgrammeScript(tempScript);
-      resetPreview(true);
-    };
 
   },
 
-  [ PaperEditsCollection, previewCardRef.offsetWidth, papereditsId, programmeScript, resetPreview ] );
+  [ PaperEditsCollection, previewCardRef.offsetWidth, papereditsId, programmeScript, resetPreview, props.programmeScript ] );
 
+  const handleUpdatePreview = () => {
+    const currentPlaylist = getPlayList();
+    // [old comment]: Workaround to mound and unmount the `PreviewCanvas` component
+    // to update the playlist
+    updatePlaylist(currentPlaylist);
+  };
+
+  const handleResetPreview = () => {
+    handleUpdatePreview();
+    toggleResetPreview(!resetPreview);
+  };
+
+  // TODO: handleReorder and handleDelete aren't working. Figure out how to update the StoryBook element.
+  const handleReorder = () => {
+    console.log('Handling reorder....');
+    const tempScript = programmeScript;
+    // tempScript.elements = list;
+
+    return updateProgrammeScript(tempScript);
+  };
+
+  const handleDelete = (i) => {
+    console.log('Handling delete');
+    // TODO: add a prompt, like are you shure you want to delete, confirm etc..?
+    // alert('handle delete');
+    const tempScript = programmeScript;
+    const index = i;
+    const list = tempScript.elements;
+    list.splice(index, i);
+    updateProgrammeScript(tempScript);
+    resetPreview(true);
+  };
+
+  const getIndexPositionOfInsertPoint = () => {
+    const elements = programmeScript.elements;
+    const insertPointElement = elements.find(el => {
+      return el.type === 'insert';
+    });
+    const indexOfInsertPoint = elements.indexOf(insertPointElement);
+
+    return indexOfInsertPoint;
+  };
+
+  const handleAddTranscriptElementToProgrammeScript = elementType => {
+    const tempProgrammeScript = programmeScript;
+    const elements = programmeScript.elements;
+    // [old comment]: TODO: refactor - with helper functions
+    if (
+      elementType === 'title' ||
+      elementType === 'note' ||
+      elementType === 'voice-over'
+    ) {
+      const text = prompt(
+        'Add some text for a section title',
+        'Some place holder text'
+      );
+
+      const indexOfInsertPoint = getIndexPositionOfInsertPoint();
+      const newElement = {
+        id: cuid(),
+        index: elements.length,
+        type: elementType,
+        text: text
+      };
+      elements.splice(indexOfInsertPoint, 0, newElement);
+      tempProgrammeScript.elements = elements;
+      // [old comment]: TODO: save to server (should this only be if the 'Save' button is clicked?)
+
+      updateProgrammeScript(tempProgrammeScript);
+    }
+  };
   // componentWillUnmount() {
   //   window.removeEventListener('resize', this.updateVideoContextWidth);
   // }
@@ -183,37 +234,6 @@ const ProgrammeScript = (props) => {
   //     //     programmeScript: programmeScript
   //     //   };
   //     // });
-  //   }
-  // };
-
-  // handleAddTranscriptElementToProgrammeScript = elementType => {
-  //   const { programmeScript } = this.state;
-  //   const elements = this.state.programmeScript.elements;
-  //   // TODO: refactor - with helper functions
-  //   if (
-  //     elementType === 'title' ||
-  //     elementType === 'note' ||
-  //     elementType === 'voice-over'
-  //   ) {
-  //     const text = prompt(
-  //       'Add some text for a section title',
-  //       'Some place holder text'
-  //     );
-
-  //     const indexOfInsertPoint = this.getIndexPositionOfInsertPoint();
-  //     const newElement = {
-  //       id: cuid(),
-  //       index: elements.length,
-  //       type: elementType,
-  //       text: text
-  //     };
-  //     elements.splice(indexOfInsertPoint, 0, newElement);
-  //     programmeScript.elements = elements;
-  //     // TODO: save to server
-  //     this.setState({
-  //       programmeScript: programmeScript,
-  //       resetPreview: true
-  //     });
   //   }
   // };
 
@@ -511,17 +531,6 @@ const ProgrammeScript = (props) => {
   //   );
   // };
 
-  const handleUpdatePreview = () => {
-    const currentPlaylist = getPlayList();
-    // Workaround to mound and unmount the `PreviewCanvas` component
-    // to update the playlist
-    updatePlaylist(currentPlaylist);
-  };
-  const handleResetPreview = (bool) => {
-    handleUpdatePreview();
-    toggleResetPreview(bool);
-  };
-
   // handleDoubleClickOnProgrammeScript = e => {
   //   if (e.target.className === 'words') {
   //     const wordCurrentTime = e.target.dataset.start;
@@ -616,11 +625,11 @@ const ProgrammeScript = (props) => {
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   <Dropdown.Item
-                    // onClick={ () => {
-                    //   this.handleAddTranscriptElementToProgrammeScript(
-                    //     'title'
-                    //   );
-                    // } }
+                    onClick={ () => {
+                      handleAddTranscriptElementToProgrammeScript(
+                        'title'
+                      );
+                    } }
                     title="Add a title header element to the programme script"
                   >
                     <FontAwesomeIcon icon={ faHeading } /> Heading
@@ -721,8 +730,8 @@ const ProgrammeScript = (props) => {
             {programmeScript ? (
               <ProgrammeScriptContainer
                 items={ programmeScript.elements }
-                // handleReorder={ handleReorder() }
-                // handleDelete={ handleDelete }
+                handleReorder={ handleReorder }
+                handleDelete={ handleDelete }
                 // handleEdit={ this.handleEdit }
               />
             ) : null}
