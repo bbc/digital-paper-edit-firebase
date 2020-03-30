@@ -23,6 +23,17 @@ const Transcripts = props => {
     return `/projects/${ props.projectId }/transcripts/${ id }/correct`;
   };
 
+  const getDurationInSeconds = (file) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(video.src);
+
+      return Math.ceil(video.duration);
+    };
+    video.src = URL.createObjectURL(file);
+  };
+
   useEffect(() => {
     const getTranscripts = async () => {
       try {
@@ -129,15 +140,18 @@ const Transcripts = props => {
 
   const asyncUploadFile = async (id, file) => {
     const path = getUploadPath(id);
+    const duration = getDurationInSeconds(file);
 
     const metadata = {
       customMetadata: {
         userId: uid,
         id: id,
         originalName: file.name,
-        folder: UPLOADFOLDER
+        folder: UPLOADFOLDER,
+        duration: duration
       }
     };
+
     const uploadTask = props.firebase.storage.child(path).put(file, metadata);
 
     uploadTask.on(
