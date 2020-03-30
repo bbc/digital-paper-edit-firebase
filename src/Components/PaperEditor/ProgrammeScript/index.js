@@ -39,16 +39,16 @@ const defaultFps = 25;
 const defaultTimecodeOffset = '00:00:00:00';
 const defaultSampleRate = '16000';
 
-const ProgrammeScript = (props) => {
+const ProgrammeScript = props => {
   const transcripts = props.transcripts;
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
   const previewCardRef = useRef(null);
 
-  const [ programmeScript, updateProgrammeScript ] = useState(null);
-  const [ resetPreview, toggleResetPreview ] = useState(false);
-  const [ width, updateWidth ] = useState(150);
-  const [ playlist, updatePlaylist ] = useState();
+  const [programmeScript, updateProgrammeScript] = useState(null);
+  const [resetPreview, toggleResetPreview] = useState(false);
+  const [width, updateWidth] = useState(150);
+  const [playlist, updatePlaylist] = useState();
 
   const getTranscript = transcriptId => {
     return transcripts.find(tr => tr.id === transcriptId);
@@ -78,7 +78,7 @@ const ProgrammeScript = (props) => {
 
   const PaperEditsCollection = new Collection(
     props.firebase,
-    `/projects/${ projectId }/paperedits`
+    `/projects/${projectId}/paperedits`
   );
 
   useEffect(() => {
@@ -96,7 +96,7 @@ const ProgrammeScript = (props) => {
         toggleResetPreview(true);
       } catch (error) {
         console.error('Error getting paper edits: ', error);
-      };
+      }
     };
 
     const updateVideoContextWidth = () => {
@@ -109,9 +109,14 @@ const ProgrammeScript = (props) => {
     if (!programmeScript) {
       getPaperEdit();
     }
-  },
-
-  [ PaperEditsCollection, previewCardRef.offsetWidth, papereditsId, programmeScript, resetPreview, props.programmeScript ] );
+  }, [
+    PaperEditsCollection,
+    previewCardRef.offsetWidth,
+    papereditsId,
+    programmeScript,
+    resetPreview,
+    props.programmeScript
+  ]);
 
   const handleUpdatePreview = () => {
     const currentPlaylist = getPlayList();
@@ -134,7 +139,7 @@ const ProgrammeScript = (props) => {
     return updateProgrammeScript(tempScript);
   };
 
-  const handleDelete = (i) => {
+  const handleDelete = i => {
     console.log('Handling delete');
     // TODO: add a prompt, like are you shure you want to delete, confirm etc..?
     // alert('handle delete');
@@ -182,7 +187,6 @@ const ProgrammeScript = (props) => {
       // [old comment]: TODO: save to server (should this only be if the 'Save' button is clicked?)
 
       updateProgrammeScript(tempProgrammeScript); // This doesn't trigger a refresh...
-
     }
   };
 
@@ -210,7 +214,7 @@ const ProgrammeScript = (props) => {
             reelName: currentTranscript.metadata
               ? currentTranscript.metadata.reelName
               : defaultReelName,
-            clipName: `${ currentTranscript.clipName }`,
+            clipName: `${currentTranscript.clipName}`,
             // TODO: frameRate should be pulled from the clips in the sequence
             // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
             // but again frameRate should not be hard coded
@@ -358,11 +362,7 @@ const ProgrammeScript = (props) => {
     const edlSq = getSequenceJsonEDL();
     const edl = new EDL(edlSq);
     console.log(edl.compose());
-    downloadjs(
-      edl.compose(),
-      `${ programmeScript.title }.edl`,
-      'text/plain'
-    );
+    downloadjs(edl.compose(), `${programmeScript.title}.edl`, 'text/plain');
   };
 
   const handleExportADL = () => {
@@ -389,7 +389,7 @@ const ProgrammeScript = (props) => {
     });
 
     console.log('ADL Result', result);
-    downloadjs(result, `${ programmeScript.title }.adl`, 'text/plain');
+    downloadjs(result, `${programmeScript.title}.adl`, 'text/plain');
   };
 
   const handleExportFCPX = () => {
@@ -397,11 +397,7 @@ const ProgrammeScript = (props) => {
     const edlSq = getSequenceJsonEDL();
     const result = jsonToFCPX(edlSq);
     console.log('FCPX result', result);
-    downloadjs(
-      result,
-      `${ programmeScript.title }.fcpxml`,
-      'text/plain'
-    );
+    downloadjs(result, `${programmeScript.title}.fcpxml`, 'text/plain');
   };
 
   const getProgrammeScriptJson = () => {
@@ -427,7 +423,7 @@ const ProgrammeScript = (props) => {
             reelName: currentTranscript.metadata
               ? currentTranscript.metadata.reelName
               : defaultReelName,
-            clipName: `${ currentTranscript.clipName }`,
+            clipName: `${currentTranscript.clipName}`,
             // TODO: frameRate should be pulled from the clips in the sequence
             // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
             // but again frameRate should not be hard coded
@@ -465,31 +461,31 @@ const ProgrammeScript = (props) => {
   };
 
   const programmeScriptJsonToText = edlsqJson => {
-    const title = `# ${ edlsqJson.title }\n\n`;
+    const title = `# ${edlsqJson.title}\n\n`;
     const body = edlsqJson.events.map(event => {
       console.log('EDL events', event);
       if (event.type === 'title') {
-        return `## ${ event.text }`;
+        return `## ${event.text}`;
       } else if (event.type === 'voice-over') {
-        return `_${ event.text }_`;
+        return `_${event.text}_`;
       } else if (event.type === 'note') {
-        return `[ ${ event.text }]`;
+        return `[ ${event.text}]`;
       } else if (event.type === 'paper-cut') {
-        return `${ timecodes.fromSeconds(
+        return `${timecodes.fromSeconds(
           event.startTime
-        ) }\t${ timecodes.fromSeconds(event.endTime) }\t${ event.speaker }\t-\t${
+        )}\t${timecodes.fromSeconds(event.endTime)}\t${event.speaker}\t-\t${
           event.clipName
-        }     \n${ event.words
+        }     \n${event.words
           .map(word => {
             return word.text;
           })
-          .join(' ') }`;
+          .join(' ')}`;
       }
 
       return null;
     });
 
-    return `${ title }${ body.join('\n\n') }`;
+    return `${title}${body.join('\n\n')}`;
   };
 
   const handleExportJson = () => {
@@ -497,20 +493,18 @@ const ProgrammeScript = (props) => {
     const programmeScriptText = JSON.stringify(programmeScriptJson, null, 2);
     downloadjs(
       programmeScriptText,
-      `${ programmeScript.title }.json`,
+      `${programmeScript.title}.json`,
       'text/plain'
     );
   };
 
   const handleExportTxt = () => {
     const programmeScriptJson = getProgrammeScriptJson();
-    const programmeScriptText = programmeScriptJsonToText(
-      programmeScriptJson
-    );
+    const programmeScriptText = programmeScriptJsonToText(programmeScriptJson);
     console.log('Programme Script Text: ', programmeScriptText);
     downloadjs(
       programmeScriptText,
-      `${ programmeScript.title }.txt`,
+      `${programmeScript.title}.txt`,
       'text/plain'
     );
   };
@@ -544,12 +538,12 @@ const ProgrammeScript = (props) => {
       programmeScript.elements = elements;
 
       try {
-        await PaperEditsCollection.putItem('asdqasada', tempProgrammeScript);
-        alert('saved programme script');
+        await PaperEditsCollection.putItem(
+          'ekUGmH6WhnwFnjr0tATO',
+          tempProgrammeScript
+        );
       } catch (error) {
-        console.log('error', error);
-        alert('error saving script');
-
+        console.log('error saving document', error);
       }
 
       // const programmeScript = json.programmeScript;
@@ -563,7 +557,7 @@ const ProgrammeScript = (props) => {
       //   this.handleUpdatePreview();
       // }
       // );
-    };
+    }
   };
 
   // // information around progressbar in the playlist object
@@ -573,132 +567,123 @@ const ProgrammeScript = (props) => {
   return (
     <>
       <h2
-        className={ [ 'text-truncate', 'text-muted' ].join(' ') }
-        title={ `Programme Script Title: ${
+        className={['text-truncate', 'text-muted'].join(' ')}
+        title={`Programme Script Title: ${
           programmeScript ? programmeScript.title : ''
-        }` }
+        }`}
       >
         {programmeScript ? programmeScript.title : ''}
       </h2>
       <Card>
-        <Card.Header ref={ previewCardRef }>
+        <Card.Header ref={previewCardRef}>
           {!resetPreview ? (
-            <PreviewCanvas
-              width={ width }
-              playlist={ playlist }
-            />
+            <PreviewCanvas width={width} playlist={playlist} />
           ) : null}
         </Card.Header>
         <Card.Header>
           <Row noGutters>
-            <Col sm={ 12 } md={ 3 }>
+            <Col sm={12} md={3}>
               <Button
                 // block
                 variant="outline-secondary"
                 // onClick={ this.handleAddTranscriptSelectionToProgrammeScript }
                 title="Add a text selection, select text in the transcript, then click this button to add it to the programme script"
               >
-                <FontAwesomeIcon icon={ faPlus } /> Selection
+                <FontAwesomeIcon icon={faPlus} /> Selection
               </Button>
             </Col>
-            <Col sm={ 12 } md={ 2 }>
+            <Col sm={12} md={2}>
               <Dropdown>
                 <Dropdown.Toggle variant="outline-secondary">
-                  <FontAwesomeIcon icon={ faPlus } />
+                  <FontAwesomeIcon icon={faPlus} />
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   <Dropdown.Item
-                    onClick={ () => {
-                      handleAddTranscriptElementToProgrammeScript(
-                        'title'
-                      );
-                    } }
+                    onClick={() => {
+                      handleAddTranscriptElementToProgrammeScript('title');
+                    }}
                     title="Add a title header element to the programme script"
                   >
-                    <FontAwesomeIcon icon={ faHeading } /> Heading
+                    <FontAwesomeIcon icon={faHeading} /> Heading
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={ () => {
-                      handleAddTranscriptElementToProgrammeScript(
-                        'voice-over'
-                      );
-                    } }
+                    onClick={() => {
+                      handleAddTranscriptElementToProgrammeScript('voice-over');
+                    }}
                     title="Add a title voice over element to the programme script"
                   >
-                    <FontAwesomeIcon icon={ faMicrophoneAlt } /> Voice Over
+                    <FontAwesomeIcon icon={faMicrophoneAlt} /> Voice Over
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={ () => {
-                      handleAddTranscriptElementToProgrammeScript(
-                        'note'
-                      );
-                    } }
+                    onClick={() => {
+                      handleAddTranscriptElementToProgrammeScript('note');
+                    }}
                     title="Add a note element to the programme script"
                   >
-                    <FontAwesomeIcon icon={ faStickyNote } /> Note
+                    <FontAwesomeIcon icon={faStickyNote} /> Note
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </Col>
-            <Col sm={ 12 } md={ 3 }>
+            <Col sm={12} md={3}>
               <Dropdown>
                 <Dropdown.Toggle variant="outline-secondary">
-                  <FontAwesomeIcon icon={ faShare } /> Export
+                  <FontAwesomeIcon icon={faShare} /> Export
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   <Dropdown.Item
-                    onClick={ handleExportEDL }
+                    onClick={handleExportEDL}
                     title="export EDL, edit decision list, to import the programme script as a sequence in video editing software - Avid, Premiere, Davinci Resolve, for FCPX choose FCPX XML"
                   >
-              EDL - Video <FontAwesomeIcon icon={ faInfoCircle } />
+                    EDL - Video <FontAwesomeIcon icon={faInfoCircle} />
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={ handleExportADL }
+                    onClick={handleExportADL}
                     title="export ADL, audio decision list, to import the programme script as a sequence in audio editing software such as SADiE"
                   >
-                    <FontAwesomeIcon icon={ faFileExport } />
-                      ADL - Audio <FontAwesomeIcon icon={ faInfoCircle } />
+                    <FontAwesomeIcon icon={faFileExport} />
+                    ADL - Audio <FontAwesomeIcon icon={faInfoCircle} />
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={ handleExportFCPX }
+                    onClick={handleExportFCPX}
                     title="export FCPX XML, to import the programme script as a sequence in Final Cut Pro X, video editing software"
                   >
-              FCPX <FontAwesomeIcon icon={ faInfoCircle } />
+                    FCPX <FontAwesomeIcon icon={faInfoCircle} />
                   </Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item
-                    onClick={ handleExportTxt }
+                    onClick={handleExportTxt}
                     title="export Text, export the programme script as a text version"
                   >
-              Text File <FontAwesomeIcon icon={ faInfoCircle } />
+                    Text File <FontAwesomeIcon icon={faInfoCircle} />
                   </Dropdown.Item>
                   <Dropdown.Item
-                    onClick={ () => {
+                    onClick={() => {
                       alert('export word doc not implemented yet');
-                    } }
+                    }}
                     title="export docx, export the programme script as a word document"
                   >
-              Word Document <FontAwesomeIcon icon={ faInfoCircle } />
+                    Word Document <FontAwesomeIcon icon={faInfoCircle} />
                   </Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item
-                    onClick={ handleExportJson }
+                    onClick={handleExportJson}
                     title="export Json, export the programme script as a json file"
                   >
-              Json <FontAwesomeIcon icon={ faInfoCircle } />
+                    Json <FontAwesomeIcon icon={faInfoCircle} />
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </Col>
-            <Col sm={ 12 } md={ 1 }>
+            <Col sm={12} md={1}>
               <Button
                 variant="outline-secondary"
-                onClick={ handleSaveProgrammeScript }
+                onClick={handleSaveProgrammeScript}
                 // size="sm"
                 title="save programme script"
                 block
               >
-                <FontAwesomeIcon icon={ faSave } />
+                <FontAwesomeIcon icon={faSave} />
                 {/* Save */}
               </Button>
             </Col>
@@ -707,21 +692,20 @@ const ProgrammeScript = (props) => {
 
         <Card.Body>
           <article
-            style={ { height: '60vh', overflow: 'scroll' } }
+            style={{ height: '60vh', overflow: 'scroll' }}
             // onDoubleClick={ this.handleDoubleClickOnProgrammeScript }
           >
             {programmeScript ? (
               <ProgrammeScriptContainer
-                items={ programmeScript.elements }
-                handleReorder={ handleReorder }
-                handleDelete={ handleDelete }
+                items={programmeScript.elements}
+                handleReorder={handleReorder}
+                handleDelete={handleDelete}
                 // handleEdit={ handleEdit }
               />
             ) : null}
           </article>
         </Card.Body>
       </Card>
-
     </>
   );
 };
