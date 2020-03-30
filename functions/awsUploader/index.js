@@ -43,7 +43,7 @@ exports.createHandler = async (admin, snap, bucket, aws, context) => {
 
   } catch (err) {
     console.error("[ERROR] Failed to upload to S3:", err);
-    return 0;
+    return 1;
   } 
 
   console.log(`[COMPLETE] Finished upload to s3://${aws.bucket}/${destPath}`);
