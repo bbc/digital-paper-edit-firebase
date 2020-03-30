@@ -13,7 +13,7 @@ const uploadS3Stream = ({ AWSConfig, Key, Metadata }) => {
 
   return {
     writeStream: pass,
-    uploadPromise: s3.upload({ Bucket, Key, Body: pass, Metadata }).promise()
+    promise: s3.upload({ Bucket, Key, Body: pass, Metadata }).promise()
   };
 };
 
@@ -34,12 +34,12 @@ exports.createHandler = async (admin, snap, bucket, aws, context) => {
 
   console.log("[START] Upload to S3");
   try {
-    const metadata = {
-      'duration': duration
+    metadata = {
+      'duration': snap.data().duration
     }
-    const { writeStream, uploadPromise } = uploadS3Stream({
+    const { writeStream, promise } = uploadS3Stream({
       AWSConfig: aws,
-      Key: destPath,
+      Key: srcPath,
       Metadata: metadata
     });
 
