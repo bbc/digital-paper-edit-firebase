@@ -39,7 +39,7 @@ exports.createHandler = async (admin, snap, bucket, aws, context) => {
     });
 
     readStream.pipe(writeStream);
-    await uploadPromise;
+    await promise;
 
   } catch (err) {
     return console.error("[ERROR] Failed to upload to S3:", err);
