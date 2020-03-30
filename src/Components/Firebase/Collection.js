@@ -58,9 +58,6 @@ class Collection {
         ...data,
         updated: this.getServerTimestamp()
       });
-      if (data) {
-        alert('The document was saved');
-      }
     } catch (error) {
       console.error('Error adding document: ', error);
       alert('Error saving document');

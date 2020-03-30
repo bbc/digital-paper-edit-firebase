@@ -710,6 +710,11 @@ const ProgrammeScript = props => {
   );
 };
 
+ProgrammeScript.propTypes = {
+  firebase: PropTypes.any,
+  match: PropTypes.any
+};
+
 const condition = authUser => !!authUser;
 export default withAuthorization(condition)(ProgrammeScript);
 //   }
