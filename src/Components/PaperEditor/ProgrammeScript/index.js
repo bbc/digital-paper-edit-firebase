@@ -84,7 +84,7 @@ const ProgrammeScript = (props) => {
   useEffect(() => {
     const getPaperEdit = async () => {
       try {
-        const data = await PaperEditsCollection.getItem('ekUGmH6WhnwFnjr0tATO');
+        const data = await PaperEditsCollection.getItem(papereditsId);
         const paperEditProgrammeScript = {};
         paperEditProgrammeScript.title = data.title;
         paperEditProgrammeScript.elements = data.elements;
@@ -525,47 +525,46 @@ const ProgrammeScript = (props) => {
   //   }
   // };
 
-  // handleSaveProgrammeScript = () => {
-  //   const api = this.context;
-  //   const { programmeScript } = this.state;
-  //   if (programmeScript) {
-  //     const elements = programmeScript.elements;
-  //     // finding an removing insert point before saving to server
-  //     // find insert point in list,
-  //     const insertPointElement = elements.find(el => {
-  //       return el.type === 'insert';
-  //     });
-  //     if (insertPointElement) {
-  //       // get insertpoint index
-  //       const indexOfInsertPoint = elements.indexOf(insertPointElement);
-  //       elements.splice(indexOfInsertPoint, 1);
-  //     }
+  const handleSaveProgrammeScript = async () => {
+    const tempProgrammeScript = programmeScript;
+    console.log('script', tempProgrammeScript);
+    if (programmeScript) {
+      const elements = programmeScript.elements;
+      // finding an removing insert point before saving to server
+      // find insert point in list,
+      const insertPointElement = elements.find(el => {
+        return el.type === 'insert';
+      });
+      if (insertPointElement) {
+        // get insertpoint index
+        const indexOfInsertPoint = elements.indexOf(insertPointElement);
+        elements.splice(indexOfInsertPoint, 1);
+      }
 
-  //     programmeScript.elements = elements;
-  //     api
-  //       .updatePaperEdit(
-  //         this.props.projectId,
-  //         this.props.papereditId,
-  //         programmeScript
-  //       )
-  //       .then(json => {
-  //         if (json.status === 'ok') {
-  //           alert('saved programme script');
-  //         }
-  //         // const programmeScript = json.programmeScript;
-  //         // Adding an insert point at the end of the list
-  //         // programmeScript.elements.push({ type: 'insert-point', text: 'Insert Point to add selection' });
-  //         // this.setState({
-  //         //   programmeScript: programmeScript
-  //         // }
-  //         // TODO: figure out how to update preview
-  //         // , () => {
-  //         //   this.handleUpdatePreview();
-  //         // }
-  //         // );
-  //       });
-  //   }
-  // };
+      programmeScript.elements = elements;
+
+      try {
+        await PaperEditsCollection.putItem('asdqasada', tempProgrammeScript);
+        alert('saved programme script');
+      } catch (error) {
+        console.log('error', error);
+        alert('error saving script');
+
+      }
+
+      // const programmeScript = json.programmeScript;
+      // Adding an insert point at the end of the list
+      // programmeScript.elements.push({ type: 'insert-point', text: 'Insert Point to add selection' });
+      // this.setState({
+      //   programmeScript: programmeScript
+      // }
+      // TODO: figure out how to update preview
+      // , () => {
+      //   this.handleUpdatePreview();
+      // }
+      // );
+    };
+  };
 
   // // information around progressbar in the playlist object
   // render() {
@@ -694,7 +693,7 @@ const ProgrammeScript = (props) => {
             <Col sm={ 12 } md={ 1 }>
               <Button
                 variant="outline-secondary"
-                // onClick={ this.handleSaveProgrammeScript }
+                onClick={ handleSaveProgrammeScript }
                 // size="sm"
                 title="save programme script"
                 block
@@ -859,24 +858,3 @@ export default withAuthorization(condition)(ProgrammeScript);
 //   </Card.Header>
 
 //   <Card.Body>
-//     <article
-//       style={{ height: '60vh', overflow: 'scroll' }}
-//       onDoubleClick={this.handleDoubleClickOnProgrammeScript}
-//     >
-//       {this.state.programmeScript ? (
-//         <ProgrammeScriptContainer
-//           items={this.state.programmeScript.elements}
-//           handleReorder={this.handleReorder}
-//           handleDelete={this.handleDelete}
-//           handleEdit={this.handleEdit}
-//         />
-//       ) : null}
-//     </article>
-//   </Card.Body>
-// </Card>
-
-ProgrammeScript.propTypes = {
-  papereditId: PropTypes.any,
-  projectId: PropTypes.any,
-  transcripts: PropTypes.any
-};

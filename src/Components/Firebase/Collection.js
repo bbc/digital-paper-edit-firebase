@@ -53,20 +53,26 @@ class Collection {
   };
 
   putItem = async (id, data) => {
-    await this.collectionRef.doc(id).update({
-      ...data,
-      updated: this.getServerTimestamp()
-    });
+    try {
+      await this.collectionRef.doc(id).update({
+        ...data,
+        updated: this.getServerTimestamp()
+      });
+    } catch (error) {
+      console.error('Error adding document: ', error);
+    }
   };
 
   deleteItem = async id => {
     await this.collectionRef.doc(id).delete();
   };
 
-  userRef = userId => this.collectionRef.where('users', 'array-contains', userId);
+  userRef = userId =>
+    this.collectionRef.where('users', 'array-contains', userId);
   user = async userId => await this.userRef(userId).get();
 
-  projectRef = projectId => this.collectionRef.where('projectId', '==', projectId);
+  projectRef = projectId =>
+    this.collectionRef.where('projectId', '==', projectId);
   project = async projectId => await this.userRef(projectId).get();
 }
 
