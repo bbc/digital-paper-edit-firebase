@@ -12,28 +12,28 @@ const bucketName = config.storage.bucket;
 const bucketTrigger = functions.storage.bucket(bucketName).object();
 const bucket = admin.storage().bucket(bucketName);
 
-exports.onFinalize = bucketTrigger.onFinalize(obj =>
+exports.onFinalizeBucketObjUpdateFirestore = bucketTrigger.onFinalize(obj =>
   inventoryChecker.finalizeHandler(obj, admin)
 );
 
-exports.onDelete = bucketTrigger.onDelete(obj =>
+exports.onDeleteBucketObjUpdateFirestore = bucketTrigger.onDelete(obj =>
   inventoryChecker.deleteHandler(obj, admin)
 );
 
-exports.onCreateAudio = functions.firestore
+exports.onCreateAudioFirestoreUploadToAWS = functions.firestore
   .document("apps/digital-paper-edit/users/{userId}/audio/{itemId}")
   .onCreate((snap, context) => {
-    awsUploader.createHandler(admin, snap, bucket, config.aws, context);
+    return awsUploader.createHandler(admin, snap, bucket, config.aws, context);
   });
 
 const maxRuntimeOpts = {
   timeoutSeconds: 540, // 9 minutes
-  memory: "2GB"
+  memory: "2GB",
 };
 
-exports.onCreateUpload = functions
+exports.onCreateFirestoreUploadStripAndUploadAudio = functions
   .runWith(maxRuntimeOpts)
   .firestore.document("apps/digital-paper-edit/users/{userId}/uploads/{itemId}")
-  .onCreate((snap, context) =>
-    audioStripper.createHandler(snap, bucket, context)
-  );
+  .onCreate((snap, context) => {
+    return audioStripper.createHandler(snap, bucket, context)
+  });

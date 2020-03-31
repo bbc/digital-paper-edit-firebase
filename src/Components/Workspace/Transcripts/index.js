@@ -129,29 +129,40 @@ const Transcripts = props => {
 
   const asyncUploadFile = async (id, file) => {
     const path = getUploadPath(id);
+    const video = document.createElement('video');
+    video.preload = 'metadata';
 
-    const metadata = {
-      customMetadata: {
-        userId: uid,
-        id: id,
-        originalName: file.name,
-        folder: UPLOADFOLDER
-      }
+    video.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(video.src);
+      const duration = video.duration;
+
+      const metadata = {
+        customMetadata: {
+          userId: uid,
+          id: id,
+          originalName: file.name,
+          folder: UPLOADFOLDER,
+          duration: duration
+        }
+      };
+
+      const uploadTask = props.firebase.storage.child(path).put(file, metadata);
+
+      uploadTask.on(
+        'state_changed',
+        snapshot => {
+          handleUploadProgress(id, snapshot);
+        },
+        async error => {
+          await handleUploadError(id, error);
+        },
+        async () => {
+          await handleUploadComplete(id);
+        }
+      );
+
     };
-    const uploadTask = props.firebase.storage.child(path).put(file, metadata);
-
-    uploadTask.on(
-      'state_changed',
-      snapshot => {
-        handleUploadProgress(id, snapshot);
-      },
-      async error => {
-        await handleUploadError(id, error);
-      },
-      async () => {
-        await handleUploadComplete(id);
-      }
-    );
+    video.src = URL.createObjectURL(file);
   };
 
   // general
