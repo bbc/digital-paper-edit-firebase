@@ -28,7 +28,7 @@ exports.onCreateAudioFirestoreUploadToAWS = functions.firestore
 
 const maxRuntimeOpts = {
   timeoutSeconds: 540, // 9 minutes
-  memory: "2GB"
+  memory: "2GB",
 };
 
 exports.onCreateFirestoreUploadStripAndUploadAudio = functions

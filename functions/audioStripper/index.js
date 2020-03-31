@@ -15,9 +15,7 @@ const convertStreamToAudio = (inputStream, outputStream) => {
         console.debug("Started " + cmd);
       })
       .on("codecData", data => {
-        console.debug(
-          "Input is " + data.audio + " audio " + "with " + data.video + " video"
-        );
+        console.debug(`Input is ${data.audio} audio with ${data.video} video`);
       })
       .on("error", (err, stdout, stderr) => {
         console.debug(err.message); //this will likely return "code=1" not really useful
@@ -27,11 +25,11 @@ const convertStreamToAudio = (inputStream, outputStream) => {
       })
       .on("progress", progress => {
         console.debug(progress);
-        console.debug("Processing: " + progress.percent + "% done");
+        console.debug(`Processing: ${progress.percent}% done`);
       })
       .on("end", (stdout, stderr) => {
         console.debug(stdout, stderr);
-        console.debug("Transcoding succeeded !");
+        console.debug("Transcoding succeeded!");
         resolve();
       })
       .pipe(outputStream, { end: true });
@@ -45,9 +43,9 @@ const getWriteStreamMetadata = (userId, itemId, originalName, duration) => {
       id: itemId,
       folder: "audio",
       originalName: originalName,
-      duration: duration
+      duration: duration,
     },
-    contentType: "audio/wav"
+    contentType: "audio/wav",
   };
 };
 
@@ -66,13 +64,8 @@ exports.createHandler = async (snap, bucket, context) => {
     const sourceUrl = await getUrl(srcFile);
     console.log(`[START] Streaming, transforming file ${sourceUrl} to audio`);
     await convertStreamToAudio(sourceUrl[0], writeStream);
-  } catch (e) {
-    return console.error(
-      "[ERROR] Could not stream / transform audio file: ",
-      e
-    );
+  } catch (err) {
+    return console.error("[ERROR] Could not stream / transform audio file: ", err);
   }
-  return console.log(
-    `[COMPLETE] Uploaded audio file for ${userId} to ${itemId}`
-  );
+  return console.log(`[COMPLETE] Uploaded audio file for ${userId} to ${itemId}`);
 };

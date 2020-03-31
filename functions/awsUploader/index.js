@@ -12,21 +12,21 @@ const uploadS3Stream = ({ AWSConfig, Key, Metadata }) => {
 
   return {
     writeStream: pass,
-    promise: s3.upload({ Bucket, Key, Body: pass, Metadata }).promise()
+    promise: s3.upload({ Bucket, Key, Body: pass, Metadata }).promise(),
   };
 };
 
 const getMetadata = (snap) => {
   const durationSeconds = Math.ceil(snap.data().duration);
   return {
-    'duration': `${durationSeconds}`
+    'duration': `${durationSeconds}`,
   }
 }
 
 exports.createHandler = async (admin, snap, bucket, aws, context) => {
   const { userId, itemId } = context.params;
   const srcPath = `users/${userId}/audio/${itemId}`;
-  const destPath = "dpe/" + srcPath + ".wav"
+  const destPath = `dpe/${srcPath}.wav`
   const readStream = bucket.file(srcPath).createReadStream();
 
   console.log("[START] Upload to S3");
@@ -35,7 +35,7 @@ exports.createHandler = async (admin, snap, bucket, aws, context) => {
     const { writeStream, promise } = uploadS3Stream({
       AWSConfig: aws,
       Key: destPath,
-      Metadata: metadata
+      Metadata: metadata,
     });
 
     readStream.pipe(writeStream);
