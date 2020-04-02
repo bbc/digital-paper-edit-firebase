@@ -270,31 +270,19 @@ const ProgrammeScript = props => {
       }
 
       // Not sure if this is right - probably need to add back a bunch of metadata.
-      // const paperEditDocument = {
-      //   title: title,
-      //   elements: newElements
-      // };
+      const paperEditDocument = {
+        title: title,
+        elements: newElements,
+      };
 
-      // try {
-      //   await PaperEditsCollection.putItem(
-      //     'ekUGmH6WhnwFnjr0tATO',
-      //     paperEditDocument
-      //   );
-      // } catch (error) {
-      //   console.log('error saving document', error);
-      // }
-
-      // const programmeScript = json.programmeScript;
-      // Adding an insert point at the end of the list
-      // programmeScript.elements.push({ type: 'insert-point', text: 'Insert Point to add selection' });
-      // this.setState({
-      //   programmeScript: programmeScript
-      // }
-      // TODO: figure out how to update preview
-      // , () => {
-      //   this.handleUpdatePreview();
-      // }
-      // );
+      try {
+        await PaperEditsCollection.putItem(
+          papereditsId,
+          paperEditDocument
+        );
+      } catch (error) {
+        console.log('error saving document', error);
+      }
     }
   };
 
