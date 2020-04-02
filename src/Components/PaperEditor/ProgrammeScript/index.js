@@ -41,6 +41,39 @@ const ProgrammeScript = props => {
     `/projects/${ projectId }/paperedits`
   );
 
+  const handleSaveProgrammeScript = async () => {
+    console.log('saving...');
+    if (elements) {
+      const newElements = JSON.parse(JSON.stringify(elements));
+      // finding an removing insert point before saving to server
+      // find insert point in list,
+      const insertPointElement = newElements.find(el => {
+        return el.type === 'insert';
+      });
+      if (insertPointElement) {
+        // get insertpoint index
+        const indexOfInsertPoint = newElements.indexOf(insertPointElement);
+        newElements.splice(indexOfInsertPoint, 1);
+      }
+
+      // Not sure if this is right - probably need to add back a bunch of metadata.
+      const paperEditDocument = {
+        title: title,
+        elements: newElements,
+      };
+
+      try {
+        await PaperEditsCollection.putItem(
+          papereditsId,
+          paperEditDocument
+        );
+        console.log('Successfully saved');
+      } catch (error) {
+        console.error('error saving document', error);
+      }
+    }
+  };
+
   useEffect(() => {
     const getPaperEdit = async () => {
       try {
@@ -144,45 +177,40 @@ const ProgrammeScript = props => {
     transcripts
   ]);
 
-  // TODO: handleDelete isn't working. Figure out how to update the StoryBook element.
   const handleReorder = (tempElements) => {
     console.log('Handling reorder.... ' + JSON.stringify(tempElements));
-
-    return setElements(tempElements);
+    setElements(tempElements);
   };
 
   const handleDelete = i => {
     console.log('Handling delete');
     // TODO: add a prompt, like are you shure you want to delete, confirm etc..?
-    // alert('handle delete');
+    alert('deleting');
+    console.log('Elements length before delete: ', elements.length);
     const tempElements = JSON.parse(JSON.stringify(elements));
     tempElements.splice(i, 1);
     setElements(tempElements);
+    console.log('Updated length of elements after delete: ', elements.length);
     setRenderVideo(true);
   };
 
-  // handleEdit = i => {
-  //   const { programmeScript } = this.state;
-  //   const elements = programmeScript.elements;
-  //   const currentElement = elements[i];
-  //   const newText = prompt('Edit', currentElement.text);
-  //   if (newText) {
-  //     currentElement.text = newText;
-  //     elements[i] = currentElement;
-  //     programmeScript.elements = elements;
-  //     // TODO: save to server
-  //     this.setState({
-  //       programmeScript: programmeScript,
-  //       resetPreview: true
-  //     });
-  //     // TODO: consider using set state function to avoid race condition? if needed?
-  //     // this.setState(({ programmeScript }) => {
-  //     //   return {
-  //     //     programmeScript: programmeScript
-  //     //   };
-  //     // });
-  //   }
-  // };
+  const handleEdit = i => {
+    console.log('handling edit');
+    const tempElements = JSON.parse(JSON.stringify(elements));
+    const currentElement = tempElements[i];
+    const newText = prompt('Edit', currentElement.text);
+    if (newText) {
+      console.log('editing...');
+      currentElement.text = newText;
+      tempElements[i] = currentElement;
+      setElements(tempElements);
+      console.log('edited');
+    } else {
+      // either newText is empty or they hit cancel
+      console.log('not editing');
+    }
+  };
+
   // // TODO: save to server
   // // TODO: needs to handle when selection spans across multiple paragraphs
   // handleAddTranscriptSelectionToProgrammeScript = () => {
@@ -254,37 +282,6 @@ const ProgrammeScript = props => {
   //     console.log('wordCurrentTime::', wordCurrentTime);
   //   }
   // };
-
-  const handleSaveProgrammeScript = async () => {
-    if (elements) {
-      const newElements = JSON.parse(JSON.stringify(elements));
-      // finding an removing insert point before saving to server
-      // find insert point in list,
-      const insertPointElement = newElements.find(el => {
-        return el.type === 'insert';
-      });
-      if (insertPointElement) {
-        // get insertpoint index
-        const indexOfInsertPoint = newElements.indexOf(insertPointElement);
-        newElements.splice(indexOfInsertPoint, 1);
-      }
-
-      // Not sure if this is right - probably need to add back a bunch of metadata.
-      const paperEditDocument = {
-        title: title,
-        elements: newElements,
-      };
-
-      try {
-        await PaperEditsCollection.putItem(
-          papereditsId,
-          paperEditDocument
-        );
-      } catch (error) {
-        console.log('error saving document', error);
-      }
-    }
-  };
 
   // // information around progressbar in the playlist object
   // render() {
@@ -387,7 +384,7 @@ const ProgrammeScript = props => {
                 items={ elements }
                 handleReorder={ handleReorder }
                 handleDelete={ i => handleDelete(i) }
-                // handleEdit={ handleEdit }
+                handleEdit={ handleEdit }
               />
             ) : null}
           </article>
