@@ -17,8 +17,8 @@ import ProgrammeScriptContainer from '@bbc/digital-paper-edit-storybook/Programm
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 
-import ExportDropdown from './ExportDropdown';
-import ElementsDropdown from './ElementsDropdown';
+import ExportDropdown from './ExportDropdown/index';
+import ElementsDropdown from './ElementsDropdown/index';
 
 import PropTypes from 'prop-types';
 
