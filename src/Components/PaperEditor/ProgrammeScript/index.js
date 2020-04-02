@@ -29,10 +29,11 @@ const ProgrammeScript = props => {
 
   const [ elements, setElements ] = useState();
   const [ title, setTitle ] = useState('');
-  const [ resetPreview, setResetPreview ] = useState(false);
+  const [ renderVideo, setRenderVideo ] = useState(false);
+  
+  // Video Context Preview
   const [ width, setWidth ] = useState(150);
   const [ playlist, setPlaylist ] = useState();
-
   const previewCardRef = useRef(null);
 
   const PaperEditsCollection = new Collection(
@@ -53,7 +54,7 @@ const ProgrammeScript = props => {
 
         elementsClone.push(insert);
         setElements(elementsClone);
-        setResetPreview(true);
+        setRenderVideo(true);
 
       } catch (error) {
         console.error('Error getting paper edits: ', error);
@@ -127,9 +128,9 @@ const ProgrammeScript = props => {
       getPaperEdit();
     }
 
-    if (setResetPreview) {
+    if (renderVideo) {
       handleUpdatePreview();
-      setResetPreview(false);
+      setRenderVideo(false);
     }
 
     return () => {
@@ -143,9 +144,9 @@ const ProgrammeScript = props => {
     transcripts
   ]);
 
-  // TODO: handleReorder and handleDelete aren't working. Figure out how to update the StoryBook element.
+  // TODO: handleDelete isn't working. Figure out how to update the StoryBook element.
   const handleReorder = (tempElements) => {
-    console.log('Handling reorder....');
+    console.log('Handling reorder.... ' + JSON.stringify(tempElements));
 
     return setElements(tempElements);
   };
@@ -155,28 +156,10 @@ const ProgrammeScript = props => {
     // TODO: add a prompt, like are you shure you want to delete, confirm etc..?
     // alert('handle delete');
     const tempElements = JSON.parse(JSON.stringify(elements));
-    const index = i;
-    tempElements.splice(index, i);
+    tempElements.splice(i, 1);
     setElements(tempElements);
-    resetPreview(true);
+    setRenderVideo(true);
   };
-
-  // // TODO: save to server
-  // handleDelete = i => {
-  //   // TODO: add a prompt, like are you shure you want to delete, confirm etc..?
-  //   // alert('handle delete');
-  //   this.setState(({ programmeScript }) => {
-  //     const index = i;
-  //     const list = programmeScript.elements;
-  //     list.splice(index, 1);
-  //     programmeScript.elements = list;
-
-  //     return {
-  //       programmeScript: programmeScript,
-  //       resetPreview: true
-  //     };
-  //   });
-  // };
 
   // handleEdit = i => {
   //   const { programmeScript } = this.state;
@@ -367,7 +350,7 @@ const ProgrammeScript = props => {
       </h2>
       <Card>
         <Card.Header ref={ previewCardRef }>
-          {!playlist ? (
+          {playlist ? (
             <PreviewCanvas width={ width } playlist={ playlist } />
           ) : null}
         </Card.Header>
@@ -415,7 +398,7 @@ const ProgrammeScript = props => {
               <ProgrammeScriptContainer
                 items={ elements }
                 handleReorder={ handleReorder }
-                handleDelete={ handleDelete }
+                handleDelete={ i => handleDelete(i) }
                 // handleEdit={ handleEdit }
               />
             ) : null}
