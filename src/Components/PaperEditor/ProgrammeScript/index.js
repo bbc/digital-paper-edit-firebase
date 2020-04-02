@@ -1,54 +1,84 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { withAuthorization } from '../../Session';
+import cuid from 'cuid';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Card from 'react-bootstrap/Card';
-import cuid from 'cuid';
+import Button from 'react-bootstrap/Button';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faPlus,
+  faSave,
+} from '@fortawesome/free-solid-svg-icons';
+
 import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 import ProgrammeScriptContainer from '@bbc/digital-paper-edit-storybook/ProgrammeScriptContainer';
-import Button from 'react-bootstrap/Button';
-import Dropdown from 'react-bootstrap/Dropdown';
-import EDL from 'edl_composer';
-import generateADL from '@bbc/aes31-adl-composer';
-import jsonToFCPX from '@bbc/fcpx-xml-composer';
-import downloadjs from 'downloadjs';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import PropTypes from 'prop-types';
-import {
-  faShare,
-  faMicrophoneAlt,
-  faStickyNote,
-  faHeading,
-  faPlus,
-  faSync,
-  faInfoCircle,
-  faSave,
-  faFileExport
-} from '@fortawesome/free-solid-svg-icons';
-import timecodes from 'node-timecodes';
-import getDataFromUserWordsSelection from './get-data-from-user-selection.js';
-import {
-  divideWordsSelectionsIntoParagraphs,
-  isOneParagraph
-} from './divide-words-selections-into-paragraphs';
 
 import Collection from '../../Firebase/Collection';
+import { withAuthorization } from '../../Session';
 
-const defaultReelName = 'NA';
-const defaultFps = 25;
-const defaultTimecodeOffset = '00:00:00:00';
-const defaultSampleRate = '16000';
+import ExportDropdown from './ExportDropdown';
+import ElementsDropdown from './ElementsDropdown';
+
+import PropTypes from 'prop-types';
 
 const ProgrammeScript = props => {
   const transcripts = props.transcripts;
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
+
+  const [ elements, setElements ] = useState();
+  const [ title, setTitle ] = useState('');
+  const [ resetPreview, setResetPreview ] = useState(false);
+  const [ width, setWidth ] = useState(150);
+  const [ playlist, setPlaylist ] = useState();
+
   const previewCardRef = useRef(null);
 
-  const [ programmeScript, updateProgrammeScript ] = useState(null);
-  const [ resetPreview, toggleResetPreview ] = useState(false);
-  const [ width, updateWidth ] = useState(150);
-  const [ playlist, updatePlaylist ] = useState();
+  const PaperEditsCollection = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/paperedits`
+  );
+
+  useEffect(() => {
+    const getPaperEdit = async () => {
+      try {
+        const paperEdit = await PaperEditsCollection.getItem(papereditsId);
+        setTitle(paperEdit.title);
+        const elementsClone = JSON.parse(JSON.stringify(paperEdit.elements));
+        const insert = {
+          type: 'insert',
+          text: 'Insert point to add selection'
+        };
+
+        elementsClone.push(insert);
+        setElements(elementsClone);
+        setResetPreview(true);
+
+      } catch (error) {
+        console.error('Error getting paper edits: ', error);
+      }
+    };
+
+    const updateVideoContextWidth = () => {
+      setWidth(previewCardRef.current.offsetWidth - 10);
+    };
+
+    window.addEventListener('resize', updateVideoContextWidth);
+
+    if (!elements) {
+      getPaperEdit();
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateVideoContextWidth);
+    };
+  },
+  [
+    PaperEditsCollection,
+    elements,
+    papereditsId
+  ]);
 
   const getTranscript = transcriptId => {
     return transcripts.find(tr => tr.id === transcriptId);
@@ -57,7 +87,7 @@ const ProgrammeScript = props => {
   const getPlayList = () => {
     let startTime = 0;
 
-    return programmeScript.elements
+    return elements
       .filter(element => element.type === 'paper-cut')
       .map(element => {
         console.log('paper cut element: ', element);
@@ -76,183 +106,34 @@ const ProgrammeScript = props => {
       });
   };
 
-  const PaperEditsCollection = new Collection(
-    props.firebase,
-    `/projects/${ projectId }/paperedits`
-  );
-
-  useEffect(() => {
-    const getPaperEdit = async () => {
-      try {
-        const data = await PaperEditsCollection.getItem(papereditsId);
-        const paperEditProgrammeScript = {};
-        paperEditProgrammeScript.title = data.title;
-        paperEditProgrammeScript.elements = data.elements;
-        paperEditProgrammeScript.elements.push({
-          type: 'insert',
-          text: 'Insert point to add selection'
-        });
-        updateProgrammeScript(paperEditProgrammeScript);
-        toggleResetPreview(true);
-      } catch (error) {
-        console.error('Error getting paper edits: ', error);
-      }
-    };
-
-    const updateVideoContextWidth = () => {
-      const recalcWidth = previewCardRef.current.offsetWidth - 10;
-      updateWidth(recalcWidth);
-    };
-
-    window.addEventListener('resize', updateVideoContextWidth);
-
-    if (!programmeScript) {
-      getPaperEdit();
-    }
-  }, [
-    PaperEditsCollection,
-    previewCardRef.offsetWidth,
-    papereditsId,
-    programmeScript,
-    resetPreview,
-    props.programmeScript
-  ]);
-
   const handleUpdatePreview = () => {
     const currentPlaylist = getPlayList();
     // [old comment]: Workaround to mound and unmount the `PreviewCanvas` component
     // to update the playlist
-    updatePlaylist(currentPlaylist);
+    setPlaylist(currentPlaylist);
   };
 
   const handleResetPreview = () => {
     handleUpdatePreview();
-    toggleResetPreview(!resetPreview);
+    setResetPreview(false);
   };
 
   // TODO: handleReorder and handleDelete aren't working. Figure out how to update the StoryBook element.
-  const handleReorder = () => {
+  const handleReorder = (tempElements) => {
     console.log('Handling reorder....');
-    const tempScript = programmeScript;
-    // tempScript.elements = list;
 
-    return updateProgrammeScript(tempScript);
+    return setElements(tempElements);
   };
 
   const handleDelete = i => {
     console.log('Handling delete');
     // TODO: add a prompt, like are you shure you want to delete, confirm etc..?
     // alert('handle delete');
-    const tempScript = programmeScript;
+    const tempElements = JSON.parse(JSON.stringify(elements));
     const index = i;
-    const list = tempScript.elements;
-    list.splice(index, i);
-    updateProgrammeScript(tempScript);
+    tempElements.splice(index, i);
+    setElements(tempElements);
     resetPreview(true);
-  };
-
-  const getIndexPositionOfInsertPoint = () => {
-    const elements = programmeScript.elements;
-    const insertPointElement = elements.find(el => {
-      return el.type === 'insert';
-    });
-    const indexOfInsertPoint = elements.indexOf(insertPointElement);
-
-    return indexOfInsertPoint;
-  };
-
-  const handleAddTranscriptElementToProgrammeScript = elementType => {
-    const tempProgrammeScript = programmeScript;
-    const elements = programmeScript.elements;
-    // [old comment]: TODO: refactor - with helper functions
-    if (
-      elementType === 'title' ||
-      elementType === 'note' ||
-      elementType === 'voice-over'
-    ) {
-      const text = prompt(
-        'Add some text for a section title',
-        'Some place holder text'
-      );
-
-      const indexOfInsertPoint = getIndexPositionOfInsertPoint();
-      const newElement = {
-        id: cuid(),
-        index: elements.length,
-        type: elementType,
-        text: text
-      };
-      elements.splice(indexOfInsertPoint, 0, newElement);
-      tempProgrammeScript.elements = elements;
-      // [old comment]: TODO: save to server (should this only be if the 'Save' button is clicked?)
-
-      updateProgrammeScript(tempProgrammeScript); // This doesn't trigger a refresh...
-    }
-  };
-
-  // /**
-  //  * Helper function to create json EDL for other EDL/ADL/FPCX export
-  //  */
-
-  const getSequenceJsonEDL = () => {
-    const edlSq = {
-      title: programmeScript.title,
-      events: []
-    };
-
-    const programmeScriptPaperCuts = programmeScript.elements
-      .map(element => {
-        if (element.type === 'paper-cut') {
-          // Get clipName for current transcript
-          const currentTranscript = transcripts.find(tr => {
-            return tr.id === element.transcriptId;
-          });
-
-          const result = {
-            startTime: element.start,
-            endTime: element.end,
-            reelName: currentTranscript.metadata
-              ? currentTranscript.metadata.reelName
-              : defaultReelName,
-            clipName: `${ currentTranscript.clipName }`,
-            // TODO: frameRate should be pulled from the clips in the sequence
-            // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
-            // but again frameRate should not be hard coded
-            fps: currentTranscript.metadata
-              ? currentTranscript.metadata.fps
-              : defaultFps,
-            // TODO: if there is an offset this should added here, for now hard coding 0
-            offset: currentTranscript.metadata
-              ? currentTranscript.metadata.timecode
-              : defaultTimecodeOffset,
-            sampleRate: currentTranscript.metadata
-              ? currentTranscript.metadata.sampleRate
-              : defaultSampleRate
-          };
-
-          console.log('EDL - result 1', result);
-
-          return result;
-        }
-
-        return null;
-      })
-      .filter(el => {
-        return el !== null;
-      });
-    // adding ids to EDL
-    const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
-      (el, index) => {
-        el.id = index + 1;
-
-        return el;
-      }
-    );
-    edlSq.events.push(...programmeScriptPaperCutsWithId);
-
-    console.log('EDL Seq', edlSq);
-
-    return edlSq;
   };
 
   // // TODO: save to server
@@ -356,159 +237,6 @@ const ProgrammeScript = props => {
   //   }
   // };
 
-  // // https://www.npmjs.com/package/downloadjs
-  // // https://www.npmjs.com/package/edl_composer
-  const handleExportEDL = () => {
-    const edlSq = getSequenceJsonEDL();
-    const edl = new EDL(edlSq);
-    console.log(edl.compose());
-    downloadjs(edl.compose(), `${ programmeScript.title }.edl`, 'text/plain');
-  };
-
-  const handleExportADL = () => {
-    // alert('this function has not been implemented yet');
-    const edlSq = getSequenceJsonEDL();
-    const firstElement = edlSq.events[0];
-    // const result = generateADL(edlSq);
-    const result = generateADL({
-      projectOriginator: 'Digital Paper Edit',
-      // TODO: it be good to change sequence for the ADL to be same schema
-      // as the one for EDL and FCPX - for now just adjusting
-      edits: edlSq.events.map(event => {
-        return {
-          start: event.startTime,
-          end: event.endTime,
-          clipName: event.clipName,
-          // TODO: could add a label if present
-          label: ''
-        };
-      }),
-      sampleRate: firstElement.sampleRate,
-      frameRate: firstElement.fps,
-      projectName: edlSq.title
-    });
-
-    console.log('ADL Result', result);
-    downloadjs(result, `${ programmeScript.title }.adl`, 'text/plain');
-  };
-
-  const handleExportFCPX = () => {
-    // alert('this function has not been implemented yet');
-    const edlSq = getSequenceJsonEDL();
-    const result = jsonToFCPX(edlSq);
-    console.log('FCPX result', result);
-    downloadjs(result, `${ programmeScript.title }.fcpxml`, 'text/plain');
-  };
-
-  const getProgrammeScriptJson = () => {
-    // alert('this function has not been implemented yet');
-    const edlSq = {
-      title: programmeScript.title,
-      events: []
-    };
-
-    const programmeScriptPaperCuts = programmeScript.elements
-      .map(element => {
-        if (element.type === 'paper-cut') {
-          console.log('paper-cut::', element);
-          // Get clipName for current transcript
-          const currentTranscript = transcripts.find(tr => {
-            return tr.id === element.transcriptId;
-          });
-
-          const result = {
-            ...element,
-            startTime: element.start,
-            endTime: element.end,
-            reelName: currentTranscript.metadata
-              ? currentTranscript.metadata.reelName
-              : defaultReelName,
-            clipName: `${ currentTranscript.clipName }`,
-            // TODO: frameRate should be pulled from the clips in the sequence
-            // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
-            // but again frameRate should not be hard coded
-            fps: currentTranscript.metadata
-              ? currentTranscript.metadata.fps
-              : defaultFps,
-            sampleRate: currentTranscript.metadata
-              ? currentTranscript.metadata.sampleRate
-              : defaultSampleRate,
-            offset: currentTranscript.metadata
-              ? currentTranscript.metadata.timecode
-              : defaultTimecodeOffset
-          };
-
-          return result;
-        } else {
-          return element;
-        }
-      })
-      .filter(el => {
-        return el !== null;
-      });
-    // adding ids to EDL
-    const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
-      (el, index) => {
-        el.id = index + 1;
-
-        return el;
-      }
-    );
-    edlSq.events.push(...programmeScriptPaperCutsWithId);
-    console.log(edlSq);
-
-    return edlSq;
-  };
-
-  const programmeScriptJsonToText = edlsqJson => {
-    const title = `# ${ edlsqJson.title }\n\n`;
-    const body = edlsqJson.events.map(event => {
-      console.log('EDL events', event);
-      if (event.type === 'title') {
-        return `## ${ event.text }`;
-      } else if (event.type === 'voice-over') {
-        return `_${ event.text }_`;
-      } else if (event.type === 'note') {
-        return `[ ${ event.text }]`;
-      } else if (event.type === 'paper-cut') {
-        return `${ timecodes.fromSeconds(
-          event.startTime
-        ) }\t${ timecodes.fromSeconds(event.endTime) }\t${ event.speaker }\t-\t${
-          event.clipName
-        }     \n${ event.words
-          .map(word => {
-            return word.text;
-          })
-          .join(' ') }`;
-      }
-
-      return null;
-    });
-
-    return `${ title }${ body.join('\n\n') }`;
-  };
-
-  const handleExportJson = () => {
-    const programmeScriptJson = getProgrammeScriptJson();
-    const programmeScriptText = JSON.stringify(programmeScriptJson, null, 2);
-    downloadjs(
-      programmeScriptText,
-      `${ programmeScript.title }.json`,
-      'text/plain'
-    );
-  };
-
-  const handleExportTxt = () => {
-    const programmeScriptJson = getProgrammeScriptJson();
-    const programmeScriptText = programmeScriptJsonToText(programmeScriptJson);
-    console.log('Programme Script Text: ', programmeScriptText);
-    downloadjs(
-      programmeScriptText,
-      `${ programmeScript.title }.txt`,
-      'text/plain'
-    );
-  };
-
   // handleDoubleClickOnProgrammeScript = e => {
   //   if (e.target.className === 'words') {
   //     const wordCurrentTime = e.target.dataset.start;
@@ -520,31 +248,33 @@ const ProgrammeScript = props => {
   // };
 
   const handleSaveProgrammeScript = async () => {
-    const tempProgrammeScript = programmeScript;
-    console.log('script', tempProgrammeScript);
-    if (programmeScript) {
-      const elements = programmeScript.elements;
+    if (elements) {
+      const newElements = JSON.parse(JSON.stringify(elements));
       // finding an removing insert point before saving to server
       // find insert point in list,
-      const insertPointElement = elements.find(el => {
+      const insertPointElement = newElements.find(el => {
         return el.type === 'insert';
       });
       if (insertPointElement) {
         // get insertpoint index
-        const indexOfInsertPoint = elements.indexOf(insertPointElement);
-        elements.splice(indexOfInsertPoint, 1);
+        const indexOfInsertPoint = newElements.indexOf(insertPointElement);
+        newElements.splice(indexOfInsertPoint, 1);
       }
 
-      programmeScript.elements = elements;
+      // Not sure if this is right - probably need to add back a bunch of metadata.
+      // const paperEditDocument = {
+      //   title: title,
+      //   elements: newElements
+      // };
 
-      try {
-        await PaperEditsCollection.putItem(
-          'ekUGmH6WhnwFnjr0tATO',
-          tempProgrammeScript
-        );
-      } catch (error) {
-        console.log('error saving document', error);
-      }
+      // try {
+      //   await PaperEditsCollection.putItem(
+      //     'ekUGmH6WhnwFnjr0tATO',
+      //     paperEditDocument
+      //   );
+      // } catch (error) {
+      //   console.log('error saving document', error);
+      // }
 
       // const programmeScript = json.programmeScript;
       // Adding an insert point at the end of the list
@@ -564,15 +294,49 @@ const ProgrammeScript = props => {
   // render() {
   // });
 
+  const getIndexPositionOfInsertPoint = () => {
+    const insertPointElement = elements.find(el => {
+      return el.type === 'insert';
+    });
+    const indexOfInsertPoint = elements.indexOf(insertPointElement);
+
+    return indexOfInsertPoint;
+  };
+
+  const handleAddTranscriptElementToProgrammeScript = elementType => {
+    // [old comment]: TODO: refactor - with helper functions
+    const newElements = JSON.parse(JSON.stringify(elements));
+    if (
+      elementType === 'title' ||
+      elementType === 'note' ||
+      elementType === 'voice-over'
+    ) {
+      const text = prompt(
+        'Add some text for a section title',
+        'Some place holder text'
+      );
+
+      const indexOfInsertPoint = getIndexPositionOfInsertPoint();
+      const newElement = {
+        id: cuid(),
+        index: elements.length,
+        type: elementType,
+        text: text
+      };
+      newElements.splice(indexOfInsertPoint, 0, newElement);
+      // [old comment]: TODO: save to server (should this only be if the 'Save' button is clicked?)
+
+      setElements(newElements); // This doesn't trigger a refresh...
+    }
+  };
+
   return (
     <>
       <h2
         className={ [ 'text-truncate', 'text-muted' ].join(' ') }
-        title={ `Programme Script Title: ${
-          programmeScript ? programmeScript.title : ''
-        }` }
+        title={ `Programme Script Title: ${ title }` }
       >
-        {programmeScript ? programmeScript.title : ''}
+        {title}
       </h2>
       <Card>
         <Card.Header ref={ previewCardRef }>
@@ -593,87 +357,13 @@ const ProgrammeScript = props => {
               </Button>
             </Col>
             <Col sm={ 12 } md={ 2 }>
-              <Dropdown>
-                <Dropdown.Toggle variant="outline-secondary">
-                  <FontAwesomeIcon icon={ faPlus } />
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item
-                    onClick={ () => {
-                      handleAddTranscriptElementToProgrammeScript('title');
-                    } }
-                    title="Add a title header element to the programme script"
-                  >
-                    <FontAwesomeIcon icon={ faHeading } /> Heading
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={ () => {
-                      handleAddTranscriptElementToProgrammeScript('voice-over');
-                    } }
-                    title="Add a title voice over element to the programme script"
-                  >
-                    <FontAwesomeIcon icon={ faMicrophoneAlt } /> Voice Over
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={ () => {
-                      handleAddTranscriptElementToProgrammeScript('note');
-                    } }
-                    title="Add a note element to the programme script"
-                  >
-                    <FontAwesomeIcon icon={ faStickyNote } /> Note
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+              <ElementsDropdown handleAdd={ handleAddTranscriptElementToProgrammeScript } />
             </Col>
             <Col sm={ 12 } md={ 3 }>
-              <Dropdown>
-                <Dropdown.Toggle variant="outline-secondary">
-                  <FontAwesomeIcon icon={ faShare } /> Export
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item
-                    onClick={ handleExportEDL }
-                    title="export EDL, edit decision list, to import the programme script as a sequence in video editing software - Avid, Premiere, Davinci Resolve, for FCPX choose FCPX XML"
-                  >
-                    EDL - Video <FontAwesomeIcon icon={ faInfoCircle } />
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={ handleExportADL }
-                    title="export ADL, audio decision list, to import the programme script as a sequence in audio editing software such as SADiE"
-                  >
-                    <FontAwesomeIcon icon={ faFileExport } />
-                    ADL - Audio <FontAwesomeIcon icon={ faInfoCircle } />
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={ handleExportFCPX }
-                    title="export FCPX XML, to import the programme script as a sequence in Final Cut Pro X, video editing software"
-                  >
-                    FCPX <FontAwesomeIcon icon={ faInfoCircle } />
-                  </Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item
-                    onClick={ handleExportTxt }
-                    title="export Text, export the programme script as a text version"
-                  >
-                    Text File <FontAwesomeIcon icon={ faInfoCircle } />
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={ () => {
-                      alert('export word doc not implemented yet');
-                    } }
-                    title="export docx, export the programme script as a word document"
-                  >
-                    Word Document <FontAwesomeIcon icon={ faInfoCircle } />
-                  </Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item
-                    onClick={ handleExportJson }
-                    title="export Json, export the programme script as a json file"
-                  >
-                    Json <FontAwesomeIcon icon={ faInfoCircle } />
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+              <ExportDropdown
+                transcripts={ transcripts }
+                title={ title }
+                elements={ elements }></ExportDropdown>
             </Col>
             <Col sm={ 12 } md={ 1 }>
               <Button
@@ -689,15 +379,14 @@ const ProgrammeScript = props => {
             </Col>
           </Row>
         </Card.Header>
-
         <Card.Body>
           <article
             style={ { height: '60vh', overflow: 'scroll' } }
             // onDoubleClick={ this.handleDoubleClickOnProgrammeScript }
           >
-            {programmeScript ? (
+            {elements ? (
               <ProgrammeScriptContainer
-                items={ programmeScript.elements }
+                items={ elements }
                 handleReorder={ handleReorder }
                 handleDelete={ handleDelete }
                 // handleEdit={ handleEdit }
@@ -712,11 +401,13 @@ const ProgrammeScript = props => {
 
 ProgrammeScript.propTypes = {
   firebase: PropTypes.any,
-  match: PropTypes.any
+  match: PropTypes.any,
+  transcripts: PropTypes.any
 };
 
 const condition = authUser => !!authUser;
 export default withAuthorization(condition)(ProgrammeScript);
+
 //   }
 // }
 

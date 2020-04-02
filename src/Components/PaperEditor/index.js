@@ -21,7 +21,6 @@ const PaperEditor = (props) => {
 
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
-
   const [ transcripts, setTranscripts ] = useState(null);
 
   const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
@@ -62,12 +61,14 @@ const PaperEditor = (props) => {
       }
     };
 
-    getProject();
-    getPaperEdit();
-    getTranscripts();
+    if (!transcripts) {
+      getProject();
+      getPaperEdit();
+      getTranscripts();
+    }
 
     return () => {};
-  }, [ PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId ]);
+  }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
