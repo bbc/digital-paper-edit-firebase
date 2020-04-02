@@ -60,14 +60,76 @@ const ProgrammeScript = props => {
       }
     };
 
+    const getTranscript = transcriptId => {
+      return transcripts.find(tr => tr.id === transcriptId);
+    };
+
+    const getPlaylist = () => {
+      let startTime = 0;
+
+      return elements
+        .filter(element => element.type === 'paper-cut')
+        .map(element => {
+          console.log('paper cut element: ', element);
+          const transcript = getTranscript(element.transcriptId);
+          const result = {
+            type: 'video',
+            start: startTime,
+            sourceStart: element.start,
+            duration: element.end - element.start,
+            src: transcript.url
+          };
+
+          startTime += result.duration;
+
+          return result;
+        });
+    };
+
     const updateVideoContextWidth = () => {
       setWidth(previewCardRef.current.offsetWidth - 10);
+    };
+
+    const handleUpdatePreview = () => {
+      // const currentPlaylist = getPlaylist();
+      // [old comment]: Workaround to mound and unmount the `PreviewCanvas` component
+      // to update the playlist
+      const currentPlaylist = [
+        {
+          'type': 'video',
+          'start': 0,
+          'sourceStart': 30,
+          'duration': 10,
+          'src': 'https://download.ted.com/talks/MorganVague_2018X.mp4'
+        },
+        {
+          'type': 'video',
+          'start': 10,
+          'sourceStart': 40,
+          'duration': 10,
+          'src': 'https://download.ted.com/talks/IvanPoupyrev_2019.mp4'
+        },
+        {
+          'type': 'video',
+          'start': 20,
+          'sourceStart': 50,
+          'duration': 10,
+          'src': 'https://download.ted.com/talks/KateDarling_2018S-950k.mp4'
+        }
+      ];
+
+      setPlaylist(currentPlaylist);
     };
 
     window.addEventListener('resize', updateVideoContextWidth);
 
     if (!elements) {
       getPaperEdit();
+    }
+
+    if (setResetPreview) {
+      handleUpdatePreview();
+      setResetPreview(false);
     }
 
     return () => {
@@ -77,46 +139,9 @@ const ProgrammeScript = props => {
   [
     PaperEditsCollection,
     elements,
-    papereditsId
+    papereditsId,
+    transcripts
   ]);
-
-  const getTranscript = transcriptId => {
-    return transcripts.find(tr => tr.id === transcriptId);
-  };
-
-  const getPlayList = () => {
-    let startTime = 0;
-
-    return elements
-      .filter(element => element.type === 'paper-cut')
-      .map(element => {
-        console.log('paper cut element: ', element);
-        const transcript = getTranscript(element.transcriptId);
-        const result = {
-          type: 'video',
-          start: startTime,
-          sourceStart: element.start,
-          duration: element.end - element.start,
-          src: transcript.url
-        };
-
-        startTime += result.duration;
-
-        return result;
-      });
-  };
-
-  const handleUpdatePreview = () => {
-    const currentPlaylist = getPlayList();
-    // [old comment]: Workaround to mound and unmount the `PreviewCanvas` component
-    // to update the playlist
-    setPlaylist(currentPlaylist);
-  };
-
-  const handleResetPreview = () => {
-    handleUpdatePreview();
-    setResetPreview(false);
-  };
 
   // TODO: handleReorder and handleDelete aren't working. Figure out how to update the StoryBook element.
   const handleReorder = (tempElements) => {
@@ -330,6 +355,8 @@ const ProgrammeScript = props => {
     }
   };
 
+  console.log(playlist);
+
   return (
     <>
       <h2
@@ -340,7 +367,7 @@ const ProgrammeScript = props => {
       </h2>
       <Card>
         <Card.Header ref={ previewCardRef }>
-          {!resetPreview ? (
+          {!playlist ? (
             <PreviewCanvas width={ width } playlist={ playlist } />
           ) : null}
         </Card.Header>
