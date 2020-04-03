@@ -183,15 +183,20 @@ const ProgrammeScript = props => {
   };
 
   const handleDelete = i => {
-    console.log('Handling delete');
-    // TODO: add a prompt, like are you shure you want to delete, confirm etc..?
-    alert('deleting');
-    console.log('Elements length before delete: ', elements.length);
-    const tempElements = JSON.parse(JSON.stringify(elements));
-    tempElements.splice(i, 1);
-    setElements(tempElements);
-    console.log('Updated length of elements after delete: ', elements.length);
-    setRenderVideo(true);
+    console.log('Handling delete...');
+    const confirmDelete = window.confirm('Are you sure you want to delete?');
+    // Using confirm() breaks it so we use window.confirm()
+    // See last comment https://helperbyte.com/questions/72323/how-to-work-with-a-confirm-to-react
+    if (confirmDelete) {
+      console.log('Deleting');
+      const tempElements = JSON.parse(JSON.stringify(elements));
+      tempElements.splice(i, 1);
+      setElements(tempElements);
+      setRenderVideo(true);
+      console.log('Deleted');
+    } else {
+      console.log('Not deleting');
+    }
   };
 
   const handleEdit = i => {
