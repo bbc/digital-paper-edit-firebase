@@ -323,8 +323,6 @@ const ProgrammeScript = props => {
     }
   };
 
-  console.log(playlist);
-
   return (
     <>
       <h2
