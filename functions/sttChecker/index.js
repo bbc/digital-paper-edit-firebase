@@ -56,25 +56,48 @@ const something = (jointData, querySnapshot, timestamp) => {
 };
 
 const getTranscriptionOwners = async admin => {
-  let jointData = {};
   const usersCollection = await getUsersCollection(admin);
-  const userIds = usersCollection.docs.map(user => user.id);
+  // const audioCollection = await Promise.all(
+  //   usersCollection.docs.map(user => getAudioCollection(admin, user.id))
+  // );
 
-  const audio = Promise.all(
-    userIds.map(async userId => {
-      const audioc = await getAudioCollection(admin, userId).docs;
-      console.log(audioc);
-    })
-  );
-  console.log("audio", JSON.stringify(audio));
-  userIds.forEach(async userId => {
+  // console.log("audio", JSON.stringify(audioCollection.map(ac => ac.docs)));
+
+  const asyncUpdate = async userId => {
     const audioCollection = await getAudioCollection(admin, userId);
-    audioCollection.docs.forEach(audio => {
-      jointData[audio.id] = userId;
-    });
+    const audioIds = audioCollection.docs.map(audio => audio.id);
+    const rest = Object.assign(
+      {},
+      ...Object.entries(audioIds).map(audioId => {
+        return { [audioId]: { user: userId } };
+      })
+    );
+    return rest;
+  };
 
-    return jointData;
-  });
+  const data = await Promise.all(
+    usersCollection.docs.map(
+      user => asyncUpdate(user.id)
+      // const asyncUpdate = async userId => {
+      //   const audioCollection = await getAudioCollection(admin, userId);
+      //   return Object.assign(
+      //     {},
+      //     ...Object.entries(audioCollection.docs).map(audio => ({
+      //       [audio.id]: { user: userId }
+      //     }))
+      //   );
+      // };
+      // const audioCollection = await getAudioCollection(admin, userId);
+      // audioCollection.docs.forEach(audio => {
+      //   jointData[audio.id] = userId;
+      // });
+      // console.log("test", JSON.stringify(jointData));
+    )
+  );
+
+  // const exampleId = "gLoKESQNkVavUfSiqqoSEEEa6Lo2";
+  // console.log(await asyncUpdate(exampleId));
+
   // const audioFiles = [];
   // const audioCollection = await getAudioCollection(admin, user.id);
   // let docs = audioCollection.docs.map(audio => audio);
@@ -91,10 +114,9 @@ const getTranscriptionOwners = async admin => {
   //   });
   //   console.log("audioFiles", audioFiles);
   // });
-  console.log("users", userIds);
   // console.log("audioFiles", audioFiles);
-  console.log("joint data at the end before return", JSON.stringify(jointData));
-  return jointData;
+  console.log("joint data at the end before return", JSON.stringify(data));
+  return data;
 };
 
 const updateFirestore = async (admin, timestamp) => {
