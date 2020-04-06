@@ -127,7 +127,7 @@ const PaperEditor = (props) => {
     />
   );
 
-  const TranscriptEl = <>
+  let TranscriptEl = <>
     <br />
     <br />
     <i>No Transcripts, create a transcript to get started</i>

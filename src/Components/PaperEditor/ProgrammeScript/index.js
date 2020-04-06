@@ -235,6 +235,15 @@ const ProgrammeScript = props => {
     setElements(result);
   };
 
+  const getIndexPositionOfInsertPoint = () => {
+    const insertPointElement = elements.find(el => {
+      return el.type === 'insert';
+    });
+    const indexOfInsertPoint = elements.indexOf(insertPointElement);
+
+    return indexOfInsertPoint;
+  };
+
   // // TODO: save to server
   // // TODO: needs to handle when selection spans across multiple paragraphs
   const handleAddTranscriptSelectionToProgrammeScript = () => {
@@ -247,7 +256,7 @@ const ProgrammeScript = props => {
       const tempElements = elements;
       // TODO: insert at insert point
 
-      const indexOfInsertPoint = this.getIndexPositionOfInsertPoint();
+      const indexOfInsertPoint = getIndexPositionOfInsertPoint();
       let newElement;
       if (isOneParagraph(result.words)) {
         // create new element
@@ -301,15 +310,6 @@ const ProgrammeScript = props => {
       // investigate how to set currentTime in video context
       console.log('wordCurrentTime::', wordCurrentTime);
     }
-  };
-
-  const getIndexPositionOfInsertPoint = () => {
-    const insertPointElement = elements.find(el => {
-      return el.type === 'insert';
-    });
-    const indexOfInsertPoint = elements.indexOf(insertPointElement);
-
-    return indexOfInsertPoint;
   };
 
   const handleAddTranscriptElementToProgrammeScript = elementType => {
