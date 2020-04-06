@@ -100,6 +100,12 @@ const ProgrammeScript = props => {
       }
     };
 
+    if (!elements) {
+      getPaperEdit();
+    }
+  }, [ PaperEditsCollection, elements, papereditsId ]);
+
+  useEffect(() => {
     const getTranscript = transcriptId => {
       return transcripts.find(tr => tr.id === transcriptId);
     };
@@ -125,19 +131,14 @@ const ProgrammeScript = props => {
         });
     };
 
-    const updateVideoContextWidth = () => {
-      setWidth(previewCardRef.current.offsetWidth - 10);
-      console.log('updating video context width...');
-    };
-
     const handleUpdatePreview = () => {
       // const currentPlaylist = getPlaylist();
 
       // [old comment]: Workaround to mound and unmount the `PreviewCanvas` component
       // to update the playlist
 
-      // currentPlaylist is hard-coded data to test previewCanvas functionality. This needs 
-      // to be refactored to be dyanmically retrieved with the currentPlaylist function. 
+      // currentPlaylist is hard-coded data to test previewCanvas functionality. This needs
+      // to be refactored to be dyanmically retrieved with the currentPlaylist function.
       const currentPlaylist = [
         {
           'type': 'video',
@@ -165,33 +166,31 @@ const ProgrammeScript = props => {
       setPlaylist(currentPlaylist);
     };
 
-    window.addEventListener('resize', updateVideoContextWidth);
-
-    if (!elements) {
-      getPaperEdit();
-    }
-
     if (resetPreview) {
       handleUpdatePreview();
       setResetPreview(false);
     }
 
+  }, [ elements, resetPreview, transcripts ]);
+
+  useEffect(() => {
+
+    const updateVideoContextWidth = () => {
+      setWidth(previewCardRef.current.offsetWidth - 10);
+      console.log('updating video context width...');
+    };
+
+    window.addEventListener('resize', updateVideoContextWidth);
+
     return () => {
       window.removeEventListener('resize', updateVideoContextWidth);
     };
-  },
-  [
-    PaperEditsCollection,
-    elements,
-    papereditsId,
-    transcripts,
-    resetPreview,
-  ]);
+  });
 
-  const handleReorder = (tempElements) => {
+  const handleReorder = (elementsClone) => {
     console.log('Handling reorder...');
-    setElements(tempElements);
-    resetPreview(true);
+    setElements(elementsClone);
+    setResetPreview(true);
     console.log('Reordered');
   };
 
@@ -202,9 +201,9 @@ const ProgrammeScript = props => {
     // See last comment https://helperbyte.com/questions/72323/how-to-work-with-a-confirm-to-react
     if (confirmDelete) {
       console.log('Deleting');
-      const tempElements = JSON.parse(JSON.stringify(elements));
-      tempElements.splice(i, 1);
-      setElements(tempElements);
+      const elementsClone = JSON.parse(JSON.stringify(elements));
+      elementsClone.splice(i, 1);
+      setElements(elementsClone);
       setResetPreview(true);
       console.log('Deleted');
     } else {
@@ -214,14 +213,14 @@ const ProgrammeScript = props => {
 
   const handleEdit = i => {
     console.log('Handling edit...');
-    const tempElements = JSON.parse(JSON.stringify(elements));
-    const currentElement = tempElements[i];
+    const elementsClone = JSON.parse(JSON.stringify(elements));
+    const currentElement = elementsClone[i];
     const newText = prompt('Edit', currentElement.text);
     if (newText) {
       console.log('Editing...');
       currentElement.text = newText;
-      tempElements[i] = currentElement;
-      setElements(tempElements);
+      elementsClone[i] = currentElement;
+      setElements(elementsClone);
       setResetPreview(true);
       console.log('Edited');
     } else {
@@ -250,12 +249,11 @@ const ProgrammeScript = props => {
     console.log('Handling add transcript selection...');
     const result = getDataFromUserWordsSelection();
     if (result) {
-      // old comment 
       // result.words
       // TODO: if there's just one speaker in selection do following
       // if it's multiple split list of words into multiple groups
       // and add a papercut for each to the programme script
-      const tempElements = elements;
+      const elementsClone = elements;
       // TODO: insert at insert point
 
       const indexOfInsertPoint = getIndexPositionOfInsertPoint();
@@ -265,7 +263,7 @@ const ProgrammeScript = props => {
         // TODO: Create new element could be refactored into helper function
         newElement = {
           id: cuid(),
-          index: tempElements.length,
+          index: elementsClone.length,
           type: 'paper-cut',
           start: result.start,
           end: result.end,
@@ -279,7 +277,7 @@ const ProgrammeScript = props => {
         paragraphs.reverse().forEach(paragraph => {
           newElement = {
             id: cuid(),
-            index: tempElements.length,
+            index: elementsClone.length,
             type: 'paper-cut',
             start: paragraph[0].start,
             end: paragraph[paragraph.length - 1].end,
@@ -291,8 +289,8 @@ const ProgrammeScript = props => {
           };
         });
       }
-      tempElements.splice(indexOfInsertPoint, 0, newElement);
-      setElements(tempElements);
+      elementsClone.splice(indexOfInsertPoint, 0, newElement);
+      setElements(elementsClone);
       setResetPreview(true);
     } else {
       console.log('nothing selected');
@@ -348,7 +346,7 @@ const ProgrammeScript = props => {
       <Card>
         <Card.Header ref={ previewCardRef }>
           {playlist ? (
-            <PreviewCanvas width={ width } playlist={ playlist } onload={}/>
+            <PreviewCanvas width={ width } playlist={ playlist }/>
           ) : null}
         </Card.Header>
         <Card.Header>
