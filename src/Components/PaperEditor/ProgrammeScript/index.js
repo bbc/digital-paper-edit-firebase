@@ -40,7 +40,7 @@ const ProgrammeScript = props => {
       {children}
     </ul>
   );
-  
+
   // Video Context Preview
   const [ width, setWidth ] = useState(150);
   const [ playlist, setPlaylist ] = useState();
@@ -55,18 +55,14 @@ const ProgrammeScript = props => {
     console.log('Saving...');
     if (elements) {
       const newElements = JSON.parse(JSON.stringify(elements));
-      // finding an removing insert point before saving to server
-      // find insert point in list,
       const insertPointElement = newElements.find(el => {
         return el.type === 'insert';
       });
       if (insertPointElement) {
-        // get insertpoint index
         const indexOfInsertPoint = newElements.indexOf(insertPointElement);
         newElements.splice(indexOfInsertPoint, 1);
       }
 
-      // Not sure if this is right - probably need to add back a bunch of metadata.
       const paperEditDocument = {
         title: title,
         elements: newElements,
@@ -131,12 +127,17 @@ const ProgrammeScript = props => {
 
     const updateVideoContextWidth = () => {
       setWidth(previewCardRef.current.offsetWidth - 10);
+      console.log('updating video context width...');
     };
 
     const handleUpdatePreview = () => {
       // const currentPlaylist = getPlaylist();
+
       // [old comment]: Workaround to mound and unmount the `PreviewCanvas` component
       // to update the playlist
+
+      // currentPlaylist is hard-coded data to test previewCanvas functionality. This needs 
+      // to be refactored to be dyanmically retrieved with the currentPlaylist function. 
       const currentPlaylist = [
         {
           'type': 'video',
@@ -244,12 +245,12 @@ const ProgrammeScript = props => {
     return indexOfInsertPoint;
   };
 
-  // // TODO: save to server
-  // // TODO: needs to handle when selection spans across multiple paragraphs
+  // // [old comment] TODO: needs to handle when selection spans across multiple paragraphs
   const handleAddTranscriptSelectionToProgrammeScript = () => {
     console.log('Handling add transcript selection...');
     const result = getDataFromUserWordsSelection();
     if (result) {
+      // old comment 
       // result.words
       // TODO: if there's just one speaker in selection do following
       // if it's multiple split list of words into multiple groups
@@ -290,10 +291,8 @@ const ProgrammeScript = props => {
           };
         });
       }
-      // add element just above of insert point
       tempElements.splice(indexOfInsertPoint, 0, newElement);
       setElements(tempElements);
-      // TODO: save to server
       setResetPreview(true);
     } else {
       console.log('nothing selected');
@@ -314,7 +313,6 @@ const ProgrammeScript = props => {
 
   const handleAddTranscriptElementToProgrammeScript = elementType => {
     console.log('Handling add transcript element...');
-    // [old comment]: TODO: refactor - with helper functions
     const newElements = JSON.parse(JSON.stringify(elements));
     if (
       elementType === 'title' ||
@@ -334,8 +332,6 @@ const ProgrammeScript = props => {
         text: text
       };
       newElements.splice(indexOfInsertPoint, 0, newElement);
-      // [old comment]: TODO: save to server (should this only be if the 'Save' button is clicked?)
-
       setElements(newElements);
       setResetPreview(true);
     }
@@ -352,7 +348,7 @@ const ProgrammeScript = props => {
       <Card>
         <Card.Header ref={ previewCardRef }>
           {playlist ? (
-            <PreviewCanvas width={ width } playlist={ playlist } />
+            <PreviewCanvas width={ width } playlist={ playlist } onload={}/>
           ) : null}
         </Card.Header>
         <Card.Header>
@@ -410,7 +406,7 @@ const ProgrammeScript = props => {
 ProgrammeScript.propTypes = {
   firebase: PropTypes.any,
   match: PropTypes.any,
-  transcripts: PropTypes.any
+  transcripts: PropTypes.any,
 };
 
 const condition = authUser => !!authUser;
