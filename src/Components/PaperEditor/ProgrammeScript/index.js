@@ -52,7 +52,7 @@ const ProgrammeScript = props => {
   );
 
   const handleSaveProgrammeScript = async () => {
-    console.log('saving...');
+    console.log('Saving...');
     if (elements) {
       const newElements = JSON.parse(JSON.stringify(elements));
       // finding an removing insert point before saving to server
@@ -79,7 +79,7 @@ const ProgrammeScript = props => {
         );
         console.log('Successfully saved');
       } catch (error) {
-        console.error('error saving document', error);
+        console.error('Error saving document', error);
       }
     }
   };
@@ -114,7 +114,6 @@ const ProgrammeScript = props => {
       return elements
         .filter(element => element.type === 'paper-cut')
         .map(element => {
-          console.log('paper cut element: ', element);
           const transcript = getTranscript(element.transcriptId);
           const result = {
             type: 'video',
@@ -189,9 +188,10 @@ const ProgrammeScript = props => {
   ]);
 
   const handleReorder = (tempElements) => {
-    console.log('Handling reorder.... ' + JSON.stringify(tempElements));
+    console.log('Handling reorder...');
     setElements(tempElements);
     resetPreview(true);
+    console.log('Reordered');
   };
 
   const handleDelete = i => {
@@ -212,20 +212,20 @@ const ProgrammeScript = props => {
   };
 
   const handleEdit = i => {
-    console.log('handling edit');
+    console.log('Handling edit...');
     const tempElements = JSON.parse(JSON.stringify(elements));
     const currentElement = tempElements[i];
     const newText = prompt('Edit', currentElement.text);
     if (newText) {
-      console.log('editing...');
+      console.log('Editing...');
       currentElement.text = newText;
       tempElements[i] = currentElement;
       setElements(tempElements);
       setResetPreview(true);
-      console.log('edited');
+      console.log('Edited');
     } else {
       // either newText is empty or they hit cancel
-      console.log('not editing');
+      console.log('Not editing');
     }
   };
 
@@ -247,6 +247,7 @@ const ProgrammeScript = props => {
   // // TODO: save to server
   // // TODO: needs to handle when selection spans across multiple paragraphs
   const handleAddTranscriptSelectionToProgrammeScript = () => {
+    console.log('Handling add transcript selection...');
     const result = getDataFromUserWordsSelection();
     if (result) {
       // result.words
@@ -295,14 +296,13 @@ const ProgrammeScript = props => {
       // TODO: save to server
       setResetPreview(true);
     } else {
-      alert(
-        'Select some text in the transcript to add to the programme script'
-      );
       console.log('nothing selected');
+      alert('Select some text in the transcript to add to the programme script');
     }
   };
 
   const handleDoubleClickOnProgrammeScript = e => {
+    console.log('Handling double click...');
     if (e.target.className === 'words') {
       const wordCurrentTime = e.target.dataset.start;
       // TODO: set current time in preview canvas
@@ -313,6 +313,7 @@ const ProgrammeScript = props => {
   };
 
   const handleAddTranscriptElementToProgrammeScript = elementType => {
+    console.log('Handling add transcript element...');
     // [old comment]: TODO: refactor - with helper functions
     const newElements = JSON.parse(JSON.stringify(elements));
     if (
