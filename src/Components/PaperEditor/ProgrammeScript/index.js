@@ -21,6 +21,8 @@ import { withAuthorization } from '../../Session';
 
 import ExportDropdown from './ExportDropdown/index';
 import ElementsDropdown from './ElementsDropdown/index';
+import getDataFromUserWordsSelection from './get-data-from-user-selection';
+import { divideWordsSelectionsIntoParagraphs, isOneParagraph } from './divide-words-selections-into-paragraphs';
 
 import PropTypes from 'prop-types';
 
@@ -31,7 +33,7 @@ const ProgrammeScript = props => {
 
   const [ elements, setElements ] = useState();
   const [ title, setTitle ] = useState('');
-  const [ renderVideo, setRenderVideo ] = useState(false);
+  const [ resetPreview, setResetPreview ] = useState(false);
 
   const SortableList = SortableContainer(({ children }) =>
     <ul style={ { listStyle: 'none', padding: '0px' } }>
@@ -95,7 +97,7 @@ const ProgrammeScript = props => {
 
         elementsClone.push(insert);
         setElements(elementsClone);
-        setRenderVideo(true);
+        setResetPreview(true);
 
       } catch (error) {
         console.error('Error getting paper edits: ', error);
@@ -169,9 +171,9 @@ const ProgrammeScript = props => {
       getPaperEdit();
     }
 
-    if (renderVideo) {
+    if (resetPreview) {
       handleUpdatePreview();
-      setRenderVideo(false);
+      setResetPreview(false);
     }
 
     return () => {
@@ -182,12 +184,14 @@ const ProgrammeScript = props => {
     PaperEditsCollection,
     elements,
     papereditsId,
-    transcripts
+    transcripts,
+    resetPreview,
   ]);
 
   const handleReorder = (tempElements) => {
     console.log('Handling reorder.... ' + JSON.stringify(tempElements));
     setElements(tempElements);
+    resetPreview(true);
   };
 
   const handleDelete = i => {
@@ -200,7 +204,7 @@ const ProgrammeScript = props => {
       const tempElements = JSON.parse(JSON.stringify(elements));
       tempElements.splice(i, 1);
       setElements(tempElements);
-      setRenderVideo(true);
+      setResetPreview(true);
       console.log('Deleted');
     } else {
       console.log('Not deleting');
@@ -217,6 +221,7 @@ const ProgrammeScript = props => {
       currentElement.text = newText;
       tempElements[i] = currentElement;
       setElements(tempElements);
+      setResetPreview(true);
       console.log('edited');
     } else {
       // either newText is empty or they hit cancel
@@ -232,79 +237,71 @@ const ProgrammeScript = props => {
 
   // // TODO: save to server
   // // TODO: needs to handle when selection spans across multiple paragraphs
-  // handleAddTranscriptSelectionToProgrammeScript = () => {
-  //   const result = getDataFromUserWordsSelection();
-  //   if (result) {
-  //     // result.words
-  //     // TODO: if there's just one speaker in selection do following
-  //     // if it's multiple split list of words into multiple groups
-  //     // and add a papercut for each to the programme script
-  //     const { programmeScript } = this.state;
-  //     const elements = programmeScript.elements;
-  //     // TODO: insert at insert point
+  const handleAddTranscriptSelectionToProgrammeScript = () => {
+    const result = getDataFromUserWordsSelection();
+    if (result) {
+      // result.words
+      // TODO: if there's just one speaker in selection do following
+      // if it's multiple split list of words into multiple groups
+      // and add a papercut for each to the programme script
+      const tempElements = elements;
+      // TODO: insert at insert point
 
-  //     const indexOfInsertPoint = this.getIndexPositionOfInsertPoint();
-  //     let newElement;
-  //     if (isOneParagraph(result.words)) {
-  //       // create new element
-  //       // TODO: Create new element could be refactored into helper function
-  //       newElement = {
-  //         id: cuid(),
-  //         index: elements.length,
-  //         type: 'paper-cut',
-  //         start: result.start,
-  //         end: result.end,
-  //         speaker: result.speaker,
-  //         words: result.words,
-  //         transcriptId: result.transcriptId,
-  //         labelId: []
-  //       };
-  //     } else {
-  //       const paragraphs = divideWordsSelectionsIntoParagraphs(result.words);
-  //       paragraphs.reverse().forEach(paragraph => {
-  //         newElement = {
-  //           id: cuid(),
-  //           index: elements.length,
-  //           type: 'paper-cut',
-  //           start: paragraph[0].start,
-  //           end: paragraph[paragraph.length - 1].end,
-  //           speaker: paragraph[0].speaker,
-  //           words: paragraph,
-  //           transcriptId: paragraph[0].transcriptId,
-  //           // TODO: ignoring labels for now
-  //           labelId: []
-  //         };
-  //       });
-  //     }
-  //     // add element just above of insert point
-  //     elements.splice(indexOfInsertPoint, 0, newElement);
-  //     programmeScript.elements = elements;
-  //     // TODO: save to server
-  //     this.setState({
-  //       programmeScript: programmeScript,
-  //       resetPreview: true
-  //     });
-  //   } else {
-  //     alert(
-  //       'Select some text in the transcript to add to the programme script'
-  //     );
-  //     console.log('nothing selected');
-  //   }
-  // };
+      const indexOfInsertPoint = this.getIndexPositionOfInsertPoint();
+      let newElement;
+      if (isOneParagraph(result.words)) {
+        // create new element
+        // TODO: Create new element could be refactored into helper function
+        newElement = {
+          id: cuid(),
+          index: tempElements.length,
+          type: 'paper-cut',
+          start: result.start,
+          end: result.end,
+          speaker: result.speaker,
+          words: result.words,
+          transcriptId: result.transcriptId,
+          labelId: []
+        };
+      } else {
+        const paragraphs = divideWordsSelectionsIntoParagraphs(result.words);
+        paragraphs.reverse().forEach(paragraph => {
+          newElement = {
+            id: cuid(),
+            index: tempElements.length,
+            type: 'paper-cut',
+            start: paragraph[0].start,
+            end: paragraph[paragraph.length - 1].end,
+            speaker: paragraph[0].speaker,
+            words: paragraph,
+            transcriptId: paragraph[0].transcriptId,
+            // TODO: ignoring labels for now
+            labelId: []
+          };
+        });
+      }
+      // add element just above of insert point
+      tempElements.splice(indexOfInsertPoint, 0, newElement);
+      setElements(tempElements);
+      // TODO: save to server
+      setResetPreview(true);
+    } else {
+      alert(
+        'Select some text in the transcript to add to the programme script'
+      );
+      console.log('nothing selected');
+    }
+  };
 
-  // handleDoubleClickOnProgrammeScript = e => {
-  //   if (e.target.className === 'words') {
-  //     const wordCurrentTime = e.target.dataset.start;
-  //     // TODO: set current time in preview canvas
-  //     // Video context probably needs more info like, which clip/track in the sequence?
-  //     // investigate how to set currentTime in video context
-  //     console.log('wordCurrentTime::', wordCurrentTime);
-  //   }
-  // };
-
-  // // information around progressbar in the playlist object
-  // render() {
-  // });
+  const handleDoubleClickOnProgrammeScript = e => {
+    if (e.target.className === 'words') {
+      const wordCurrentTime = e.target.dataset.start;
+      // TODO: set current time in preview canvas
+      // Video context probably needs more info like, which clip/track in the sequence?
+      // investigate how to set currentTime in video context
+      console.log('wordCurrentTime::', wordCurrentTime);
+    }
+  };
 
   const getIndexPositionOfInsertPoint = () => {
     const insertPointElement = elements.find(el => {
@@ -338,7 +335,8 @@ const ProgrammeScript = props => {
       newElements.splice(indexOfInsertPoint, 0, newElement);
       // [old comment]: TODO: save to server (should this only be if the 'Save' button is clicked?)
 
-      setElements(newElements); // This doesn't trigger a refresh...
+      setElements(newElements);
+      setResetPreview(true);
     }
   };
 
@@ -362,7 +360,7 @@ const ProgrammeScript = props => {
               <Button
                 // block
                 variant="outline-secondary"
-                // onClick={ this.handleAddTranscriptSelectionToProgrammeScript }
+                onClick={ handleAddTranscriptSelectionToProgrammeScript }
                 title="Add a text selection, select text in the transcript, then click this button to add it to the programme script"
               >
                 <FontAwesomeIcon icon={ faPlus } /> Selection
@@ -394,7 +392,7 @@ const ProgrammeScript = props => {
         <Card.Body>
           <article
             style={ { height: '60vh', overflow: 'scroll' } }
-            // onDoubleClick={ this.handleDoubleClickOnProgrammeScript }
+            onDoubleClick={ handleDoubleClickOnProgrammeScript }
           >
             {elements ? (
               <SortableList useDragHandle onSortEnd={ onSortEnd }>
