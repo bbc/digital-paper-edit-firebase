@@ -264,7 +264,7 @@ const ProgrammeScript = props => {
         // TODO: Create new element could be refactored into helper function
         newElement = {
           id: cuid(),
-          index: elementsClone.length,
+          index: newElements.length,
           type: 'paper-cut',
           start: result.start,
           end: result.end,
