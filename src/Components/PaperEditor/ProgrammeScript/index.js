@@ -236,7 +236,7 @@ const ProgrammeScript = props => {
   };
 
   const getIndexPositionOfInsertPoint = () => {
-    const insertPointElement = elements.find(el => {
+    const insertElement = elements.find(el => {
       return el.type === 'insert';
     });
     const indexOfInsertPoint = elements.indexOf(insertPointElement);
