@@ -60,8 +60,8 @@ const ProgrammeScript = props => {
         return el.type === 'insert';
       });
       if (insertPointElement) {
-        const indexOfInsertPoint = newElements.indexOf(insertPointElement);
-        newElements.splice(indexOfInsertPoint, 1);
+        const insertElementIndex = newElements.indexOf(insertPointElement);
+        newElements.splice(insertElementIndex, 1);
       }
 
       const paperEditDocument = {
@@ -235,13 +235,12 @@ const ProgrammeScript = props => {
     setElements(newElements);
   };
 
-  const getIndexPositionOfInsertPoint = () => {
+  const getInsertElementIndex = () => {
     const insertElement = elements.find(el => {
       return el.type === 'insert';
     });
-    const indexOfInsertPoint = elements.indexOf(insertPointElement);
 
-    return indexOfInsertPoint;
+    return elements.indexOf(insertElement);
   };
 
   // // [old comment] TODO: needs to handle when selection spans across multiple paragraphs
@@ -256,7 +255,7 @@ const ProgrammeScript = props => {
       const newElements = JSON.parse(JSON.stringify(elements));
       // TODO: insert at insert point
 
-      const InsertElementIndex = getInsertElementIndex();
+      const insertElementIndex = getInsertElementIndex();
       let newElement;
       if (isOneParagraph(result.words)) {
         // create new element
@@ -322,14 +321,14 @@ const ProgrammeScript = props => {
         'Some place holder text'
       );
 
-      const indexOfInsertPoint = getIndexPositionOfInsertPoint();
+      const insertElementIndex = getInsertElementIndex();
       const newElement = {
         id: cuid(),
         index: elements.length,
         type: elementType,
         text: text
       };
-      newElements.splice(indexOfInsertPoint, 0, newElement);
+      newElements.splice(insertElementIndex, 0, newElement);
       setElements(newElements);
       setResetPreview(true);
     }
