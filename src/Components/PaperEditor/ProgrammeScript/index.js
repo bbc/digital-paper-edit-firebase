@@ -278,7 +278,7 @@ const ProgrammeScript = props => {
         paragraphs.reverse().forEach(paragraph => {
           newElement = {
             id: cuid(),
-            index: elementsClone.length,
+            index: newElements.length,
             type: 'paper-cut',
             start: paragraph[0].start,
             end: paragraph[paragraph.length - 1].end,
