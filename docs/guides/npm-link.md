@@ -14,13 +14,14 @@ The build process uses a Webpack configuration file called [`webpack.dev.config.
 See [here](https://reactjs.org/warnings/invalid-hook-call-warning.html) for trouble shooting and [here](https://github.com/facebook/react/issues/13991)
 
 You can check if there's duplicated React libraries this way:
+
 ```js
 // Add this in node_modules/react-dom/index.js
-window.React1 = require('react');
+window.React1 = require("react");
 
 // Add this in your component file
-require('react-dom');
-window.React2 = require('react');
+require("react-dom");
+window.React2 = require("react");
 console.log(window.React1 === window.React2);
 ```
 
@@ -48,11 +49,9 @@ Make sure to reload both the thing that's using the library and the build of the
 }
 ```
 
-You can generate a dev build in digital-paper-edit-storybook by running `yarn dev`.
+You can generate a dev build in digital-paper-edit-storybook by running `npm run dev`.
 
 ## Link
 
-You can replace the yarn commands with npm and it should just work as is. Make sure that you've copied over the `package.json` file, otherwise it won't work.
-
-1. In the **directory: `dist`** of `digital-paper-edit-storybook` repository, run `yarn link`
-2. In root of this repository, run `yarn link @bbc/digital-paper-edit-storybook`
+1. In the **directory: `dist`** of `digital-paper-edit-storybook` repository, run `npm link`
+2. In root of this repository, run `npm link @bbc/digital-paper-edit-storybook`
