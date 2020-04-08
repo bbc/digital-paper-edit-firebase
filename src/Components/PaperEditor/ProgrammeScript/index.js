@@ -187,9 +187,9 @@ const ProgrammeScript = props => {
     };
   });
 
-  const handleReorder = (elementsClone) => {
+  const handleReorder = (newElements) => {
     console.log('Handling reorder...');
-    setElements(elementsClone);
+    setElements(newElements);
     setResetPreview(true);
     console.log('Reordered');
   };
@@ -219,8 +219,8 @@ const ProgrammeScript = props => {
     if (newText) {
       console.log('Editing...');
       currentElement.text = newText;
-      elementsClone[i] = currentElement;
-      setElements(elementsClone);
+      newElements[i] = currentElement;
+      setElements(newElements);
       setResetPreview(true);
       console.log('Edited');
     } else {
@@ -253,7 +253,7 @@ const ProgrammeScript = props => {
       // TODO: if there's just one speaker in selection do following
       // if it's multiple split list of words into multiple groups
       // and add a papercut for each to the programme script
-      const elementsClone = elements;
+      const newElements = JSON.parse(JSON.stringify(elements));
       // TODO: insert at insert point
 
       const indexOfInsertPoint = getIndexPositionOfInsertPoint();
