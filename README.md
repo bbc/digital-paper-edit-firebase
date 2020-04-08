@@ -141,11 +141,15 @@ React is setup using [Create React App](https://facebook.github.io/create-react-
 
 ## Development env
 
-- [ ] npm > `6.1.0`
+- [ ] npm > `6.11.3`
 - [ ] node v 10 - [lts/dubnium](https://scotch.io/tutorials/whats-new-in-node-10-dubnium)
 - [ ] see [`.eslintrc`](./.eslintrc) in the various packages for linting rules
 
 Node version is set in node version manager [`.nvmrc`](https://github.com/creationix/nvm#nvmrc)
+
+### Functions
+
+Use node v8 in Functions directory.
 
 <!-- TODO: Setup eslint in express server -->
 
@@ -190,7 +194,7 @@ npm run test
 
 During development you can use
 
-```
+```sh
 npm run test:watch
 ```
 
