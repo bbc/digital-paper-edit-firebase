@@ -118,7 +118,7 @@ const ProgrammeScript = props => {
         .filter(element => element.type === 'paper-cut')
         .map(element => {
           const transcript = getTranscript(element.transcriptId);
-          const result = {
+          const playlistItem = {
             type: 'video',
             start: startTime,
             sourceStart: element.start,
