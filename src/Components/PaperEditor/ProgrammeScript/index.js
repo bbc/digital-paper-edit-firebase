@@ -178,7 +178,6 @@ const ProgrammeScript = props => {
 
     const updateVideoContextWidth = () => {
       setWidth(previewCardRef.current.offsetWidth - 10);
-      console.log('updating video context width...');
     };
 
     window.addEventListener('resize', updateVideoContextWidth);
