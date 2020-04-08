@@ -256,7 +256,7 @@ const ProgrammeScript = props => {
       const newElements = JSON.parse(JSON.stringify(elements));
       // TODO: insert at insert point
 
-      const indexOfInsertPoint = getIndexPositionOfInsertPoint();
+      const InsertElementIndex = getInsertElementIndex();
       let newElement;
       if (isOneParagraph(result.words)) {
         // create new element
