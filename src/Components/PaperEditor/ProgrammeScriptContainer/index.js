@@ -86,7 +86,9 @@ const ProgrammeScript = props => {
       try {
         const paperEdit = await PaperEditsCollection.getItem(papereditsId);
         setTitle(paperEdit.title);
-        const newElements = JSON.parse(JSON.stringify(paperEdit.elements));
+        const newElements = paperEdit.elements ?
+          JSON.parse(JSON.stringify(paperEdit.elements)) :
+          [];
         const insertElement = {
           type: 'insert',
           text: 'Insert point to add selection'
