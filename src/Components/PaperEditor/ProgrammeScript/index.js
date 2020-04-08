@@ -92,7 +92,7 @@ const ProgrammeScript = props => {
           text: 'Insert point to add selection'
         };
 
-        elementsClone.push(insert);
+        newElements.push(insertElement);
         setElements(elementsClone);
         setResetPreview(true);
 
