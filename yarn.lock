@@ -1047,10 +1047,10 @@
     smpte-timecode "^1.2.3"
     uuid "^3.3.2"
 
-"@bbc/digital-paper-edit-storybook@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@bbc/digital-paper-edit-storybook/-/digital-paper-edit-storybook-1.4.0.tgz#99c857b9f14c40874eafad3934d95fa20f4b45bb"
-  integrity sha512-bFGiMYgtKXDJwJl4n1gS2K8HEmjnTBv9fZHW7Onhzec/aqTNayyddfBEBEGL95BLfuGmo4E5Gy59wd2VhwMDiQ==
+"@bbc/digital-paper-edit-storybook@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@bbc/digital-paper-edit-storybook/-/digital-paper-edit-storybook-1.6.0.tgz#93520a34ac3e241d9ad61ea75cbccfccc47dd39f"
+  integrity sha512-77t212RLERdLgtczgqApc8wlAbpdLQLzM4TcFII+NeE9f/IF0+BkkggiZ80VtnAM4iDMpAzsvIz/VRmVbnh08A==
   dependencies:
     "@bbc/react-transcript-editor" "^1.0.4"
     "@fortawesome/fontawesome-svg-core" "^1.2.19"
