@@ -8,8 +8,8 @@ import Button from 'react-bootstrap/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleUp, faAngleDown } from '@fortawesome/free-solid-svg-icons';
 import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
-import Transcripts from './Transcripts';
-import ProgrammeScript from './ProgrammeScript';
+import TranscriptsContainer from './TranscriptsContainer';
+import ProgrammeScriptContainer from './ProgrammeScriptContainer';
 import PropTypes from 'prop-types';
 import Collection from '../Firebase/Collection';
 
@@ -21,7 +21,6 @@ const PaperEditor = (props) => {
 
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
-
   const [ transcripts, setTranscripts ] = useState(null);
 
   const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
@@ -62,12 +61,14 @@ const PaperEditor = (props) => {
       }
     };
 
-    getProject();
-    getPaperEdit();
-    getTranscripts();
+    if (!transcripts) {
+      getProject();
+      getPaperEdit();
+      getTranscripts();
+    }
 
     return () => {};
-  }, [ PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId ]);
+  }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
@@ -133,7 +134,7 @@ const PaperEditor = (props) => {
   </>;
 
   if (transcripts) {
-    TranscriptEl = <Transcripts
+    TranscriptEl = <TranscriptsContainer
       projectId={ projectId }
       transcripts={ transcripts }
       labelsOptions={ labelsOptions }
@@ -142,7 +143,7 @@ const PaperEditor = (props) => {
 
   let ProgrammeScriptEl = null;
   if (transcripts) {
-    ProgrammeScriptEl = <ProgrammeScript
+    ProgrammeScriptEl = <ProgrammeScriptContainer
       projectId={ projectId }
       papereditId={ papereditId }
       transcripts={ transcripts }
@@ -230,7 +231,7 @@ const PaperEditor = (props) => {
         </div>
 
         <Row>
-          {transcriptsColumn(TranscriptEl)}
+          {/* {transcriptsColumn(TranscriptEl)} */}
           {programmeScriptColumn(ProgrammeScriptEl)}
         </Row>
       </Container>
