@@ -93,7 +93,7 @@ const ProgrammeScript = props => {
         };
 
         newElements.push(insertElement);
-        setElements(elementsClone);
+        setElements(newElements);
         setResetPreview(true);
 
       } catch (error) {
