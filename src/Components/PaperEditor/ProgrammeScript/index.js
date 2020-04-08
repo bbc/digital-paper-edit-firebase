@@ -30,6 +30,7 @@ const ProgrammeScript = props => {
   const transcripts = props.transcripts;
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
+  const firebase = props.firebase;
 
   const [ elements, setElements ] = useState();
   const [ title, setTitle ] = useState('');
