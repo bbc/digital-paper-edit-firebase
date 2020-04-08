@@ -201,9 +201,9 @@ const ProgrammeScript = props => {
     // See last comment https://helperbyte.com/questions/72323/how-to-work-with-a-confirm-to-react
     if (confirmDelete) {
       console.log('Deleting');
-      const elementsClone = JSON.parse(JSON.stringify(elements));
-      elementsClone.splice(i, 1);
-      setElements(elementsClone);
+      const newElements = JSON.parse(JSON.stringify(elements));
+      newElements.splice(i, 1);
+      setElements(newElements);
       setResetPreview(true);
       console.log('Deleted');
     } else {
