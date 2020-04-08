@@ -290,7 +290,7 @@ const ProgrammeScript = props => {
           };
         });
       }
-      elementsClone.splice(indexOfInsertPoint, 0, newElement);
+      newElements.splice(insertElementIndex, 0, newElement);
       setElements(newElements);
       setResetPreview(true);
     } else {
