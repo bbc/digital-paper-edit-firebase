@@ -230,9 +230,9 @@ const ProgrammeScript = props => {
   };
 
   const onSortEnd = ({ oldIndex, newIndex }) => {
-    const result = arrayMove(elements, oldIndex, newIndex);
-    handleReorder(result);
-    setElements(result);
+    const newElements = arrayMove(elements, oldIndex, newIndex);
+    handleReorder(newElements);
+    setElements(newElements);
   };
 
   const getIndexPositionOfInsertPoint = () => {
