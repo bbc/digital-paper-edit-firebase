@@ -27,7 +27,7 @@ const ElementsDropdown = (props) => {
         </Dropdown.Item>
         <Dropdown.Item
           onClick={ () => {
-            props.handleAdd('voice-over');
+            handleAdd('voice-over');
           } }
           title="Add a title voice over element to the programme script"
         >
