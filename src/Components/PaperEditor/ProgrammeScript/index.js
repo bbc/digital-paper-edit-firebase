@@ -291,7 +291,7 @@ const ProgrammeScript = props => {
         });
       }
       elementsClone.splice(indexOfInsertPoint, 0, newElement);
-      setElements(elementsClone);
+      setElements(newElements);
       setResetPreview(true);
     } else {
       console.log('nothing selected');
