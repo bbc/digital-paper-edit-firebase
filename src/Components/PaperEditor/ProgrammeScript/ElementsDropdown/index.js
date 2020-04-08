@@ -35,7 +35,7 @@ const ElementsDropdown = (props) => {
         </Dropdown.Item>
         <Dropdown.Item
           onClick={ () => {
-            props.handleAdd('note');
+            handleAdd('note');
           } }
           title="Add a note element to the programme script"
         >
