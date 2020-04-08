@@ -126,9 +126,9 @@ const ProgrammeScript = props => {
             src: transcript.url
           };
 
-          startTime += result.duration;
+          startTime += playlistItem.duration;
 
-          return result;
+          return playlistItem;
         });
     };
 
