@@ -19,7 +19,7 @@ const ElementsDropdown = (props) => {
       <Dropdown.Menu>
         <Dropdown.Item
           onClick={ () => {
-            props.handleAdd('title');
+            handleAdd('title');
           } }
           title="Add a title header element to the programme script"
         >
