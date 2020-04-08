@@ -48,7 +48,7 @@ const ProgrammeScript = props => {
   const previewCardRef = useRef(null);
 
   const PaperEditsCollection = new Collection(
-    props.firebase,
+    firebase,
     `/projects/${ projectId }/paperedits`
   );
 
