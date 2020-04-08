@@ -213,8 +213,8 @@ const ProgrammeScript = props => {
 
   const handleEdit = i => {
     console.log('Handling edit...');
-    const elementsClone = JSON.parse(JSON.stringify(elements));
-    const currentElement = elementsClone[i];
+    const newElements = JSON.parse(JSON.stringify(elements));
+    const currentElement = newElements[i];
     const newText = prompt('Edit', currentElement.text);
     if (newText) {
       console.log('Editing...');
