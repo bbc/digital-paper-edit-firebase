@@ -40,13 +40,18 @@ var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
 return dDisplay + hDisplay + mDisplay + sDisplay;
 }
 
-const validateJob = (handlerRunDate, jobData) => {
-  // if updated date  || created date is too old return false
-  const updatedTime = jobData.updated.toDate()
+const isExpired = (handlerRunDate, lastUpdated) => {
+  const updatedTime = lastUpdated.toDate()
   console.log(handlerRunDate, updatedTime)
   const timeDifference = handlerRunDate - updatedTime
   console.log(timeDifference)
   console.log(secondsToDhms(timeDifference))
+  return false
+}
+
+const validateJob = (handlerRunDate, jobData) => {
+  // if updated date  || created date is too old return false
+  isExpired(handlerRunDate, jobData.updated)
   return true;
 };
 
@@ -119,8 +124,8 @@ const updateFirestore = async (admin, handlerCalledTimestamp) => {
 
 exports.createHandler = async (admin, config, context) => {
   // const status = await getStatus(config)
-  console.log("context timestamp", context.timestamp)
-  const handlerRunDate = Date.parse(context.timestamp);
-  await updateFirestore(admin, handlerRunDate);
+  console.log("context timestamp", context.timestamp) // 2020-04-09T05:56:56.741Z
+  // const handlerRunDate = Date.parse(context.timestamp);
+  await updateFirestore(admin, context.timestamp);
   return console.log();
 };
