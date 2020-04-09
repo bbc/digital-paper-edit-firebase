@@ -14,7 +14,10 @@ import onlyCallOnce from '../../../Util/only-call-once/index.js';
 import getTimeFromUserWordsSelection from './get-user-selection.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
-
+import {
+  faHighlighter,
+  faCog
+} from '@fortawesome/free-solid-svg-icons';
 /**
  * Makes list of unique speakers
  * from transcript.paragraphs list
