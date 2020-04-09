@@ -114,58 +114,33 @@ const ProgrammeScript = props => {
     };
 
     const getPlaylist = () => {
+      console.log('Inside get playlist...');
       let startTime = 0;
 
       return elements
         .filter(element => element.type === 'paper-cut')
         .map(element => {
+          console.log('Found a paper-cut..');
           const transcript = getTranscript(element.transcriptId);
+          console.log('Found a transcript:: ', transcript);
+
           const playlistItem = {
             type: 'video',
             start: startTime,
             sourceStart: element.start,
             duration: element.end - element.start,
-            src: transcript.url
+            src: element.media.url
           };
 
           startTime += playlistItem.duration;
+          console.log('Here is my playlist item:: ', playlistItem);
 
           return playlistItem;
         });
     };
 
     const handleUpdatePreview = () => {
-      // const currentPlaylist = getPlaylist();
-
-      // [old comment]: Workaround to mound and unmount the `PreviewCanvas` component
-      // to update the playlist
-
-      // currentPlaylist is hard-coded data to test previewCanvas functionality. This needs
-      // to be refactored to be dyanmically retrieved with the currentPlaylist function.
-      const currentPlaylist = [
-        {
-          'type': 'video',
-          'start': 0,
-          'sourceStart': 30,
-          'duration': 10,
-          'src': 'https://download.ted.com/talks/MorganVague_2018X.mp4'
-        },
-        {
-          'type': 'video',
-          'start': 10,
-          'sourceStart': 40,
-          'duration': 10,
-          'src': 'https://download.ted.com/talks/IvanPoupyrev_2019.mp4'
-        },
-        {
-          'type': 'video',
-          'start': 20,
-          'sourceStart': 50,
-          'duration': 10,
-          'src': 'https://download.ted.com/talks/KateDarling_2018S-950k.mp4'
-        }
-      ];
-
+      const currentPlaylist = getPlaylist();
       setPlaylist(currentPlaylist);
     };
 
