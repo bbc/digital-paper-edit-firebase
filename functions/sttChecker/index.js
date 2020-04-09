@@ -1,15 +1,11 @@
-const getProjectsCollection = admin => {
-  return admin
-    .firestore()
-    .collection(`apps/digital-paper-edit/projects`)
-    .get();
+const secondsToDhms = require("../utils").secondsToDhms;
+
+const getProjectsCollection = (admin) => {
+  return admin.firestore().collection(`apps/digital-paper-edit/projects`).get();
 };
 
-const getUsersCollection = admin => {
-  return admin
-    .firestore()
-    .collection(`apps/digital-paper-edit/users`)
-    .get();
+const getUsersCollection = (admin) => {
+  return admin.firestore().collection(`apps/digital-paper-edit/users`).get();
 };
 
 const getTranscriptsInProgress = (admin, projectId) => {
@@ -26,93 +22,109 @@ const getAudioCollection = (admin, userId) => {
     .get();
 };
 
-function secondsToDhms(seconds) {
-seconds = Number(seconds);
-var d = Math.floor(seconds / (3600*24));
-var h = Math.floor(seconds % (3600*24) / 3600);
-var m = Math.floor(seconds % 3600 / 60);
-var s = Math.floor(seconds % 60);
+const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
+  const ONE_DAY_IN_NANOSECONDS = 3600 * 24 * 1000;
+  const timeDifference = sttCheckerExecTime - lastUpdatedTime;
+  console.log(`Job last updated ${secondsToDhms(timeDifference / 1000)} ago`);
+  return timeDifference >= ONE_DAY_IN_NANOSECONDS;
+};
 
-var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
-var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
-var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
-var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
-return dDisplay + hDisplay + mDisplay + sDisplay;
-}
-
-const isExpired = (handlerRunDate, lastUpdated) => {
-  const updatedTime = lastUpdated.toDate()
-  console.log(handlerRunDate, updatedTime)
-  const timeDifference = handlerRunDate - updatedTime
-  console.log(timeDifference)
-  console.log(secondsToDhms(timeDifference))
-  return false
-}
-
-const validateJob = (handlerRunDate, jobData) => {
-  // if updated date  || created date is too old return false
-  isExpired(handlerRunDate, jobData.updated)
+const validJob = (execTimestamp, transcript) => {
+  const transcriptData = transcript.data();
+  const sttCheckerExecTime = Date.parse(execTimestamp);
+  const lastUpdatedTime = transcriptData.updated.toDate().getTime();
+  if (isExpired(sttCheckerExecTime, lastUpdatedTime)) {
+    console.log(`Job expired, updating status of ${transcript.id} to Error`);
+    return false;
+  }
   return true;
 };
 
-const fetchStatus = async objectKey => {
-  console.log("objectKey", objectKey);
-  const body = {
-    objectKey: objectKey
-    // "dpe/users/gLoKESQNkVavUfSiqqoSEEEa6Lo2/audio/1ipL5m7V7Jal7h3x3Odu.wav"
-  };
+const getStatus = async (objectKey, config) => {
+  const response = await fetch(config.endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": config.key,
+    },
+    body: JSON.stringify({
+      objectKey: objectKey,
+    }),
+  });
+  console.log(JSON.stringify(response));
 };
 
-const updateStatus = status => {};
+const updateStatus = (status) => {};
 
-const something = (userData, querySnapshot, handlerCalledTimestamp) => {
-  querySnapshot.forEach(transcript => {
-    validateJob(handlerCalledTimestamp, transcript.data());
-    try {
-      const userId = userData[transcript.id]["user"];
-      const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
-      const status = fetchStatus(objectKey);
-    } catch (err) {
-      console.error("some err");
+const getValidJobs = (querySnapshot, userData, execTimestamp, config) => {
+  const validJobs = [];
+  querySnapshot.forEach((transcript) => {
+    if (validJob(execTimestamp, transcript)) {
+      validJobs.push(transcript);
     }
   });
+
+  console.log(JSON.stringify(validJobs));
+
+  querySnapshot.forEach((transcript) => {
+    if (validJob(execTimestamp, transcript)) {
+      try {
+        const userId = userData[transcript.id]["user"];
+        const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
+        const status = getStatus(objectKey, config);
+      } catch (err) {
+        console.error("some err");
+      }
+    }
+  });
+  // querySnapshot.forEach((transcript) => {
+  //   if (validJob(execTimestamp, transcript)) {
+  //     try {
+  //       const userId = userData[transcript.id]["user"];
+  //       const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
+  //       const status = getStatus(objectKey, config);
+  //     } catch (err) {
+  //       console.error("some err");
+  //     }
+  //   }
+  // });
 };
 
-const getUserAudio = async (admin,userId) => {
+const getUserAudio = async (admin, userId) => {
   const audioCollection = await getAudioCollection(admin, userId);
-  const audioIds = audioCollection.docs.map(audio => audio.id);
+  const audioIds = audioCollection.docs.map((audio) => audio.id);
   return Object.assign(
     {},
-    ...Object.entries(audioIds).map(([index, audioId]) => 
-    ({[audioId]: { user: userId }})
-    )
+    ...Object.entries(audioIds).map(([index, audioId]) => ({
+      [audioId]: { user: userId },
+    }))
   );
 };
 
-const getUsersAudioData = async admin => {
+const getUsersAudioData = async (admin) => {
   const usersCollection = await getUsersCollection(admin);
   const allUserAudioData = await Promise.all(
-    usersCollection.docs.map(
-      user => getUserAudio(admin, user.id)
-    )
+    usersCollection.docs.map((user) => getUserAudio(admin, user.id))
   );
-  return Object.assign({},
-    ...Object.entries(allUserAudioData).map(([index, userData]) => userData));
+  return Object.assign(
+    {},
+    ...Object.entries(allUserAudioData).map(([index, userData]) => userData)
+  );
 };
 
-const updateFirestore = async (admin, handlerCalledTimestamp) => {
+const updateFirestore = async (admin, config, execTimestamp) => {
   console.log(`[START] Checking STT jobs for in-progress transcriptions`);
   try {
     const projectsCollection = await getProjectsCollection(admin);
     const usersAudioData = await getUsersAudioData(admin);
 
     await projectsCollection.forEach(
-      async project =>
+      async (project) =>
         await getTranscriptsInProgress(
           admin,
           project.id
-        ).onSnapshot(querySnapshot =>
-          something(usersAudioData, querySnapshot, handlerCalledTimestamp)
+        ).onSnapshot((querySnapshot) =>
+          getValidJobs(querySnapshot, usersAudioData, execTimestamp, config)
         )
     );
 
@@ -123,9 +135,6 @@ const updateFirestore = async (admin, handlerCalledTimestamp) => {
 };
 
 exports.createHandler = async (admin, config, context) => {
-  // const status = await getStatus(config)
-  console.log("context timestamp", context.timestamp) // 2020-04-09T05:56:56.741Z
-  // const handlerRunDate = Date.parse(context.timestamp);
-  await updateFirestore(admin, context.timestamp);
+  await updateFirestore(admin, config, context.timestamp);
   return console.log();
 };
