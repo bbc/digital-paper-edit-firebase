@@ -323,16 +323,22 @@ const ProgrammeScript = props => {
         'Some place holder text'
       );
 
-      const insertElementIndex = getInsertElementIndex();
-      const newElement = {
-        id: cuid(),
-        index: elements.length,
-        type: elementType,
-        text: text
-      };
-      newElements.splice(insertElementIndex, 0, newElement);
-      setElements(newElements);
-      setResetPreview(true);
+      if (text !== null) {
+        console.log('Adding element');
+        const insertElementIndex = getInsertElementIndex();
+        const newElement = {
+          id: cuid(),
+          index: elements.length,
+          type: elementType,
+          text: text
+        };
+        newElements.splice(insertElementIndex, 0, newElement);
+        setElements(newElements);
+        console.log('Added element');
+        setResetPreview(true);
+      } else {
+        console.log('Not adding element');
+      }
     }
   };
 
