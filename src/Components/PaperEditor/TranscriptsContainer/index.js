@@ -32,13 +32,13 @@ const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotatio
           eventKey={ transcript.id }
         >
           {getStatusIcon(transcript.status)}
-          {`  ${ transcript.transcriptTitle }`}
+          {`  ${ transcript.title }`}
         </Nav.Link>
       </Nav.Item>
     );
   };
 
-  const getTranscriptTab = ({ id, transcript, mediaType, transcriptTitle, url }) => {
+  const getTranscriptTab = ({ id, transcript, mediaType, title, url }) => {
     return (
       <Tab.Pane key={ cuid() } eventKey={ id }>
         <Transcript
@@ -46,7 +46,7 @@ const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotatio
           transcriptId={ id }
           labelsOptions={ labelsOptions }
           annotations = { annotations }
-          title={ transcriptTitle }
+          title={ title }
           transcript={ transcript }
           mediaType={ mediaType }
           url={ url }
