@@ -1,48 +1,40 @@
+const fetch = require("node-fetch");
+
 const secondsToDhms = require("../utils").secondsToDhms;
 
-const getProjectsCollection = (admin) => {
-  return admin.firestore().collection(`apps/digital-paper-edit/projects`).get();
-};
-
-const getUsersCollection = (admin) => {
-  return admin.firestore().collection(`apps/digital-paper-edit/users`).get();
-};
-
-const getTranscriptsInProgress = (admin, projectId) => {
-  return admin
-    .firestore()
-    .collection(`apps/digital-paper-edit/projects/${projectId}/transcripts`)
-    .where("status", "==", "in-progress")
-    .get();
-};
-
-const getAudioCollection = (admin, userId) => {
-  return admin
-    .firestore()
-    .collection(`apps/digital-paper-edit/users/${userId}/audio`)
-    .get();
-};
+const getUsersAudioData = require("../utils").getUsersAudioData;
+const getProjectsCollection = require("../utils").getProjectsCollection;
+const getTranscriptsInProgress = require("../utils").getTranscriptsInProgress;
 
 const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
   const ONE_DAY_IN_NANOSECONDS = 3600 * 24 * 1000;
   const timeDifference = sttCheckerExecTime - lastUpdatedTime;
-  console.log(`Job last updated ${secondsToDhms(timeDifference / 1000)} ago`);
+  console.debug(`Job last updated ${secondsToDhms(timeDifference / 1000)} ago`);
   return timeDifference >= ONE_DAY_IN_NANOSECONDS;
 };
 
-const validJob = (execTimestamp, transcript) => {
+// TODO
+const updateStatus = (status) => {};
+
+const isValidJob = (execTimestamp, transcript) => {
   const transcriptData = transcript.data();
   const sttCheckerExecTime = Date.parse(execTimestamp);
   const lastUpdatedTime = transcriptData.updated.toDate().getTime();
+
   if (isExpired(sttCheckerExecTime, lastUpdatedTime)) {
-    console.log(`Job expired, updating status of ${transcript.id} to Error`);
     return false;
   }
   return true;
 };
 
-const getStatus = (objectKey, config) => {
-  return fetch(config.endpoint, {
+const filterValidJobs = (transcripts, execTimestamp) =>
+  transcripts.filter((transcript) => isValidJob(execTimestamp, transcript));
+
+const filterInvalidJobs = (transcripts, execTimestamp) =>
+  transcripts.filter((transcript) => !isValidJob(execTimestamp, transcript));
+
+const getJobStatus = async (objectKey, config) =>
+  await fetch(config.endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -52,115 +44,77 @@ const getStatus = (objectKey, config) => {
       objectKey: objectKey,
     }),
   });
-  // console.log(JSON.stringify(response));
+
+const getProjectTranscripts = async (admin, execTimestamp) => {
+  const projectsCollection = await getProjectsCollection(admin);
+  const projects = projectsCollection.docs;
+  const projectTranscripts = await Promise.all(
+    projects.map(
+      async (project) => await getTranscriptsInProgress(admin, project.id)
+    )
+  );
+  return projectTranscripts;
 };
 
-const updateStatus = (status) => {};
+const updateJobs = async (
+  projectTranscripts,
+  usersAudioData,
+  execTimestamp,
+  config
+) => {
+  filterInvalidJobs(projectTranscripts, execTimestamp).forEach((job) => {
+    console.debug(`Job expired, updating status of ${job.id} to Error`);
+    // TODO: updateStatus("error" , job ... )
+  });
 
-const getValidJobs = (transcripts, execTimestamp) =>
-  transcripts.filter((transcript) => validJob(execTimestamp, transcript));
+  let validJobs = filterValidJobs(projectTranscripts, execTimestamp);
 
-// transcripts.forEach((transcript) => {
-//   try {
-//     const userId = userData[transcript.id]["user"];
-//     const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
-//     const status = getStatus(objectKey, config);
-//   } catch (err) {
-//     console.error("some err");
-//   }
-// });
-// querySnapshot.forEach((transcript) => {
-//   if (validJob(execTimestamp, transcript)) {
-//     try {
-//       const userId = userData[transcript.id]["user"];
-//       const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
-//       const status = getStatus(objectKey, config);
-//     } catch (err) {
-//       console.error("some err");
-//     }
-//   }
-// });
+  await validJobs.forEach(async (job) => {
+    let status = "";
 
-const getUserAudio = async (admin, userId) => {
-  const audioCollection = await getAudioCollection(admin, userId);
-  const audioIds = audioCollection.docs.map((audio) => audio.id);
-  return Object.assign(
-    {},
-    ...Object.entries(audioIds).map(([index, audioId]) => ({
-      [audioId]: { user: userId },
-    }))
-  );
+    const userId = usersAudioData[job.id]["user"];
+    const objectKey = `dpe/users/${userId}/audio/${job.id}.wav`;
+
+    try {
+      const response = await getJobStatus(objectKey, config);
+      const body = await response.json();
+      status = body.status.toLowerCase();
+    } catch (err) {
+      console.error(`[ERROR] Failed to get STT jobs status:`, err);
+    }
+
+    if (status) {
+      // TODO
+      // updateStatus(status)
+    }
+  });
 };
 
-const getUsersAudioData = async (admin) => {
-  const usersCollection = await getUsersCollection(admin);
-  const allUserAudioData = await Promise.all(
-    usersCollection.docs.map((user) => getUserAudio(admin, user.id))
-  );
-  return Object.assign(
-    {},
-    ...Object.entries(allUserAudioData).map(([index, userData]) => userData)
-  );
-};
-
-const updateFirestore = async (admin, config, execTimestamp) => {
+const sttCheckRunner = async (admin, config, execTimestamp) => {
   console.log(`[START] Checking STT jobs for in-progress transcriptions`);
+  let usersAudioData = {};
+  let projectTranscripts = [];
+
   try {
-    const projectsCollection = await getProjectsCollection(admin);
-    const usersAudioData = await getUsersAudioData(admin);
-    const projects = projectsCollection.docs;
-    const projectTranscripts = await Promise.all(
-      projects.map(
-        async (project) => await getTranscriptsInProgress(admin, project.id)
-      )
-    );
-
-    projectTranscripts.forEach((transcripts) => {
-      const validJobs = getValidJobs(transcripts.docs, execTimestamp);
-      validJobs.forEach((transcript) => {
-        console.log("transcript", transcript);
-        try {
-          const userId = userData[transcript.id]["user"];
-          const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
-          console.log(objectKey);
-          // const status = getStatus(objectKey, config);
-        } catch (err) {
-          console.error("some err");
-        }
-      });
-    });
-
-    await projectsCollection.forEach(
-      async (project) =>
-        await getTranscriptsInProgress(admin, project.id).onSnapshot(
-          (transcripts) => {
-            const validJobs = getValidJobs(
-              transcripts,
-              usersAudioData,
-              execTimestamp,
-              config
-            );
-            // console.log("validJobs", JSON.stringify(validJobs));
-            validJobs.forEach((transcript) => {
-              try {
-                const userId = userData[transcript.id]["user"];
-                const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
-                const status = getStatus(objectKey, config);
-              } catch (err) {
-                console.error("some err");
-              }
-            });
-          }
-        )
-    );
-
-    console.log(`[COMPLETE] Checking STT jobs for in-progress transcriptions`);
-  } catch (e) {
-    console.error(`[ERROR] Failed to get STT jobs status:`, e);
+    usersAudioData = await getUsersAudioData(admin);
+  } catch (err) {
+    return console.error("[ERROR] Could not get User's Audio Data", err);
   }
+
+  try {
+    projectTranscripts = await getProjectTranscripts(admin, execTimestamp);
+    const allProjectsTranscripts = projectTranscripts
+      .map((transcripts) => transcripts.docs)
+      .flat();
+    updateJobs(allProjectsTranscripts, usersAudioData, execTimestamp, config);
+  } catch (err) {
+    console.error("[ERROR] Could not get valid Jobs", err);
+  }
+
+  console.log(`[COMPLETE] Checking STT jobs for in-progress transcriptions`);
 };
 
 exports.createHandler = async (admin, config, context) => {
-  await updateFirestore(admin, config, context.timestamp);
-  return console.log();
+  await sttCheckRunner(admin, config, context.timestamp);
+  return;
 };

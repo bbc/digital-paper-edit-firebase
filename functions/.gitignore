@@ -1,4 +1,8 @@
 node_modules/
 docs/guides/example/input/*
 docs/guides/example/output/*
+
+
+# Local test configuration files
 .runtimeconfig.json
+gcp-credentials.json
