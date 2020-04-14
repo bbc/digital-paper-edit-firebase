@@ -19,8 +19,6 @@
 .vscode
 
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 
 # Node specific .gitignore
@@ -28,8 +26,6 @@ yarn-error.log*
 logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # Runtime data
 pids
@@ -76,9 +72,6 @@ typings/
 
 # Output of 'npm pack'
 *.tgz
-
-# Yarn Integrity file
-.yarn-integrity
 
 
 # next.js build output
