@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "aws-sdk": "^2.588.0",
-    "fetch": "^1.1.0",
     "firebase-admin": "^8.6.0",
     "firebase-functions": "^3.3.0",
     "fluent-ffmpeg": "^2.1.2",
