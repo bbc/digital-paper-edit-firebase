@@ -46,6 +46,5 @@ exports.cronSTTJobChecker = functions
 .pubsub
 .schedule(runSchedule)
 .onRun((context) => {
-  console.log(`STT Check - running ${runSchedule}`);
   return sttChecker.createHandler(admin, config.aws.api, context);
 });

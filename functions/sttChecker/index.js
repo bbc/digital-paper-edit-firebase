@@ -56,7 +56,7 @@ const getProjectTranscripts = async (admin, execTimestamp) => {
   return projectTranscripts;
 };
 
-const updateJobs = async (
+const updateTranscriptsStatus = async (
   projectTranscripts,
   usersAudioData,
   execTimestamp,
@@ -106,7 +106,12 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
     const allProjectsTranscripts = projectTranscripts
       .map((transcripts) => transcripts.docs)
       .flat();
-    updateJobs(allProjectsTranscripts, usersAudioData, execTimestamp, config);
+    updateTranscriptsStatus(
+      allProjectsTranscripts,
+      usersAudioData,
+      execTimestamp,
+      config
+    );
   } catch (err) {
     console.error("[ERROR] Could not get valid Jobs", err);
   }
