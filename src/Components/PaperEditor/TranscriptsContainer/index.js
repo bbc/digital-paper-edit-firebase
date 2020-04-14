@@ -13,7 +13,7 @@ import cuid from 'cuid';
 
 import Transcript from './Transcript.js';
 
-const Transcripts = ({ transcripts, projectId, labelsOptions }) => {
+const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotations }) => {
   const getStatusIcon = (status) => {
     if (status === 'in-progress') {
       return <FontAwesomeIcon icon={ faClock } />;
@@ -45,6 +45,7 @@ const Transcripts = ({ transcripts, projectId, labelsOptions }) => {
           projectId={ projectId }
           transcriptId={ id }
           labelsOptions={ labelsOptions }
+          annotations = { annotations }
           title={ transcriptTitle }
           transcript={ transcript }
           mediaType={ mediaType }
@@ -88,10 +89,11 @@ const Transcripts = ({ transcripts, projectId, labelsOptions }) => {
   );
 };
 
-Transcripts.propTypes = {
+TranscriptsContainer.propTypes = {
   labelsOptions: PropTypes.any,
   projectId: PropTypes.any,
-  transcripts: PropTypes.any
+  transcripts: PropTypes.any,
+  annotations: PropTypes.any
 };
 
-export default Transcripts;
+export default TranscriptsContainer;
