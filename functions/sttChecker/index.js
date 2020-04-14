@@ -12,7 +12,8 @@ const getTranscriptsInProgress = (admin, projectId) => {
   return admin
     .firestore()
     .collection(`apps/digital-paper-edit/projects/${projectId}/transcripts`)
-    .where("status", "==", "in-progress");
+    .where("status", "==", "in-progress")
+    .get();
 };
 
 const getAudioCollection = (admin, userId) => {
@@ -40,8 +41,8 @@ const validJob = (execTimestamp, transcript) => {
   return true;
 };
 
-const getStatus = async (objectKey, config) => {
-  const response = await fetch(config.endpoint, {
+const getStatus = (objectKey, config) => {
+  return fetch(config.endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -51,44 +52,34 @@ const getStatus = async (objectKey, config) => {
       objectKey: objectKey,
     }),
   });
-  console.log(JSON.stringify(response));
+  // console.log(JSON.stringify(response));
 };
 
 const updateStatus = (status) => {};
 
-const getValidJobs = (querySnapshot, userData, execTimestamp, config) => {
-  const validJobs = [];
-  querySnapshot.forEach((transcript) => {
-    if (validJob(execTimestamp, transcript)) {
-      validJobs.push(transcript);
-    }
-  });
+const getValidJobs = (transcripts, execTimestamp) =>
+  transcripts.filter((transcript) => validJob(execTimestamp, transcript));
 
-  console.log(JSON.stringify(validJobs));
-
-  querySnapshot.forEach((transcript) => {
-    if (validJob(execTimestamp, transcript)) {
-      try {
-        const userId = userData[transcript.id]["user"];
-        const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
-        const status = getStatus(objectKey, config);
-      } catch (err) {
-        console.error("some err");
-      }
-    }
-  });
-  // querySnapshot.forEach((transcript) => {
-  //   if (validJob(execTimestamp, transcript)) {
-  //     try {
-  //       const userId = userData[transcript.id]["user"];
-  //       const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
-  //       const status = getStatus(objectKey, config);
-  //     } catch (err) {
-  //       console.error("some err");
-  //     }
-  //   }
-  // });
-};
+// transcripts.forEach((transcript) => {
+//   try {
+//     const userId = userData[transcript.id]["user"];
+//     const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
+//     const status = getStatus(objectKey, config);
+//   } catch (err) {
+//     console.error("some err");
+//   }
+// });
+// querySnapshot.forEach((transcript) => {
+//   if (validJob(execTimestamp, transcript)) {
+//     try {
+//       const userId = userData[transcript.id]["user"];
+//       const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
+//       const status = getStatus(objectKey, config);
+//     } catch (err) {
+//       console.error("some err");
+//     }
+//   }
+// });
 
 const getUserAudio = async (admin, userId) => {
   const audioCollection = await getAudioCollection(admin, userId);
@@ -117,14 +108,49 @@ const updateFirestore = async (admin, config, execTimestamp) => {
   try {
     const projectsCollection = await getProjectsCollection(admin);
     const usersAudioData = await getUsersAudioData(admin);
+    const projects = projectsCollection.docs;
+    const projectTranscripts = await Promise.all(
+      projects.map(
+        async (project) => await getTranscriptsInProgress(admin, project.id)
+      )
+    );
+
+    projectTranscripts.forEach((transcripts) => {
+      const validJobs = getValidJobs(transcripts.docs, execTimestamp);
+      validJobs.forEach((transcript) => {
+        console.log("transcript", transcript);
+        try {
+          const userId = userData[transcript.id]["user"];
+          const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
+          console.log(objectKey);
+          // const status = getStatus(objectKey, config);
+        } catch (err) {
+          console.error("some err");
+        }
+      });
+    });
 
     await projectsCollection.forEach(
       async (project) =>
-        await getTranscriptsInProgress(
-          admin,
-          project.id
-        ).onSnapshot((querySnapshot) =>
-          getValidJobs(querySnapshot, usersAudioData, execTimestamp, config)
+        await getTranscriptsInProgress(admin, project.id).onSnapshot(
+          (transcripts) => {
+            const validJobs = getValidJobs(
+              transcripts,
+              usersAudioData,
+              execTimestamp,
+              config
+            );
+            // console.log("validJobs", JSON.stringify(validJobs));
+            validJobs.forEach((transcript) => {
+              try {
+                const userId = userData[transcript.id]["user"];
+                const objectKey = `dpe/users/${userId}/audio/${transcript.id}.wav`;
+                const status = getStatus(objectKey, config);
+              } catch (err) {
+                console.error("some err");
+              }
+            });
+          }
         )
     );
 
