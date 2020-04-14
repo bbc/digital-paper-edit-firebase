@@ -151,6 +151,10 @@ Node version is set in node version manager [`.nvmrc`](https://github.com/creati
 
 Use node v8 in Functions directory.
 
+Developing is a lot easier if you have your **local emulator** set up.
+1. Follow the instructions [here](https://firebase.google.com/docs/functions/local-2. emulator#set_up_admin_credentials_optional) to get the admin credentials.
+2. You need to save this as `gcp-credentials.json` and keep it in your `digital-paper-edit-firebase/functions` folder.
+3. Run `./start_firebase_shell` in functions folder.
 <!-- TODO: Setup eslint in express server -->
 
 ## Documentation
