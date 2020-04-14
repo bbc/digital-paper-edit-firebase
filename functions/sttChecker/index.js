@@ -93,7 +93,6 @@ const updateTranscriptsStatus = async (
 const sttCheckRunner = async (admin, config, execTimestamp) => {
   console.log(`[START] Checking STT jobs for in-progress transcriptions`);
   let usersAudioData = {};
-  let projectTranscripts = [];
 
   try {
     usersAudioData = await getUsersAudioData(admin);
@@ -102,7 +101,10 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
   }
 
   try {
-    projectTranscripts = await getProjectTranscripts(admin, execTimestamp);
+    const projectTranscripts = await getProjectTranscripts(
+      admin,
+      execTimestamp
+    );
     const allProjectsTranscripts = projectTranscripts
       .map((transcripts) => transcripts.docs)
       .flat();
