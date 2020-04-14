@@ -64,7 +64,6 @@ const PaperEditor = (props) => {
 
     const getAnnotations = async () => {
       try {
-        
       } catch (error) {
         console.error('Error getting annotations: ', error);
       }
@@ -81,6 +80,7 @@ const PaperEditor = (props) => {
   }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId, annotations ]);
 
   const toggleTranscripts = () => {
+    console.log('baksdna');
     if (isProgramScriptShown) {
       setIsTranscriptsShown(!isTranscriptsShown);
     }
@@ -109,7 +109,7 @@ const PaperEditor = (props) => {
 
     return (
       <Button
-        onClick={ toggle() }
+        onClick={ toggle }
         variant={ variant }>
         {text} {Icon} {actionText}
       </Button>
