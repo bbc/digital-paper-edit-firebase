@@ -4,6 +4,7 @@ const secondsToDhms = require("../utils").secondsToDhms;
 const getUsersAudioData = require("../utils").getUsersAudioData;
 const getProjectsCollection = require("../utils").getProjectsCollection;
 const getTranscriptsInProgress = require("../utils").getTranscriptsInProgress;
+const getTranscriptsCollection = require("../utils").getTranscriptsCollection;
 
 const psttAdapter = require("./psttAdapter");
 
@@ -13,9 +14,6 @@ const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
   console.debug(`Last updated ${secondsToDhms(timeDifference / 1000)} ago`);
   return timeDifference >= ONE_DAY_IN_NANOSECONDS;
 };
-
-// TODO
-const updateStatus = (status) => {};
 
 const isValidJob = (execTimestamp, transcript) => {
   const transcriptData = transcript.data();
@@ -47,52 +45,70 @@ const getJobStatus = async (objectKey, config) =>
   });
 
 const getProjectTranscripts = async (admin, execTimestamp) => {
-  const projectsCollection = await getProjectsCollection(admin);
+  const projectsCollection = await getProjectsCollection(admin).get();
   const projects = projectsCollection.docs;
   const projectTranscripts = await Promise.all(
     projects.map(
-      async (project) => await getTranscriptsInProgress(admin, project.id)
+      async (project) => await getTranscriptsInProgress(admin, project.id).get()
     )
   );
   return projectTranscripts;
 };
 
+const updateTranscription = async (admin, transcriptId, projectId, update) => {
+  const docRef = getTranscriptsCollection(admin, projectId).doc(transcriptId);
+  await docRef.update(update);
+};
+
 const updateTranscriptsStatus = async (
+  admin,
   projectTranscripts,
   usersAudioData,
   execTimestamp,
   config
 ) => {
-  filterInvalidJobs(projectTranscripts, execTimestamp).forEach((job) => {
-    console.debug(`Job ${job.id} expired, updating status to Error`);
-    // TODO: updateStatus("error" , job ... )
-  });
+  await filterInvalidJobs(projectTranscripts, execTimestamp).forEach(
+    async (job) => {
+      console.debug(`Job ${job.id} expired, updating status to Error`);
+      const { projectId } = job.data();
+      await updateTranscription(admin, job.id, projectId, { status: "error" });
+    }
+  );
 
   let validJobs = filterValidJobs(projectTranscripts, execTimestamp);
 
   await validJobs.forEach(async (job) => {
     let status = "";
+    let responseData = {};
+    const { projectId } = job.data();
 
     const userId = usersAudioData[job.id]["user"];
     const objectKey = `dpe/users/${userId}/audio/${job.id}.wav`;
 
     try {
       const response = await getJobStatus(objectKey, config);
-      const body = await response.json();
-      status = body.status.toLowerCase();
-      transcript = body.transcript;
+      responseData = await response.json();
+      status = responseData.status.toLowerCase();
     } catch (err) {
       console.error(`[ERROR] Failed to get STT jobs status:`, err);
+      return;
     }
 
-    if (status) {
-      // TODO
-      // updateStatus(status)
+    if (status === "in-progress") {
+      return;
     }
 
-    if (transcript) {
-      const { words, paragraphs } = psttAdapter(transcript.items);
+    const update = { status: status };
+
+    if (status === "success") {
+      const { words, paragraphs } = psttAdapter(responseData.transcript.items);
+      update.words = words;
+      update.paragraphs = paragraphs;
+      update.status = "done";
     }
+
+    await updateTranscription(admin, job.id, projectId, update);
+    console.debug(`Updated ${job.id} with data`, update);
   });
 };
 
@@ -114,7 +130,9 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
     const allProjectsTranscripts = projectTranscripts
       .map((transcripts) => transcripts.docs)
       .flat();
+
     updateTranscriptsStatus(
+      admin,
       allProjectsTranscripts,
       usersAudioData,
       execTimestamp,

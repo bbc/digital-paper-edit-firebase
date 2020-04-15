@@ -29,30 +29,43 @@ const secondsToDhms = (seconds) => {
 
 /* ====== Firebase helper functions ====== */
 const getProjectsCollection = (admin) => {
-  return admin.firestore().collection(`apps/digital-paper-edit/projects`).get();
+  return admin.firestore().collection(`apps/digital-paper-edit/projects`);
 };
 
 const getUsersCollection = (admin) => {
-  return admin.firestore().collection(`apps/digital-paper-edit/users`).get();
+  return admin.firestore().collection(`apps/digital-paper-edit/users`);
+};
+
+const getTranscriptsCollection = (admin, projectId) => {
+  return admin
+    .firestore()
+    .collection(`apps/digital-paper-edit/projects/${projectId}/transcripts`);
 };
 
 const getTranscriptsInProgress = (admin, projectId) => {
+  return getTranscriptsCollection(admin, projectId).where(
+    "status",
+    "==",
+    "in-progress"
+  );
+};
+
+const getTranscript = (admin, projectId, transcriptId) => {
   return admin
     .firestore()
-    .collection(`apps/digital-paper-edit/projects/${projectId}/transcripts`)
-    .where("status", "==", "in-progress")
-    .get();
+    .collection(
+      `apps/digital-paper-edit/projects/${projectId}/transcripts/${transcriptId}`
+    );
 };
 
 const getAudioCollection = (admin, userId) => {
   return admin
     .firestore()
-    .collection(`apps/digital-paper-edit/users/${userId}/audio`)
-    .get();
+    .collection(`apps/digital-paper-edit/users/${userId}/audio`);
 };
 
 const getUserAudio = async (admin, userId) => {
-  const audioCollection = await getAudioCollection(admin, userId);
+  const audioCollection = await getAudioCollection(admin, userId).get();
   const audioIds = audioCollection.docs.map((audio) => audio.id);
   return Object.assign(
     {},
@@ -63,7 +76,7 @@ const getUserAudio = async (admin, userId) => {
 };
 
 const getUsersAudioData = async (admin) => {
-  const usersCollection = await getUsersCollection(admin);
+  const usersCollection = await getUsersCollection(admin).get();
   const allUserAudioData = await Promise.all(
     usersCollection.docs.map((user) => getUserAudio(admin, user.id))
   );
@@ -78,6 +91,7 @@ const getUsersAudioData = async (admin) => {
 exports.getUsersAudioData = getUsersAudioData;
 exports.getProjectsCollection = getProjectsCollection;
 exports.getTranscriptsInProgress = getTranscriptsInProgress;
+exports.getTranscriptsCollection = getTranscriptsCollection;
 
 exports.getUrl = getUrl;
 exports.secondsToDhms = secondsToDhms;
