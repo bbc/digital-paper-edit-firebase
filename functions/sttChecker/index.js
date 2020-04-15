@@ -1,15 +1,16 @@
 const fetch = require("node-fetch");
-
 const secondsToDhms = require("../utils").secondsToDhms;
 
 const getUsersAudioData = require("../utils").getUsersAudioData;
 const getProjectsCollection = require("../utils").getProjectsCollection;
 const getTranscriptsInProgress = require("../utils").getTranscriptsInProgress;
 
+const psttAdapter = require("./psttAdapter");
+
 const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
   const ONE_DAY_IN_NANOSECONDS = 3600 * 24 * 1000;
   const timeDifference = sttCheckerExecTime - lastUpdatedTime;
-  console.debug(`Job last updated ${secondsToDhms(timeDifference / 1000)} ago`);
+  console.debug(`Last updated ${secondsToDhms(timeDifference / 1000)} ago`);
   return timeDifference >= ONE_DAY_IN_NANOSECONDS;
 };
 
@@ -63,7 +64,7 @@ const updateTranscriptsStatus = async (
   config
 ) => {
   filterInvalidJobs(projectTranscripts, execTimestamp).forEach((job) => {
-    console.debug(`Job expired, updating status of ${job.id} to Error`);
+    console.debug(`Job ${job.id} expired, updating status to Error`);
     // TODO: updateStatus("error" , job ... )
   });
 
@@ -79,6 +80,7 @@ const updateTranscriptsStatus = async (
       const response = await getJobStatus(objectKey, config);
       const body = await response.json();
       status = body.status.toLowerCase();
+      transcript = body.transcript;
     } catch (err) {
       console.error(`[ERROR] Failed to get STT jobs status:`, err);
     }
@@ -86,6 +88,10 @@ const updateTranscriptsStatus = async (
     if (status) {
       // TODO
       // updateStatus(status)
+    }
+
+    if (transcript) {
+      const { words, paragraphs } = psttAdapter(transcript.items);
     }
   });
 };
@@ -115,13 +121,14 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
       config
     );
   } catch (err) {
-    console.error("[ERROR] Could not get valid Jobs", err);
+    return console.error("[ERROR] Could not get valid Jobs", err);
   }
 
-  console.log(`[COMPLETE] Checking STT jobs for in-progress transcriptions`);
+  return console.log(
+    `[COMPLETE] Checking STT jobs for in-progress transcriptions`
+  );
 };
 
 exports.createHandler = async (admin, config, context) => {
   await sttCheckRunner(admin, config, context.timestamp);
-  return;
 };
