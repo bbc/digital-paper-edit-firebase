@@ -86,7 +86,9 @@ const ProgrammeScript = props => {
       try {
         const paperEdit = await PaperEditsCollection.getItem(papereditsId);
         setTitle(paperEdit.title);
-        const newElements = JSON.parse(JSON.stringify(paperEdit.elements));
+        const newElements = paperEdit.elements ?
+          JSON.parse(JSON.stringify(paperEdit.elements)) :
+          [];
         const insertElement = {
           type: 'insert',
           text: 'Insert point to add selection'
@@ -321,16 +323,22 @@ const ProgrammeScript = props => {
         'Some place holder text'
       );
 
-      const insertElementIndex = getInsertElementIndex();
-      const newElement = {
-        id: cuid(),
-        index: elements.length,
-        type: elementType,
-        text: text
-      };
-      newElements.splice(insertElementIndex, 0, newElement);
-      setElements(newElements);
-      setResetPreview(true);
+      if (text !== null) {
+        console.log('Adding element');
+        const insertElementIndex = getInsertElementIndex();
+        const newElement = {
+          id: cuid(),
+          index: elements.length,
+          type: elementType,
+          text: text
+        };
+        newElements.splice(insertElementIndex, 0, newElement);
+        setElements(newElements);
+        console.log('Added element');
+        setResetPreview(true);
+      } else {
+        console.log('Not adding element');
+      }
     }
   };
 
