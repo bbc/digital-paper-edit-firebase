@@ -80,7 +80,6 @@ const PaperEditor = (props) => {
   }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId, annotations ]);
 
   const toggleTranscripts = () => {
-    console.log('baksdna');
     if (isProgramScriptShown) {
       setIsTranscriptsShown(!isTranscriptsShown);
     }
