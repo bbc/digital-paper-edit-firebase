@@ -43,6 +43,7 @@ function makeListOfUniqueSpeakers(array) {
 }
 
 const Transcript = (props) => {
+  console.log('transcript [props', props);
   const videoRef = useRef();
   const transcriptId = props.transcriptId;
   const projectId = props.projectId;
@@ -73,6 +74,65 @@ const Transcript = (props) => {
     projectId,
     transcriptId
   ]);
+
+  const onLabelCreate = (newLabel) => {
+    // const api = this.context;
+    // api
+    //   .createLabel(this.props.projectId, newLabel)
+    //   // TODO: add error handling
+    //   .then(json => {
+    //     this.setState({
+    //       labelsOptions: json.labels
+    //     });
+    //   });
+  };
+
+  const onLabelUpdate = (updatedLabel) => {
+    // const api = this.context;
+    // console.log("updatedLabel", updatedLabel);
+    // // TODO: PUT with API Wrapper
+    // api
+    //   .updateLabel(this.props.projectId, updatedLabel.id, updatedLabel)
+    //   // TODO: add error handling
+    //   .then(json => {
+    //     this.setState({
+    //       labelsOptions: json.labels
+    //     });
+    //   });
+  };
+
+  const onLabelDelete = (labelIid) => {
+    // const api = this.context;
+    // api
+    //   .deleteLabel(this.props.projectId, labelIid)
+    //   // TODO: add error handling
+    //   .then(json => {
+    //     this.setState({
+    //       labelsOptions: json.labels
+    //     });
+    //   });
+  };
+
+  const showLabelsReference = () => {
+    // if (this.state.isShowLabelsReference) {
+    //   this.props.showLabelsReference();
+    //   // this.setState({
+    //   //   isShowLabelsReference: false
+    //   // });
+    // }
+    // else {
+    //   this.props.showLabelsReference();
+    //   // this.setState({
+    //   //   isShowLabelsReference: true
+    //   // });
+    // }
+  };
+
+  const handleLabelsSearchChange = (selectedOptionLabelSearch) => {
+    // this.setState({
+    //   selectedOptionLabelSearch,
+    // });
+  };
 
   const currentWordTime = currentTime;
   const unplayedColor = 'grey';
@@ -238,7 +298,7 @@ const Transcript = (props) => {
           {props.transcript && (
             <Paragraphs
               labelsOptions={
-                state.labelsOptions && state.labelsOptions
+                labelsOptions && labelsOptions
               }
               annotations={
                 state.annotations ? state.annotations : []
@@ -251,8 +311,8 @@ const Transcript = (props) => {
                 state.showParagraphsMatchingSearch
               }
               selectedOptionLabelSearch={
-                state.selectedOptionLabelSearch
-                  ? state.selectedOptionLabelSearch
+                selectedOptionLabelSearch
+                  ? selectedOptionLabelSearch
                   : []
               }
               selectedOptionSpeakerSearch={
@@ -304,44 +364,6 @@ const Transcript = (props) => {
 //     //   });
 //   };
 
-//   onLabelCreate = (newLabel) => {
-//     // const api = this.context;
-//     // api
-//     //   .createLabel(this.props.projectId, newLabel)
-//     //   // TODO: add error handling
-//     //   .then(json => {
-//     //     this.setState({
-//     //       labelsOptions: json.labels
-//     //     });
-//     //   });
-//   };
-
-//   onLabelUpdate = (updatedLabel) => {
-//     // const api = this.context;
-//     // console.log("updatedLabel", updatedLabel);
-//     // // TODO: PUT with API Wrapper
-//     // api
-//     //   .updateLabel(this.props.projectId, updatedLabel.id, updatedLabel)
-//     //   // TODO: add error handling
-//     //   .then(json => {
-//     //     this.setState({
-//     //       labelsOptions: json.labels
-//     //     });
-//     //   });
-//   };
-
-//   onLabelDelete = (labelIid) => {
-//     // const api = this.context;
-//     // api
-//     //   .deleteLabel(this.props.projectId, labelIid)
-//     //   // TODO: add error handling
-//     //   .then(json => {
-//     //     this.setState({
-//     //       labelsOptions: json.labels
-//     //     });
-//     //   });
-//   };
-
 //   // functions repeadrted from TranscriptAnnotate/index.js
 //   handleTimecodeClick = (e) => {
 //     if (e.target.classList.contains('timecode')) {
@@ -364,12 +386,6 @@ const Transcript = (props) => {
 //       return {
 //         showParagraphsMatchingSearch: !state.showParagraphsMatchingSearch,
 //       };
-//     });
-//   };
-
-//   handleLabelsSearchChange = (selectedOptionLabelSearch) => {
-//     this.setState({
-//       selectedOptionLabelSearch,
 //     });
 //   };
 
@@ -432,64 +448,64 @@ const Transcript = (props) => {
 //     });
 //   };
 
-  // handleCreateAnnotation = (e) => {
-  //   const api = this.context;
-  //   const element = e.target;
-  //   // window.element = element;
-  //   const selection = getTimeFromUserWordsSelection();
-  //   if (selection) {
-  //     const { annotations } = this.state;
-  //     selection.labelId = element.dataset.labelId;
-  //     selection.note = '';
-  //     const newAnnotation = selection;
-  //     console.log('newAnnotation', newAnnotation);
-  //     api
-  //       .createAnnotation(
-  //         this.props.projectId,
-  //         this.props.transcriptId,
-  //         newAnnotation
-  //       )
-  //       .then((json) => {
-  //         const newAnnotationFromServer = json.annotation;
-  //         console.log('newAnnotationFromServer', newAnnotationFromServer);
-  //         // console.log('handleCreateAnnotation', newAnnotation);
-  //         // this.setState({
-  //         //   labelsOptions: json.labels
-  //         // });
-  //         const newAnnotationsSet = JSON.parse(JSON.stringify(annotations));
-  //         // newAnnotation.id = json.annotation.id;
-  //         // newAnnotationsList.push(newAnnotation);
-  //         newAnnotationsSet.push(newAnnotationFromServer);
+//   handleCreateAnnotation = (e) => {
+//     const api = this.context;
+//     const element = e.target;
+//     // window.element = element;
+//     const selection = getTimeFromUserWordsSelection();
+//     if (selection) {
+//       const { annotations } = this.state;
+//       selection.labelId = element.dataset.labelId;
+//       selection.note = '';
+//       const newAnnotation = selection;
+//       console.log('newAnnotation', newAnnotation);
+//       api
+//         .createAnnotation(
+//           this.props.projectId,
+//           this.props.transcriptId,
+//           newAnnotation
+//         )
+//         .then((json) => {
+//           const newAnnotationFromServer = json.annotation;
+//           console.log('newAnnotationFromServer', newAnnotationFromServer);
+//           // console.log('handleCreateAnnotation', newAnnotation);
+//           // this.setState({
+//           //   labelsOptions: json.labels
+//           // });
+//           const newAnnotationsSet = JSON.parse(JSON.stringify(annotations));
+//           // newAnnotation.id = json.annotation.id;
+//           // newAnnotationsList.push(newAnnotation);
+//           newAnnotationsSet.push(newAnnotationFromServer);
 
-  //         this.setState({ annotations: newAnnotationsSet });
-  //       });
-  //   } else {
-  //     alert('Select some text in the transcript to highlight ');
-  //   }
-  // };
+//           this.setState({ annotations: newAnnotationsSet });
+//         });
+//     } else {
+//       alert('Select some text in the transcript to highlight ');
+//     }
+//   };
 
-  // handleDeleteAnnotation = (annotationId) => {
-  //   const api = this.context;
-  //   const { annotations } = this.state;
-  //   const newAnnotationsSet = annotations.filter((annotation) => {
-  //     return annotation.id !== annotationId;
-  //   });
+//   handleDeleteAnnotation = (annotationId) => {
+//     const api = this.context;
+//     const { annotations } = this.state;
+//     const newAnnotationsSet = annotations.filter((annotation) => {
+//       return annotation.id !== annotationId;
+//     });
 
-  //   const deepCloneOfNestedObjectNewAnnotationsSet = JSON.parse(
-  //     JSON.stringify(newAnnotationsSet)
-  //   );
-  //   api
-  //     .deleteAnnotation(
-  //       this.props.projectId,
-  //       this.props.transcriptId,
-  //       annotationId
-  //     )
-  //     .then(() => {
-  //       this.setState({
-  //         annotations: deepCloneOfNestedObjectNewAnnotationsSet,
-  //       });
-  //     });
-  // };
+//     const deepCloneOfNestedObjectNewAnnotationsSet = JSON.parse(
+//       JSON.stringify(newAnnotationsSet)
+//     );
+//     api
+//       .deleteAnnotation(
+//         this.props.projectId,
+//         this.props.transcriptId,
+//         annotationId
+//       )
+//       .then(() => {
+//         this.setState({
+//           annotations: deepCloneOfNestedObjectNewAnnotationsSet,
+//         });
+//       });
+//   };
 
 //   // TODO: add server side via api
 //   // similar to handleDeleteAnnotation filter to find annotation then replace text
@@ -528,21 +544,6 @@ const Transcript = (props) => {
 //     }
 //   };
 
-//   showLabelsReference = () => {
-//     // if (this.state.isShowLabelsReference) {
-//     //   this.props.showLabelsReference();
-//     //   // this.setState({
-//     //   //   isShowLabelsReference: false
-//     //   // });
-//     // }
-//     // else {
-//     //   this.props.showLabelsReference();
-//     //   // this.setState({
-//     //   //   isShowLabelsReference: true
-//     //   // });
-//     // }
-//   };
-
 //   getCurrentWordTime = () => {
 //     const { words } = this.props.transcript;
 
@@ -561,208 +562,6 @@ const Transcript = (props) => {
 
 //     return 0;
 //   };
-//   // eslint-disable-next-line class-methods-use-this
-//   render() {
-//     const currentWordTime = this.state.currentTime;
-//     const unplayedColor = 'grey';
-
-//     // Time to the nearest half second
-//     const time = Math.round(currentWordTime * 4.0) / 4.0;
-//     const highlights = (
-//       <style scoped>
-//         {`span.words[data-prev-times~="${ Math.floor(
-//           time
-//         ) }"][data-transcript-id="${
-//           Transcript.transcriptId
-//         }"] { color: ${ unplayedColor } }`}
-//       </style>
-//     );
-
-//     const cardBodyHeight = this.props.mediaType === 'audio' ? '100vh' : '60vh';
-
-//     let transcriptMediaCard;
-
-//     if (this.props.mediaType === 'audio') {
-//       transcriptMediaCard = (
-//         <Card.Header>
-//           <audio
-//             src={ this.props.url }
-//             ref={ this.videoRef }
-//             onTimeUpdate={ (e) => {
-//               this.setState({ currentTime: e.target.currentTime });
-//             } }
-//             style={ {
-//               width: '100%',
-//               backgroundColor: 'black',
-//             } }
-//             controls
-//           />
-//         </Card.Header>
-//       );
-//     } else {
-//       transcriptMediaCard = (
-//         <Card.Header>
-//           <video
-//             src={ this.props.url }
-//             ref={ this.videoRef }
-//             onTimeUpdate={ (e) => {
-//               this.setState({ currentTime: e.target.currentTime });
-//             } }
-//             style={ {
-//               width: '100%',
-//               backgroundColor: 'black',
-//             } }
-//             controls
-//           />
-//         </Card.Header>
-//       );
-//     }
-
-//     return (
-//       <>
-//         <style scoped>
-//           {/* This is to style of the Paragraph component programmatically */}
-//           {`${
-//             this.state.sentenceToSearchCSS
-//           } { background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
-//           {`${
-//             this.state.sentenceToSearchCSSInHighlights
-//           } { background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
-//         </style>
-
-//         <h2
-//           className={ [ 'text-truncate', 'text-muted' ].join(' ') }
-//           title={ `Transcript Title: ${ this.props.title }` }
-//         >
-//           {/* <FontAwesomeIcon icon={ this.state.isVideoTranscriptPreviewShow === 'none' ? faEye : faEyeSlash } onClick={ this.handleVideoTranscriptPreviewDisplay }/> */}
-//           {this.props.title}
-//         </h2>
-
-//         <Card>
-//           {transcriptMediaCard}
-//           <Card.Header>
-//             <Row>
-//               <Col xs={ 12 }>
-//                 <ButtonGroup style={ { width: '100%' } }>
-//                   <Dropdown as={ ButtonGroup } style={ { width: '100%' } }>
-//                     <Button
-//                       variant="outline-secondary"
-//                       data-label-id={ 'default' }
-//                       onClick={ this.handleCreateAnnotation }
-//                     >
-//                       <FontAwesomeIcon icon={ faHighlighter } flip="horizontal" />{' '}
-//                       Highlight
-//                       {/* */}
-//                     </Button>
-//                     <Dropdown.Toggle
-//                       split
-//                       variant="outline-secondary"
-//                       data-lable-id={ 0 }
-//                     />
-//                     <Dropdown.Menu onClick={ this.handleCreateAnnotation }>
-//                       {this.state.labelsOptions &&
-//                         this.state.labelsOptions.map((label) => {
-//                           return (
-//                             <Dropdown.Item
-//                               key={ `label_id_${ label.id }` }
-//                               data-label-id={ label.id }
-//                             >
-//                               <Row data-label-id={ label.id }>
-//                                 <Col
-//                                   xs={ 1 }
-//                                   style={ { backgroundColor: label.color } }
-//                                   data-label-id={ label.id }
-//                                 ></Col>
-//                                 <Col xs={ 1 } data-label-id={ label.id }>
-//                                   {label.label}
-//                                 </Col>
-//                               </Row>
-//                             </Dropdown.Item>
-//                           );
-//                         })}
-//                     </Dropdown.Menu>
-//                   </Dropdown>
-
-//                   <DropdownButton
-//                     drop={ 'right' }
-//                     as={ ButtonGroup }
-//                     title={ <FontAwesomeIcon icon={ faCog } /> }
-//                     id="bg-nested-dropdown"
-//                     variant="outline-secondary"
-//                   >
-//                     <LabelsList
-//                       isLabelsListOpen={ this.state.isLabelsListOpen }
-//                       labelsOptions={
-//                         this.state.labelsOptions && this.state.labelsOptions
-//                       }
-//                       onLabelUpdate={ this.onLabelUpdate }
-//                       onLabelCreate={ this.onLabelCreate }
-//                       onLabelDelete={ this.onLabelDelete }
-//                     />
-//                   </DropdownButton>
-//                 </ButtonGroup>
-//               </Col>
-//             </Row>
-//           </Card.Header>
-//           <SearchBar
-//             labelsOptions={ this.state.labelsOptions }
-//             speakersOptions={
-//               this.props.transcript
-//                 ? makeListOfUniqueSpeakers(this.props.transcript.paragraphs)
-//                 : null
-//             }
-//             handleSearch={ this.handleSearch }
-//             handleLabelsSearchChange={ this.handleLabelsSearchChange }
-//             handleSpeakersSearchChange={ this.handleSpeakersSearchChange }
-//             handleShowParagraphsMatchingSearch={
-//               this.handleShowParagraphsMatchingSearch
-//             }
-//           />
-
-//           <Card.Body
-//             onDoubleClick={ this.handleWordClick }
-//             onClick={ this.handleTimecodeClick }
-//             style={ { height: cardBodyHeight, overflow: 'scroll' } }
-//           >
-//             {highlights}
-
-//             {this.props.transcript && (
-//               <Paragraphs
-//                 labelsOptions={
-//                   this.state.labelsOptions && this.state.labelsOptions
-//                 }
-//                 annotations={
-//                   this.state.annotations ? this.state.annotations : []
-//                 }
-//                 transcriptJson={ this.props.transcript }
-//                 searchString={
-//                   this.state.searchString ? this.state.searchString : ''
-//                 }
-//                 showParagraphsMatchingSearch={
-//                   this.state.showParagraphsMatchingSearch
-//                 }
-//                 selectedOptionLabelSearch={
-//                   this.state.selectedOptionLabelSearch
-//                     ? this.state.selectedOptionLabelSearch
-//                     : []
-//                 }
-//                 selectedOptionSpeakerSearch={
-//                   this.state.selectedOptionSpeakerSearch
-//                     ? this.state.selectedOptionSpeakerSearch
-//                     : []
-//                 }
-//                 transcriptId={ this.props.transcriptId }
-//                 handleTimecodeClick={ this.handleTimecodeClick }
-//                 handleWordClick={ this.handleWordClick }
-//                 handleDeleteAnnotation={ this.handleDeleteAnnotation }
-//                 handleEditAnnotation={ this.handleEditAnnotation }
-//               />
-//             )}
-//           </Card.Body>
-//         </Card>
-//       </>
-//     );
-//   }
 // }
 
 Transcript.propTypes = {
