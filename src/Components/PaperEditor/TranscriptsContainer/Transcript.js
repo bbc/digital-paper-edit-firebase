@@ -43,7 +43,6 @@ function makeListOfUniqueSpeakers(array) {
 }
 
 const Transcript = (props) => {
-  console.log('transcript props', props);
   const videoRef = useRef();
   const transcriptId = props.transcriptId;
   const projectId = props.projectId;
