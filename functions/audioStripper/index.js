@@ -36,11 +36,18 @@ const convertStreamToAudio = (inputStream, outputStream) => {
   });
 };
 
-const getWriteStreamMetadata = (userId, itemId, originalName, duration) => {
+const getWriteStreamMetadata = (
+  userId,
+  itemId,
+  projectId,
+  originalName,
+  duration
+) => {
   return {
     metadata: {
       userId: userId,
       id: itemId,
+      projectId: projectId,
       folder: "audio",
       originalName: originalName,
       duration: duration,
@@ -60,6 +67,7 @@ exports.createHandler = async (snap, bucket, context) => {
     metadata: getWriteStreamMetadata(
       userId,
       itemId,
+      upload.projectId,
       upload.originalName,
       upload.duration
     ),

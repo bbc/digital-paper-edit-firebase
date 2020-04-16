@@ -1,3 +1,9 @@
+const getTranscriptsCollection = (admin, projectId) => {
+  return admin
+    .firestore()
+    .collection(`apps/digital-paper-edit/projects/${projectId}/transcripts`);
+};
+
 const getUserCollection = (admin, uid, collection) => {
   return admin
     .firestore()
@@ -5,53 +11,78 @@ const getUserCollection = (admin, uid, collection) => {
 };
 
 const deleteFirestore = async (admin, object) => {
-  const uid = object.metadata.userId;
-  const id = object.metadata.id;
-  const folder = object.metadata.folder;
-
-  console.log(`[START] Deleting item ${id} for user ${uid} in ${folder}`);
+  const { id, userId, folder } = object.metadata;
+  console.log(`[START] Deleting item ${id} for user ${userId} in ${folder}`);
 
   try {
-    await getUserCollection(admin, uid, folder).doc(id).delete();
-    console.log(`[COMPLETE] Deleted item ${id} for user ${uid} in ${folder}`);
+    await getUserCollection(admin, userId, folder).doc(id).delete();
+    console.log(
+      `[COMPLETE] Deleted item ${id} for user ${userId} in ${folder}`
+    );
   } catch (e) {
     console.error(
-      `[ERROR] Failed to delete item ${id} for user ${uid} in ${folder}: `,
+      `[ERROR] Failed to delete item ${id} for user ${userId} in ${folder}: `,
       e
     );
   }
 };
 
 const updateFirestore = async (admin, object) => {
-  const uid = object.metadata.userId;
-  const id = object.metadata.id;
-  const folder = object.metadata.folder;
-  const originalName = object.metadata.originalName
-    ? object.metadata.originalName
-    : "";
-  const duration = object.metadata.duration ? object.metadata.duration : 0;
+  const {
+    metadata,
+    size,
+    contentType,
+    md5Hash,
+    timeCreated,
+    mediaLink,
+  } = object;
 
-  const update = {
-    originalName: originalName,
-    size: object.size,
-    contentType: object.contentType,
-    md5Hash: object.md5Hash,
-    timeCreated: object.timeCreated,
-    duration: duration,
-    mediaLink: object.mediaLink,
+  const { id, userId, projectId, folder, originalName, duration } = metadata;
+
+  const userUpdate = {
+    originalName: originalName ? originalName : "",
+    size: size,
+    contentType: contentType,
+    md5Hash: md5Hash,
+    timeCreated: timeCreated,
+    duration: duration ? duration : 0,
+    mediaLink: mediaLink,
   };
 
-  console.log(
-    `[START] Setting item ${id} for user ${uid} in ${folder} with: ${JSON.stringify(
-      update
-    )}`
-  );
+  const mediaType = contentType.split("/")[0];
+
+  const transcriptionUpdate = { media: { type: mediaType, url: mediaLink } };
+
   try {
-    await getUserCollection(admin, uid, folder).doc(id).set(update);
-    console.log(`[COMPLETE] Set item ${id} for user ${uid} in ${folder}`);
+    console.log(
+      `[START] Setting item ${id} for user ${userId} in ${folder} with: ${JSON.stringify(
+        userUpdate
+      )}`
+    );
+    await getUserCollection(admin, userId, folder).doc(id).set(userUpdate);
+    console.log(`[COMPLETE] Set item ${id} for user ${userId} in ${folder}`);
   } catch (e) {
     console.error(
-      `[ERROR] Failed to set item ${id} for user ${uid} in ${folder}: `,
+      `[ERROR] Failed to set item ${id} for user ${userId} in ${folder}: `,
+      e
+    );
+  }
+
+  try {
+    console.log(
+      `[START] Updating transcription item ${id} in project ${projectId} with: ${JSON.stringify(
+        transcriptionUpdate
+      )}`
+    );
+    await getTranscriptsCollection(admin, projectId)
+      .doc(id)
+      .update(transcriptionUpdate);
+    console.log(
+      `[COMPLETE] Updating transcription item ${id} in project ${projectId}`
+    );
+  } catch (e) {
+    console.error(
+      `[ERROR] Failed transcription item ${id} in project ${projectId}:`,
       e
     );
   }
