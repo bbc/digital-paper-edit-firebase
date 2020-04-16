@@ -9,7 +9,8 @@
     "start": "npm run shell",
     "deploy:dev": "firebase deploy -P dev --only functions",
     "deploy:prod": "firebase deploy -P prod --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "test": "mocha --reporter spec"
   },
   "engines": {
     "node": "8"
@@ -24,7 +25,9 @@
   "devDependencies": {
     "eslint": "^5.12.0",
     "eslint-plugin-promise": "^4.0.1",
-    "firebase-functions-test": "^0.1.6"
+    "fetch-mock": "^9.3.1",
+    "firebase-functions-test": "^0.1.7",
+    "mocha": "^7.1.1"
   },
   "private": true
 }
