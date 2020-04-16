@@ -38,7 +38,7 @@ const updateFirestore = async (admin, object) => {
     md5Hash: object.md5Hash,
     timeCreated: object.timeCreated,
     duration: duration,
-    mediaUrl: object.mediaLink,
+    mediaLink: object.mediaLink,
   };
 
   console.log(
