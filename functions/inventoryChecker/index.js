@@ -12,9 +12,7 @@ const deleteFirestore = async (admin, object) => {
   console.log(`[START] Deleting item ${id} for user ${uid} in ${folder}`);
 
   try {
-    await getUserCollection(admin, uid, folder)
-      .doc(id)
-      .delete();
+    await getUserCollection(admin, uid, folder).doc(id).delete();
     console.log(`[COMPLETE] Deleted item ${id} for user ${uid} in ${folder}`);
   } catch (e) {
     console.error(
@@ -39,7 +37,8 @@ const updateFirestore = async (admin, object) => {
     contentType: object.contentType,
     md5Hash: object.md5Hash,
     timeCreated: object.timeCreated,
-    duration: duration
+    duration: duration,
+    mediaUrl: object.mediaLink,
   };
 
   console.log(
@@ -48,9 +47,7 @@ const updateFirestore = async (admin, object) => {
     )}`
   );
   try {
-    await getUserCollection(admin, uid, folder)
-      .doc(id)
-      .set(update);
+    await getUserCollection(admin, uid, folder).doc(id).set(update);
     console.log(`[COMPLETE] Set item ${id} for user ${uid} in ${folder}`);
   } catch (e) {
     console.error(
