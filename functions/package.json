@@ -18,7 +18,8 @@
     "aws-sdk": "^2.588.0",
     "firebase-admin": "^8.6.0",
     "firebase-functions": "^3.3.0",
-    "fluent-ffmpeg": "^2.1.2"
+    "fluent-ffmpeg": "^2.1.2",
+    "node-fetch": "^2.6.0"
   },
   "devDependencies": {
     "eslint": "^5.12.0",
