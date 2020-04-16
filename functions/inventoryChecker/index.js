@@ -1,8 +1,4 @@
-const getUserCollection = (admin, uid, collection) => {
-  return admin
-    .firestore()
-    .collection(`apps/digital-paper-edit/users/${uid}/${collection}`);
-};
+const { getUserCollection } = require("../utils/firebase");
 
 const deleteFirestore = async (admin, object) => {
   const uid = object.metadata.userId;
@@ -56,10 +52,10 @@ const updateFirestore = async (admin, object) => {
   }
 };
 
-exports.deleteHandler = async (object, admin) => {
+exports.deleteHandler = async (admin, object) => {
   await deleteFirestore(admin, object);
 };
 
-exports.finalizeHandler = async (object, admin) => {
+exports.finalizeHandler = async (admin, object) => {
   await updateFirestore(admin, object);
 };

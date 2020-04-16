@@ -1,10 +1,12 @@
 const fetch = require("node-fetch");
-const secondsToDhms = require("../utils").secondsToDhms;
+const { secondsToDhms } = require("../utils");
 
-const getUsersAudioData = require("../utils").getUsersAudioData;
-const getProjectsCollection = require("../utils").getProjectsCollection;
-const getTranscriptsInProgress = require("../utils").getTranscriptsInProgress;
-const getTranscriptsCollection = require("../utils").getTranscriptsCollection;
+const {
+  getUsersAudioData,
+  getProjectsCollection,
+  getTranscriptsCollection,
+  getTranscriptsInProgress,
+} = require("../utils/firebase");
 
 const psttAdapter = require("./psttAdapter");
 

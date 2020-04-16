@@ -14,11 +14,11 @@ const bucketTrigger = functions.storage.bucket(bucketName).object();
 const bucket = admin.storage().bucket(bucketName);
 
 exports.onFinalizeBucketObjUpdateFirestore = bucketTrigger.onFinalize((obj) =>
-  inventoryChecker.finalizeHandler(obj, admin)
+  inventoryChecker.finalizeHandler(admin, obj)
 );
 
 exports.onDeleteBucketObjUpdateFirestore = bucketTrigger.onDelete((obj) =>
-  inventoryChecker.deleteHandler(obj, admin)
+  inventoryChecker.deleteHandler(admin, obj)
 );
 
 exports.onCreateAudioFirestoreUploadToAWS = functions.firestore
