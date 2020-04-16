@@ -13,7 +13,7 @@ import cuid from 'cuid';
 
 import Transcript from './Transcript.js';
 
-const Transcripts = ({ transcripts, projectId, labelsOptions }) => {
+const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotations }) => {
   const getStatusIcon = (status) => {
     if (status === 'in-progress') {
       return <FontAwesomeIcon icon={ faClock } />;
@@ -32,20 +32,21 @@ const Transcripts = ({ transcripts, projectId, labelsOptions }) => {
           eventKey={ transcript.id }
         >
           {getStatusIcon(transcript.status)}
-          {`  ${ transcript.transcriptTitle }`}
+          {`  ${ transcript.title }`}
         </Nav.Link>
       </Nav.Item>
     );
   };
 
-  const getTranscriptTab = ({ id, transcript, mediaType, transcriptTitle, url }) => {
+  const getTranscriptTab = ({ id, transcript, mediaType, title, url }) => {
     return (
       <Tab.Pane key={ cuid() } eventKey={ id }>
         <Transcript
           projectId={ projectId }
           transcriptId={ id }
           labelsOptions={ labelsOptions }
-          title={ transcriptTitle }
+          annotations = { annotations }
+          title={ title }
           transcript={ transcript }
           mediaType={ mediaType }
           url={ url }
@@ -88,10 +89,11 @@ const Transcripts = ({ transcripts, projectId, labelsOptions }) => {
   );
 };
 
-Transcripts.propTypes = {
+TranscriptsContainer.propTypes = {
   labelsOptions: PropTypes.any,
   projectId: PropTypes.any,
-  transcripts: PropTypes.any
+  transcripts: PropTypes.any,
+  annotations: PropTypes.any
 };
 
-export default Transcripts;
+export default TranscriptsContainer;
