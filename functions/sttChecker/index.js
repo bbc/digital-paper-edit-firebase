@@ -69,6 +69,7 @@ const updateTranscriptsStatus = async (
   execTimestamp,
   config
 ) => {
+  console.log(projectTranscripts);
   await filterInvalidJobs(projectTranscripts, execTimestamp).forEach(
     async (job) => {
       console.debug(`Job ${job.id} expired, updating status to Error`);
@@ -89,11 +90,15 @@ const updateTranscriptsStatus = async (
 
     try {
       const response = await getJobStatus(objectKey, config);
-      responseData = await response.json();
-      status = responseData.status.toLowerCase();
+      if (response.status < 400) {
+        responseData = await response.json();
+        status = responseData.status.toLowerCase();
+        transcript = responseData.transcript;
+      } else {
+        console.error(`[ERROR] Status code ${response.status}: ${response.statusText}`);
+      }
     } catch (err) {
       console.error(`[ERROR] Failed to get STT jobs status:`, err);
-      return;
     }
 
     if (status === "in-progress") {
@@ -129,24 +134,23 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
       admin,
       execTimestamp
     );
-    const allProjectsTranscripts = projectTranscripts
-      .map((transcripts) => transcripts.docs)
-      .flat();
-
-    updateTranscriptsStatus(
-      admin,
-      allProjectsTranscripts,
-      usersAudioData,
-      execTimestamp,
-      config
-    );
+    projectTranscripts
+      .forEach(async (transcripts) => {
+        const transcriptDocs = transcripts.docs;
+        if (transcriptDocs.length > 0) {
+          await updateTranscriptsStatus(
+            transcriptDocs,
+            usersAudioData,
+            execTimestamp,
+            config
+          );
+        }
+      });
   } catch (err) {
     return console.error("[ERROR] Could not get valid Jobs", err);
   }
 
-  return console.log(
-    `[COMPLETE] Checking STT jobs for in-progress transcriptions`
-  );
+  return console.log(`[COMPLETE] Checking STT jobs for in-progress transcriptions`);
 };
 
 exports.createHandler = async (admin, config, context) => {
