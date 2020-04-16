@@ -77,8 +77,12 @@ const updateTranscriptsStatus = async (
 
     try {
       const response = await getJobStatus(objectKey, config);
-      const body = await response.json();
-      status = body.status.toLowerCase();
+      if (response.status < 400) {
+        const body = await response.json();
+        status = body.status.toLowerCase();
+      } else {
+        console.error(`[ERROR] Status code ${response.status}: ${response.statusText}`);
+      }
     } catch (err) {
       console.error(`[ERROR] Failed to get STT jobs status:`, err);
     }
@@ -105,15 +109,15 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
       admin,
       execTimestamp
     );
-    const allProjectsTranscripts = projectTranscripts
-      .map((transcripts) => transcripts.docs)
-      .flat();
-    updateTranscriptsStatus(
-      allProjectsTranscripts,
-      usersAudioData,
-      execTimestamp,
-      config
-    );
+    projectTranscripts
+      .forEach(async (transcripts) => {
+        await updateTranscriptsStatus(
+          transcripts.docs,
+          usersAudioData,
+          execTimestamp,
+          config
+        );
+      });
   } catch (err) {
     console.error("[ERROR] Could not get valid Jobs", err);
   }
