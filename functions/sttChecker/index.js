@@ -1,6 +1,5 @@
 const fetch = require("node-fetch");
 const secondsToDhms = require("../utils").secondsToDhms;
-
 const getUsersAudioData = require("../utils").getUsersAudioData;
 const getProjectsCollection = require("../utils").getProjectsCollection;
 const getTranscriptsInProgress = require("../utils").getTranscriptsInProgress;
@@ -72,15 +71,20 @@ const updateTranscriptsStatus = async (
 
   await validJobs.forEach(async (job) => {
     let status = "";
+    let transcript;
 
     const userId = usersAudioData[job.id]["user"];
     const objectKey = `dpe/users/${userId}/audio/${job.id}.wav`;
 
     try {
       const response = await getJobStatus(objectKey, config);
-      const body = await response.json();
-      status = body.status.toLowerCase();
-      transcript = body.transcript;
+      if (response.status < 400) {
+        const body = await response.json();
+        status = body.status.toLowerCase();
+        transcript = body.transcript;
+      } else {
+        console.error(`[ERROR] Status code ${response.status}: ${response.statusText}`);
+      }
     } catch (err) {
       console.error(`[ERROR] Failed to get STT jobs status:`, err);
     }
@@ -111,22 +115,20 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
       admin,
       execTimestamp
     );
-    const allProjectsTranscripts = projectTranscripts
-      .map((transcripts) => transcripts.docs)
-      .flat();
-    updateTranscriptsStatus(
-      allProjectsTranscripts,
-      usersAudioData,
-      execTimestamp,
-      config
-    );
+    projectTranscripts
+      .forEach(async (transcripts) => {
+        await updateTranscriptsStatus(
+          transcripts.docs,
+          usersAudioData,
+          execTimestamp,
+          config
+        );
+      });
   } catch (err) {
-    return console.error("[ERROR] Could not get valid Jobs", err);
+    console.error("[ERROR] Could not get valid Jobs", err);
   }
 
-  return console.log(
-    `[COMPLETE] Checking STT jobs for in-progress transcriptions`
-  );
+  console.log(`[COMPLETE] Checking STT jobs for in-progress transcriptions`);
 };
 
 exports.createHandler = async (admin, config, context) => {
