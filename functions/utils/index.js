@@ -27,7 +27,6 @@ const secondsToDhms = (seconds) => {
   return dDisplay + hDisplay + mDisplay + sDisplay;
 };
 
-/* ====== Firebase helper functions ====== */
 const getProjectsCollection = (admin) => {
   return admin.firestore().collection(`apps/digital-paper-edit/projects`);
 };
@@ -48,14 +47,6 @@ const getTranscriptsInProgress = (admin, projectId) => {
     "==",
     "in-progress"
   );
-};
-
-const getTranscript = (admin, projectId, transcriptId) => {
-  return admin
-    .firestore()
-    .collection(
-      `apps/digital-paper-edit/projects/${projectId}/transcripts/${transcriptId}`
-    );
 };
 
 const getAudioCollection = (admin, userId) => {
@@ -85,8 +76,6 @@ const getUsersAudioData = async (admin) => {
     ...Object.entries(allUserAudioData).map(([index, userData]) => userData)
   );
 };
-
-/* ========================================= */
 
 exports.getUsersAudioData = getUsersAudioData;
 exports.getProjectsCollection = getProjectsCollection;
