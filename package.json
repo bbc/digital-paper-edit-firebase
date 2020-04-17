@@ -19,7 +19,7 @@
     "downloadjs": "^1.4.7",
     "edl_composer": "^1.0.3",
     "express": "^4.17.1",
-    "firebase": "^7.4.0",
+    "firebase": "^7.14.0",
     "firebase-admin": "^8.7.0",
     "firebaseui": "^4.3.0",
     "http2": "^3.3.7",

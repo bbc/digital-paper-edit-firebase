@@ -22,6 +22,7 @@ const PaperEditor = (props) => {
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
   const [ transcripts, setTranscripts ] = useState(null);
+  const [ annotations, setAnnotations ] = useState([]);
 
   const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
   const [ isProgramScriptShown, setIsProgramScriptShown ] = useState(true);
@@ -61,14 +62,22 @@ const PaperEditor = (props) => {
       }
     };
 
+    const getAnnotations = async () => {
+      try {
+      } catch (error) {
+        console.error('Error getting annotations: ', error);
+      }
+    };
+
     if (!transcripts) {
       getProject();
       getPaperEdit();
       getTranscripts();
+      getAnnotations();
     }
 
     return () => {};
-  }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId ]);
+  }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId, annotations ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
@@ -99,7 +108,7 @@ const PaperEditor = (props) => {
 
     return (
       <Button
-        onClick={ toggle() }
+        onClick={ toggle }
         variant={ variant }>
         {text} {Icon} {actionText}
       </Button>
@@ -231,7 +240,7 @@ const PaperEditor = (props) => {
         </div>
 
         <Row>
-          {/* {transcriptsColumn(TranscriptEl)} */}
+          {transcriptsColumn(TranscriptEl)}
           {programmeScriptColumn(ProgrammeScriptEl)}
         </Row>
       </Container>

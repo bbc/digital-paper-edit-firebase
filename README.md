@@ -54,7 +54,7 @@ The projects use [npm semantic versioning](https://docs.npmjs.com/about-semantic
 
 ## Setup
 
-This project uses `yarn` `>v1.19.1` instead of `npm`. You can install it from [here](https://classic.yarnpkg.com/en/docs/install/#mac-stable)
+This project uses `npm`.
 
 ## Configuration
 
@@ -93,7 +93,7 @@ You must setup the Firebase credentials in order to develop the project - as men
 In root of the project (`cd digital-paper-edit-firebase`):
 
 ```sh
-yarn start
+npm run start
 ```
 
 which maps to `"run-p --race dev:firebase dev:react",`
@@ -118,13 +118,13 @@ See Configuration step above and configure `firebase.json`, `.firebaserc` to cha
 To deploy to development environment:
 
 ```sh
-yarn deploy:dev:hosting
+npm run deploy:dev:hosting
 ```
 
 To deploy to production environment:
 
 ```sh
-yarn deploy:prod:hosting
+npm run deploy:prod:hosting
 ```
 
 Both steps will remove the build folder, rebuild and deploy, using `firebase cli tools`. You must ensure that Firebase is installed globally (`npm i -g firebase-tools`).
@@ -141,12 +141,20 @@ React is setup using [Create React App](https://facebook.github.io/create-react-
 
 ## Development env
 
-- [ ] npm > `6.1.0`
+- [ ] npm > `6.11.3`
 - [ ] node v 10 - [lts/dubnium](https://scotch.io/tutorials/whats-new-in-node-10-dubnium)
 - [ ] see [`.eslintrc`](./.eslintrc) in the various packages for linting rules
 
 Node version is set in node version manager [`.nvmrc`](https://github.com/creationix/nvm#nvmrc)
 
+### Functions
+
+Use node v8 in Functions directory.
+
+Developing is a lot easier if you have your **local emulator** set up.
+1. Follow the instructions [here](https://firebase.google.com/docs/functions/local-2. emulator#set_up_admin_credentials_optional) to get the admin credentials.
+2. You need to save this as `gcp-credentials.json` and keep it in your `digital-paper-edit-firebase/functions` folder.
+3. Run `./start_firebase_shell` in functions folder.
 <!-- TODO: Setup eslint in express server -->
 
 ## Documentation
@@ -169,7 +177,7 @@ We are using [this template for ADR](https://gist.github.com/iaincollins/92923cc
 ## Build
 
 ```sh
-yarn build
+npm run build
 ```
 
 Build of react client side will be in `build`
@@ -190,7 +198,7 @@ npm run test
 
 During development you can use
 
-```
+```sh
 npm run test:watch
 ```
 

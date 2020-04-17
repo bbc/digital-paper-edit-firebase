@@ -2,7 +2,7 @@ const AWS = require("aws-sdk");
 const stream = require("stream");
 
 const uploadS3Stream = ({ AWSConfig, Key, Metadata }) => {
-  const Bucket = AWSConfig.bucket;
+  const Bucket = AWSConfig.name;
   const s3 = new AWS.S3({
     region: AWSConfig.region,
     accessKeyId: AWSConfig.key,
@@ -45,5 +45,5 @@ exports.createHandler = async (admin, snap, bucket, aws, context) => {
     return console.error("[ERROR] Failed to upload to S3:", err);
   } 
 
-  return console.log(`[COMPLETE] Finished upload to s3://${aws.bucket}/${destPath}`);
+  return console.log(`[COMPLETE] Finished upload to s3://${aws.name}/${destPath}`);
 };
