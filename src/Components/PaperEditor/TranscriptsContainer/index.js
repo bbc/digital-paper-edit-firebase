@@ -38,7 +38,7 @@ const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotatio
     );
   };
 
-  const getTranscriptTab = ({ id, transcript, mediaType, title, url }) => {
+  const getTranscriptTab = ({ id, transcript, media, title, url }) => {
     return (
       <Tab.Pane key={ cuid() } eventKey={ id }>
         <Transcript
@@ -48,13 +48,14 @@ const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotatio
           annotations = { annotations }
           title={ title }
           transcript={ transcript }
-          mediaType={ mediaType }
+          mediaType={ media.type }
           url={ url }
         />
       </Tab.Pane>
     );
   };
 
+  console.log(JSON.stringify(transcripts));
   const transcriptsElNav = transcripts.map(transcript => getTranscriptNav(transcript));
   const transcriptsElTab = transcripts.map(transcript => getTranscriptTab(transcript));
 
