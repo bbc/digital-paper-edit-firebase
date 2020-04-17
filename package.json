@@ -1,5 +1,5 @@
 {
-  "name": "@bbc/digital-paper-edit-firebase", 
+  "name": "@bbc/digital-paper-edit-firebase",
   "version": "1.0.0",
   "description": "Digital paper edit application, using transcriptions from automated STT, to do text based video editing on audio and video interviews. Modular architecture with  - React - Express - Electron - Adobe CEP",
   "main": "index.js",
