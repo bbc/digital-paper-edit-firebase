@@ -1,10 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useRef, useState, useEffect } from 'react';
 import { withAuthorization } from '../../Session';
-// import './index.module.css';
-// import styles from './Transcript.module.css';
-// TODO: perhaps import TranscriptEditor on componentDidMount(?) to defer the load for later
-// https://facebook.github.io/create-react-app/docs/code-splitting
 import { TranscriptEditor as ReactTranscriptEditor } from '@bbc/react-transcript-editor';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -45,7 +41,8 @@ const TranscriptEditor = ({ match, firebase }) => {
           .getDownloadURL();
 
         setMediaUrl(url);
-        setMediaType(media.type);
+        setMediaType(media.type.split('/')[0]);
+
         setTranscriptData({
           paragraphs: paragraphs,
           words: words,
@@ -122,7 +119,7 @@ const TranscriptEditor = ({ match, firebase }) => {
         />
       );
     } catch (error) {
-      console.error('error saving transcript:: ', error);
+      console.error('Error saving transcript::', error);
       setSavedNotification(
         <CustomAlert
           dismissable={ true }
@@ -189,7 +186,7 @@ const TranscriptEditor = ({ match, firebase }) => {
             title={ transcriptTitle }
             // fileName={ this.state.projectTitle }// optional*
             ref={ transcriptEditorRef }
-            mediaType={ mediaType.split('/')[0] }
+            mediaType={ mediaType }
           />
         )}
       </Container>
