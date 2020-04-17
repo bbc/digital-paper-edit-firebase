@@ -46,7 +46,7 @@ const filterValidJobs = (transcripts, execTimestamp) =>
 const filterInvalidJobs = (transcripts, execTimestamp) =>
   transcripts.filter((transcript) => !isValidJob(execTimestamp, transcript));
 
-const SUCCESSFUL = (status) => status < 400;
+const successfulHTTPStatus= (status) => status < 400;
 
 const getJobStatus = async (objectKey, config) => {
   const request = {
@@ -61,7 +61,7 @@ const getJobStatus = async (objectKey, config) => {
   };
   const response = await fetch(config.endpoint, request);
 
-  if (SUCCESSFUL(response.status)) {
+  if (successfulHTTPStatus(response.status)) {
     const responseData = await response.json();
     return {
       status: responseData.status.toLowerCase(),
