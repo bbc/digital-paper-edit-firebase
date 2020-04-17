@@ -46,7 +46,7 @@ const getUserUpdate = (object) => {
 };
 
 const getTranscriptionUpdate = (object) => {
-  const {id, contentType} = object;
+  const {name, contentType} = object;
   return {
     media: { type: contentType, ref: name },
   }
