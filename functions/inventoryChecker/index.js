@@ -34,7 +34,7 @@ const updateFirestore = async (admin, object) => {
     contentType,
     md5Hash,
     timeCreated,
-    mediaLink,
+    selfLink,
   } = object;
 
   const { id, userId, projectId, folder, originalName, duration } = metadata;
@@ -46,12 +46,12 @@ const updateFirestore = async (admin, object) => {
     md5Hash: md5Hash,
     timeCreated: timeCreated,
     duration: duration ? duration : 0,
-    mediaLink: mediaLink,
+    selfLink: selfLink,
   };
 
   const mediaType = contentType.split("/")[0];
 
-  const transcriptionUpdate = { media: { type: mediaType, url: mediaLink } };
+  const transcriptionUpdate = { media: { type: mediaType, url: selfLink } };
 
   try {
     console.log(
