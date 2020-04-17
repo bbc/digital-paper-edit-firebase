@@ -1,27 +1,40 @@
 const fetch = require("node-fetch");
-const secondsToDhms = require("../utils").secondsToDhms;
-const getUsersAudioData = require("../utils").getUsersAudioData;
-const getProjectsCollection = require("../utils").getProjectsCollection;
-const getTranscriptsInProgress = require("../utils").getTranscriptsInProgress;
+const { secondsToDhms } = require("../utils");
+
+const {
+  getUsersAudioData,
+  getProjectsCollection,
+  getTranscriptsCollection,
+  getTranscriptsInProgress,
+} = require("../utils/firebase");
 
 const psttAdapter = require("./psttAdapter");
 
 const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
   const ONE_DAY_IN_NANOSECONDS = 3600 * 24 * 1000;
   const timeDifference = sttCheckerExecTime - lastUpdatedTime;
-  console.debug(`Last updated ${secondsToDhms(timeDifference / 1000)} ago`);
-  return timeDifference >= ONE_DAY_IN_NANOSECONDS;
+  return {
+    expired: timeDifference >= ONE_DAY_IN_NANOSECONDS,
+    expiredByNano: timeDifference,
+  };
 };
-
-// TODO
-const updateStatus = (status) => {};
 
 const isValidJob = (execTimestamp, transcript) => {
   const transcriptData = transcript.data();
   const sttCheckerExecTime = Date.parse(execTimestamp);
   const lastUpdatedTime = transcriptData.updated.toDate().getTime();
 
-  if (isExpired(sttCheckerExecTime, lastUpdatedTime)) {
+  const { expired, expiredByNano } = isExpired(
+    sttCheckerExecTime,
+    lastUpdatedTime
+  );
+
+  // make sure objectKey exists in upload
+
+  if (expired) {
+    console.debug(
+      `Last updated ${transcript.id} ${secondsToDhms(expiredByNano / 1000)} ago`
+    );
     return false;
   }
   return true;
@@ -33,8 +46,10 @@ const filterValidJobs = (transcripts, execTimestamp) =>
 const filterInvalidJobs = (transcripts, execTimestamp) =>
   transcripts.filter((transcript) => !isValidJob(execTimestamp, transcript));
 
-const getJobStatus = async (objectKey, config) =>
-  await fetch(config.endpoint, {
+const successfulHTTPStatus= (status) => status < 400;
+
+const getJobStatus = async (objectKey, config) => {
+  const request = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -43,60 +58,82 @@ const getJobStatus = async (objectKey, config) =>
     body: JSON.stringify({
       objectKey: objectKey,
     }),
-  });
+  };
+  const response = await fetch(config.endpoint, request);
+
+  if (successfulHTTPStatus(response.status)) {
+    const responseData = await response.json();
+    return {
+      status: responseData.status.toLowerCase(),
+      transcript: responseData.transcript,
+    };
+  } else {
+    throw new Error(
+      `Received bad response for ${objectKey} from STT service - Status code ${response.status}: ${response.statusText}`
+    );
+  }
+};
 
 const getProjectTranscripts = async (admin, execTimestamp) => {
-  const projectsCollection = await getProjectsCollection(admin);
+  const projectsCollection = await getProjectsCollection(admin).get();
   const projects = projectsCollection.docs;
   const projectTranscripts = await Promise.all(
     projects.map(
-      async (project) => await getTranscriptsInProgress(admin, project.id)
+      async (project) => await getTranscriptsInProgress(admin, project.id).get()
     )
   );
   return projectTranscripts;
 };
 
+const updateTranscription = async (admin, transcriptId, projectId, update) => {
+  const docRef = getTranscriptsCollection(admin, projectId).doc(transcriptId);
+  await docRef.update(update);
+};
+
 const updateTranscriptsStatus = async (
+  admin,
   projectTranscripts,
   usersAudioData,
   execTimestamp,
   config
 ) => {
-  filterInvalidJobs(projectTranscripts, execTimestamp).forEach((job) => {
-    console.debug(`Job ${job.id} expired, updating status to Error`);
-    // TODO: updateStatus("error" , job ... )
-  });
+  await filterInvalidJobs(projectTranscripts, execTimestamp).forEach(
+    async (job) => {
+      console.debug(`Job ${job.id} expired, updating status to Error`);
+      const { projectId } = job.data();
+      await updateTranscription(admin, job.id, projectId, { status: "error" });
+    }
+  );
 
   let validJobs = filterValidJobs(projectTranscripts, execTimestamp);
 
   await validJobs.forEach(async (job) => {
-    let status = "";
-    let transcript;
-
+    let update;
     const userId = usersAudioData[job.id]["user"];
     const objectKey = `dpe/users/${userId}/audio/${job.id}.wav`;
 
     try {
-      const response = await getJobStatus(objectKey, config);
-      if (response.status < 400) {
-        const body = await response.json();
-        status = body.status.toLowerCase();
-        transcript = body.transcript;
-      } else {
-        console.error(`[ERROR] Status code ${response.status}: ${response.statusText}`);
-      }
+      update = await getJobStatus(objectKey, config);
     } catch (err) {
-      console.error(`[ERROR] Failed to get STT jobs status:`, err);
+      console.error(
+        `[ERROR] Failed to get STT jobs status for ${objectKey}:`,
+        err
+      );
+      return;
     }
 
-    if (status) {
-      // TODO
-      // updateStatus(status)
+    if (update.status === "in-progress") {
+      return;
+    } else if (update.status === "success") {
+      const { words, paragraphs } = psttAdapter(update.transcript.items);
+      update.words = words;
+      update.paragraphs = paragraphs;
+      update.status = "done";
     }
 
-    if (transcript) {
-      const { words, paragraphs } = psttAdapter(transcript.items);
-    }
+    const { projectId } = job.data();
+    await updateTranscription(admin, job.id, projectId, update);
+    console.debug(`Updated ${job.id} with data`, update);
   });
 };
 
@@ -115,20 +152,25 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
       admin,
       execTimestamp
     );
-    projectTranscripts
-      .forEach(async (transcripts) => {
+    projectTranscripts.forEach(async (transcripts) => {
+      const transcriptDocs = transcripts.docs;
+      if (transcriptDocs.length > 0) {
         await updateTranscriptsStatus(
-          transcripts.docs,
+          admin,
+          transcriptDocs,
           usersAudioData,
           execTimestamp,
           config
         );
-      });
+      }
+    });
   } catch (err) {
-    console.error("[ERROR] Could not get valid Jobs", err);
+    return console.error("[ERROR] Could not get valid Jobs", err);
   }
 
-  console.log(`[COMPLETE] Checking STT jobs for in-progress transcriptions`);
+  return console.log(
+    `[COMPLETE] Checking STT jobs for in-progress transcriptions`
+  );
 };
 
 exports.createHandler = async (admin, config, context) => {

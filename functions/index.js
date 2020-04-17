@@ -14,24 +14,18 @@ const bucketTrigger = functions.storage.bucket(bucketName).object();
 const bucket = admin.storage().bucket(bucketName);
 
 exports.onFinalizeBucketObjUpdateFirestore = bucketTrigger.onFinalize((obj) =>
-  inventoryChecker.finalizeHandler(obj, admin)
+  inventoryChecker.finalizeHandler(admin, obj)
 );
 
 exports.onDeleteBucketObjUpdateFirestore = bucketTrigger.onDelete((obj) =>
-  inventoryChecker.deleteHandler(obj, admin)
+  inventoryChecker.deleteHandler(admin, obj)
 );
 
 exports.onCreateAudioFirestoreUploadToAWS = functions.firestore
   .document("apps/digital-paper-edit/users/{userId}/audio/{itemId}")
-  .onCreate((snap, context) => {
-    return awsUploader.createHandler(
-      admin,
-      snap,
-      bucket,
-      config.aws.bucket,
-      context
-    );
-  });
+  .onCreate((snap, context) =>
+    awsUploader.createHandler(admin, snap, bucket, config.aws.bucket, context)
+  );
 
 const maxRuntimeOpts = {
   timeoutSeconds: 540, // 9 minutes
@@ -41,14 +35,12 @@ const maxRuntimeOpts = {
 exports.onCreateFirestoreUploadStripAndUploadAudio = functions
   .runWith(maxRuntimeOpts)
   .firestore.document("apps/digital-paper-edit/users/{userId}/uploads/{itemId}")
-  .onCreate((snap, context) => {
-    return audioStripper.createHandler(snap, bucket, context);
-  });
+  .onCreate((snap, context) =>
+    audioStripper.createHandler(snap, bucket, context)
+  );
 
 const runSchedule = config.aws.api.schedule || "every 60 minutes";
 
 exports.cronSTTJobChecker = functions.pubsub
   .schedule(runSchedule)
-  .onRun((context) => {
-    return sttChecker.createHandler(admin, config.aws.api, context);
-  });
+  .onRun((context) => sttChecker.createHandler(admin, config.aws.api, context));
