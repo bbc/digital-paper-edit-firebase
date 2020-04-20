@@ -9,7 +9,7 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Paragraphs from './Paragraphs/index.js';
-import LabelsList from './LabelsList/index.js';
+import LabelsList from './LabelsList';
 import onlyCallOnce from '../../../Util/only-call-once/index.js';
 import getTimeFromUserWordsSelection from './get-user-selection.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -43,7 +43,6 @@ function makeListOfUniqueSpeakers(array) {
 }
 
 const Transcript = (props) => {
-  console.log('transcript [props', props);
   const videoRef = useRef();
   const transcriptId = props.transcriptId;
   const projectId = props.projectId;
@@ -76,7 +75,7 @@ const Transcript = (props) => {
   ]);
 
   const onLabelCreate = (newLabel) => {
-    // const api = this.context;
+     // const api = this.context;
     // api
     //   .createLabel(this.props.projectId, newLabel)
     //   // TODO: add error handling
@@ -85,6 +84,7 @@ const Transcript = (props) => {
     //       labelsOptions: json.labels
     //     });
     //   });
+    setLabelsOptions(projectId, newLabel);
   };
 
   const onLabelUpdate = (updatedLabel) => {
@@ -262,13 +262,13 @@ const Transcript = (props) => {
                   variant="outline-secondary"
                 >
                   <LabelsList
-                    // isLabelsListOpen={ isLabelsListOpen }
-                    // labelsOptions={
-                    //   labelsOptions && labelsOptions
-                    // }
-                    // onLabelUpdate={ onLabelUpdate }
-                    // onLabelCreate={ onLabelCreate }
-                    // onLabelDelete={ onLabelDelete }
+                    isLabelsListOpen={ isLabelsListOpen }
+                    labelsOptions={
+                      labelsOptions && labelsOptions
+                    }
+                    onLabelUpdate={ onLabelUpdate }
+                    onLabelCreate={ onLabelCreate }
+                    onLabelDelete={ onLabelDelete }
                   />
                 </DropdownButton>
               </ButtonGroup>
@@ -320,7 +320,7 @@ const Transcript = (props) => {
                   ? state.selectedOptionSpeakerSearch
                   : []
               }
-              transcriptId={ props.transcriptId }
+              transcriptId={ transcriptId }
               handleTimecodeClick={ handleTimecodeClick }
               handleWordClick={ handleWordClick }
               handleDeleteAnnotation={ handleDeleteAnnotation }

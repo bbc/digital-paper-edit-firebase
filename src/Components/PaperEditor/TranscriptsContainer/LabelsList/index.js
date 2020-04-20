@@ -16,22 +16,30 @@ import {
 
 import LabelModal from './LabelModal.js';
 import { randomColor } from './css-color-names.js';
+import PropTypes from 'prop-types';
 
-const LabelsList2 = (props) => {
+const LabelsList = (props) => {
+  console.log('labellist props', props);
 
-  const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(false);
+  const labelsOptions = props.labelsOptions;
+  const isLabelsListOpen = props.isLabelsListOpen;
+
+  // const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(false);
   const [ isLabelmodalShown, setIsLabelmodalShown ] = useState(false);
+  const [ onLabelUpdate, setOnLabelUpdate ] = useState();
+  const [ onLabelCreate, setOnLabelCreate ] = useState();
+  const [ onLabelDelete, setOnLabelDelete ] = useState();
 
   const removeLabel = (id, e) => {
     // eslint-disable-next-line no-restricted-globals
-    // const response = confirm(
-    //   'Click OK to delete the label, Cancel if you changed your mind'
-    // );
-    // if (response === true) {
-    //   this.props.onLabelDelete(id);
-    // } else {
-    //   alert('Your label was not deleted');
-    // }
+    const response = confirm(
+      'Click OK to delete the label, Cancel if you changed your mind'
+    );
+    if (response === true) {
+      onLabelDelete(id);
+    } else {
+      alert('Your label was not deleted');
+    }
   };
 
   // TODO: See if CreateNewLabelModal can be refactored to accomodate for edit label
@@ -42,35 +50,30 @@ const LabelsList2 = (props) => {
       return label.id === id;
     });
     // this.props.onLabelsUpdate(newLabelsOptions);
-    console.log('labelToEdit', labelToEdit);
     // alert('this functionality has not been implemented yet');
   };
   const onLabelSaved = newLabel => {
     // if updated - labelId is diff from null
-    if (newLabel.id) {
-      this.props.onLabelUpdate(newLabel);
-    }
-    // if created
-    else {
-      this.props.onLabelCreate(newLabel);
-    }
+    // if (newLabel.id) {
+    //   onLabelUpdate(newLabel);
+    // }
+    // // if created
+    // else {
+    //   onLabelCreate(newLabel);
+    // }
   };
 
   const showLabelModal = () => {
-    console.log(this.state.isLabelmodalShown);
-    this.setState(state => {
-      return {
-        isLabelmodalShown: !state.isLabelmodalShown
-      };
-    });
+    console.log('islabelshown', isLabelmodalShown);
+    setIsLabelmodalShown(true);
   };
 
   // TODO: add CSS to label and description to constrain width?
   // move edit and X to the rigth
   let labelsListOptions;
   // Handle edge case if there's no labels
-  if (this.props.labelsOptions) {
-    labelsListOptions = this.props.labelsOptions.map((label, index) => {
+  if (labelsOptions) {
+    labelsListOptions = labelsOptions.map((label, index) => {
       return (
         <ListGroup.Item style={ { width: '100%' } } key={ 'label_' + index }>
           <Row>
@@ -105,8 +108,8 @@ const LabelsList2 = (props) => {
                   label={ label.label }
                   description={ label.description }
                   labelId={ label.id }
-                  show={ this.state.isLabelmodalShown }
-                  onLabelSaved={ this.onLabelSaved }
+                  show={ isLabelmodalShown }
+                  onLabelSaved={ onLabelSaved }
                   openBtn={
                     <span>
                       {' '}
@@ -131,7 +134,7 @@ const LabelsList2 = (props) => {
                 variant="link"
                 size="sm"
                 onClick={ e => {
-                  this.removeLabel(label.id, e);
+                  removeLabel(label.id, e);
                 } }
                 disabled={
                   label.label.toLowerCase() === 'default' ? true : false
@@ -182,7 +185,7 @@ const LabelsList2 = (props) => {
 
   return (
     <>
-      {this.props.isLabelsListOpen ? (
+      {isLabelsListOpen ? (
         <>
           {/* <br/> */}
           <Card>
@@ -197,8 +200,8 @@ const LabelsList2 = (props) => {
                 label={ '' }
                 description={ '' }
                 labelId={ null }
-                show={ this.state.isLabelmodalShown }
-                onLabelSaved={ this.onLabelSaved }
+                show={ isLabelmodalShown }
+                onLabelSaved={ onLabelSaved }
                 openBtn={
                   <Button variant="outline-secondary" block>
                     <FontAwesomeIcon icon={ faTag } /> Create New Label
@@ -216,9 +219,8 @@ const LabelsList2 = (props) => {
 
 };
 
-class LabelsList extends Component {
+class LabelsList2 extends Component {
   constructor(props) {
-    console.log('label props', props);
     super(props);
 
     this.state = {
@@ -421,5 +423,9 @@ class LabelsList extends Component {
     );
   }
 }
+
+LabelsList.propTypes = {
+  labelsOptions: PropTypes.any,
+};
 
 export default LabelsList;
