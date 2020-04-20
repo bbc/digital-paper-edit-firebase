@@ -46,7 +46,7 @@ const LabelsList = (props) => {
   // if not then separate model to achieve same
   // https://stackoverflow.com/questions/43335452/pass-item-data-to-a-react-modal
   const editLabel = (id, e) => {
-    const labelToEdit = this.props.labelsOptions.filter(label => {
+    const labelToEdit = labelsOptions.filter(label => {
       return label.id === id;
     });
     // this.props.onLabelsUpdate(newLabelsOptions);

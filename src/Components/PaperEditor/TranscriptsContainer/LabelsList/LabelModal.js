@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTag
@@ -6,25 +6,22 @@ import {
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import LabelForm from './LabelForm';
+import PropTypes from 'prop-types';
 
 const LabelModal = (props) => {
-  console.log('label modal props', props);
+  const labelId = props.labelId;
+  const openBtn = props.openBtn;
+  const color = props.color;
+  const label = props.label;
+  const description = props.description;
+  const onLabelSaved = props.onLabelSaved;
+
   const [ show, setShow ] = useState(false);
-  const [ openBtn, setOpenBtn ] = useState(false);
-  const [ color, setColor ] = useState(props.color);
-  const [ label, setLabel ] = useState(props.label);
-  const [ description, setDescription ] = useState(props.description);
-  const [ labelId, setLabelId ] = useState(props.labelId);
-  const [ onLabelSaved, setOnLabelSaved ] = useState(props.onLabelSaved);
 
   const handleClose = () => {
     setShow({
       show: false,
-      // color: randomColor(),
-      // label: '',
-      // description: ''
     });
-    // Clear all input fields in form?
   };
 
   const handleShow = () => {
@@ -55,56 +52,13 @@ const LabelModal = (props) => {
   );
 };
 
-class LabelModal2 extends Component {
-  constructor(props, context) {
-    super(props, context);
+LabelModal.propTypes = {
+  openBtn: PropTypes.any,
+  labelId: PropTypes.any,
+  color: PropTypes.any,
+  label: PropTypes.any,
+  description: PropTypes.any,
+  onLabelSaved: PropTypes.any
+};
 
-    this.state = {
-      show: false,
-      color: this.props.color,
-      label: this.props.label,
-      description:  this.props.description,
-      labelId: this.props.labelId
-    };
-  }
-
-  handleClose = () => {
-    this.setState({
-      show: false,
-      // color: randomColor(),
-      // label: '',
-      // description: ''
-    });
-    // Clear all input fields in form?
-  }
-
-  handleShow = () => {
-    this.setState({ show: true });
-  }
-
-  render() {
-    return (
-      <>
-        <Button variant="link" size="sm" onClick={ this.handleShow } block>
-          {this.props.openBtn}
-        </Button>
-        <Modal show={ this.state.show } onHide={ this.handleClose }>
-          <Modal.Header closeButton>
-            <Modal.Title><FontAwesomeIcon icon={ faTag } />  Label </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <LabelForm
-              onLabelSaved={ this.props.onLabelSaved }
-              label={ this.props.label }
-              description={ this.props.description }
-              color={ this.props.color }
-              labelId={ this.props.labelId }
-              handleClose={ this.handleClose }
-            />
-          </Modal.Body>
-        </Modal>
-      </>
-    );
-  }
-}
 export default LabelModal;

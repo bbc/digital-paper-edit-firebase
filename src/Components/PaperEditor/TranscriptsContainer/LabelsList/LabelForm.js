@@ -13,11 +13,11 @@ import chroma from 'chroma-js';
 import PropTypes from 'prop-types';
 
 const LabelForm = (props) => {
-  console.log('label form props', props);
+
+  const labelId = props.labelId;
   const [ color, setColor ] = useState(props.color);
   const [ label, setLabel ] = useState(props.label);
   const [ description, setDescription ] = useState(props.description);
-  const [ labelId, setLabelId ] = useState(props.labelId);
 
   const handleRandomiseColor = () => {
     // this.setState({ color: randomColor() });
