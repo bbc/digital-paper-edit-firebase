@@ -44,10 +44,9 @@ const PaperEdits = props => {
     const paperEdit = { ...item, projectId: props.projectId };
     const docRef = await PaperEditsCollection.postItem(paperEdit);
 
-    item.url = genUrl(docRef.id);
-
     docRef.update({
-      url: item.url
+      id: docRef.id,
+      url: genUrl(docRef.id)
     });
 
     item.display = true;
