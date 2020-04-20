@@ -1,9 +1,16 @@
 {
   "aws": {
-    "bucket": "int-digital-paper-edit-audio",
-    "key": "",
-    "region": "eu-west-1",
-    "secret": ""
+    "bucket": {
+      "name": "",
+      "region": "",
+      "key": "",
+      "secret": ""
+    },
+    "api": {
+      "key": "",
+      "schedule": "every 60 minutes",
+      "endpoint": ""
+    }
   },
   "storage": {
     "bucket": "dev-digital-paper-edit"

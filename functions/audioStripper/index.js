@@ -11,10 +11,10 @@ const convertStreamToAudio = (inputStream, outputStream) => {
       .audioChannels(1)
       .toFormat("wav")
       .audioFrequency(16000)
-      .on("start", cmd => {
+      .on("start", (cmd) => {
         console.debug("Started " + cmd);
       })
-      .on("codecData", data => {
+      .on("codecData", (data) => {
         console.debug(`Input is ${data.audio} audio with ${data.video} video`);
       })
       .on("error", (err, stdout, stderr) => {
@@ -23,7 +23,7 @@ const convertStreamToAudio = (inputStream, outputStream) => {
         console.debug("stderr:\n" + stderr); //this will contain more detailed debugging info
         reject(err);
       })
-      .on("progress", progress => {
+      .on("progress", (progress) => {
         console.debug(progress);
         console.debug(`Processing: ${progress.percent}% done`);
       })
@@ -57,7 +57,12 @@ exports.createHandler = async (snap, bucket, context) => {
   const outFile = bucket.file(`users/${userId}/audio/${itemId}`);
 
   const writeStream = outFile.createWriteStream({
-    metadata: getWriteStreamMetadata(userId, itemId, upload.originalName, upload.duration)
+    metadata: getWriteStreamMetadata(
+      userId,
+      itemId,
+      upload.originalName,
+      upload.duration
+    ),
   });
 
   try {
@@ -65,7 +70,12 @@ exports.createHandler = async (snap, bucket, context) => {
     console.log(`[START] Streaming, transforming file ${sourceUrl} to audio`);
     await convertStreamToAudio(sourceUrl[0], writeStream);
   } catch (err) {
-    return console.error("[ERROR] Could not stream / transform audio file: ", err);
+    return console.error(
+      "[ERROR] Could not stream / transform audio file: ",
+      err
+    );
   }
-  return console.log(`[COMPLETE] Uploaded audio file for ${userId} to ${itemId}`);
+  return console.log(
+    `[COMPLETE] Uploaded audio file for ${userId} to ${itemId}`
+  );
 };

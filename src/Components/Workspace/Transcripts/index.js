@@ -99,7 +99,7 @@ const Transcripts = props => {
   };
 
   const handleUploadProgress = (id, snapshot) => {
-    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    const progress = Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
     updateUploadTasksProgress(id, progress);
   };
 
