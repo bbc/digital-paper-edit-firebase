@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 
-const Transcripts = props => {
+const Transcripts = ({ projectId, firebase }) => {
   const TYPE = 'Transcript';
   const UPLOADFOLDER = 'uploads';
 
@@ -15,19 +15,19 @@ const Transcripts = props => {
   const [ uploadTasks, setUploadTasks ] = useState(new Map());
 
   const TranscriptsCollection = new Collection(
-    props.firebase,
-    `/projects/${ props.projectId }/transcripts`
+    firebase,
+    `/projects/${ projectId }/transcripts`
   );
 
-  const genUrl = id => {
-    return `/projects/${ props.projectId }/transcripts/${ id }/correct`;
+  const genUrl = (id) => {
+    return `/projects/${ projectId }/transcripts/${ id }/correct`;
   };
 
   useEffect(() => {
     const getTranscripts = async () => {
       try {
-        TranscriptsCollection.collectionRef.onSnapshot(snapshot => {
-          const transcripts = snapshot.docs.map(doc => {
+        TranscriptsCollection.collectionRef.onSnapshot((snapshot) => {
+          const transcripts = snapshot.docs.map((doc) => {
             return { ...doc.data(), id: doc.id, display: true };
           });
           setItems(transcripts);
@@ -37,8 +37,8 @@ const Transcripts = props => {
       }
     };
 
-    const authListener = props.firebase.onAuthUserListener(
-      authUser => {
+    const authListener = firebase.onAuthUserListener(
+      (authUser) => {
         if (authUser) {
           setUid(authUser.uid);
         }
@@ -54,7 +54,13 @@ const Transcripts = props => {
     return () => {
       authListener();
     };
-  }, [ TranscriptsCollection.collectionRef, items, loading, props.firebase, uploadTasks ]);
+  }, [
+    TranscriptsCollection.collectionRef,
+    items,
+    loading,
+    firebase,
+    uploadTasks,
+  ]);
 
   // firestore
 
@@ -65,27 +71,27 @@ const Transcripts = props => {
     return item;
   };
 
-  const createTranscript = async item => {
+  const createTranscript = async (item) => {
     const docRef = await TranscriptsCollection.postItem(item);
 
     return docRef;
   };
 
-  const deleteTranscript = async id => {
+  const deleteTranscript = async (id) => {
     try {
       await TranscriptsCollection.deleteItem(id);
     } catch (e) {
       console.error('Failed to delete item from collection: ', e.code_);
     }
     try {
-      await props.firebase.storage.child(`users/${ uid }/uploads/${ id }`).delete();
-      await props.firebase.storage.child(`users/${ uid }/audio/${ id }`).delete();
+      await firebase.storage.child(`users/${ uid }/uploads/${ id }`).delete();
+      await firebase.storage.child(`users/${ uid }/audio/${ id }`).delete();
     } catch (e) {
       console.error('Failed to delete item in storage: ', e.code_);
     }
   };
 
-  const handleDelete = id => {
+  const handleDelete = (id) => {
     deleteTranscript(id);
   };
 
@@ -112,10 +118,8 @@ const Transcripts = props => {
     await updateTranscript(id, { status: 'error' });
   };
 
-  const handleUploadComplete = async id => {
-    // const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-    // console.log('File available at', downloadURL);
-    console.log('file upload completed');
+  const handleUploadComplete = async (id) => {
+    console.log('File upload completed');
     const newTasks = new Map(uploadTasks); // shallow clone
     newTasks.delete(id);
     setUploadTasks(newTasks);
@@ -123,7 +127,7 @@ const Transcripts = props => {
     await updateTranscript(id, { status: 'in-progress' });
   };
 
-  const getUploadPath = id => {
+  const getUploadPath = (id) => {
     return `users/${ uid }/${ UPLOADFOLDER }/${ id }`;
   };
 
@@ -140,34 +144,34 @@ const Transcripts = props => {
         customMetadata: {
           userId: uid,
           id: id,
+          projectId: projectId,
           originalName: file.name,
           folder: UPLOADFOLDER,
-          duration: duration
-        }
+          duration: duration,
+        },
       };
 
-      const uploadTask = props.firebase.storage.child(path).put(file, metadata);
+      const uploadTask = firebase.storage.child(path).put(file, metadata);
 
       uploadTask.on(
         'state_changed',
-        snapshot => {
+        (snapshot) => {
           handleUploadProgress(id, snapshot);
         },
-        async error => {
+        async (error) => {
           await handleUploadError(id, error);
         },
         async () => {
           await handleUploadComplete(id);
         }
       );
-
     };
     video.src = URL.createObjectURL(file);
   };
 
   // general
 
-  const handleSave = async item => {
+  const handleSave = async (item) => {
     if (item.id) {
       return await updateTranscript(item.id, item);
     } else {
@@ -175,13 +179,13 @@ const Transcripts = props => {
         title: item.title,
         description: item.description ? item.description : '',
         status: 'uploading',
-        projectId: props.projectId
+        projectId: projectId,
       });
 
       asyncUploadFile(newTranscript.id, item.file);
 
       newTranscript.update({
-        url: genUrl(newTranscript.id)
+        url: genUrl(newTranscript.id),
       });
     }
   };
@@ -198,8 +202,9 @@ const Transcripts = props => {
 };
 
 Transcripts.propTypes = {
-  projectId: PropTypes.any
+  projectId: PropTypes.any,
+  firebase: PropTypes.any
 };
 
-const condition = authUser => !!authUser;
+const condition = (authUser) => !!authUser;
 export default withAuthorization(condition)(Transcripts);
