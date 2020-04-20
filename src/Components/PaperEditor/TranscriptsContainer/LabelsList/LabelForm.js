@@ -13,14 +13,13 @@ import chroma from 'chroma-js';
 import PropTypes from 'prop-types';
 
 const LabelForm = (props) => {
-
+console.log('labelform props', props);
   const labelId = props.labelId;
   const [ color, setColor ] = useState(props.color);
   const [ label, setLabel ] = useState(props.label);
   const [ description, setDescription ] = useState(props.description);
 
   const handleRandomiseColor = () => {
-    // this.setState({ color: randomColor() });
     setColor({ color: randomColor() });
   };
 
@@ -43,6 +42,7 @@ const LabelForm = (props) => {
   // };
 
   const handleSave = () => {
+    console.log('i aM HERE');
     // checks color in color picker input is valid - can be color name in letters or hex
     if (chroma.valid(color)) {
       // checks label name is not empty
@@ -54,6 +54,8 @@ const LabelForm = (props) => {
           description: description,
           id: labelId
         });
+
+        props.onLabelSaved(label);
 
         // handleClose();
       }

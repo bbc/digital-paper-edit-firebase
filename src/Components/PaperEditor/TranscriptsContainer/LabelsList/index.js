@@ -24,14 +24,13 @@ const LabelsList = (props) => {
   const labelsOptions = props.labelsOptions;
   const isLabelsListOpen = props.isLabelsListOpen;
   const onLabelDelete = props.onLabelDelete;
+  const onLabelCreate = props.onLabelCreate;
 
   const [ isLabelmodalShown, setIsLabelmodalShown ] = useState(false);
   const [ onLabelUpdate, setOnLabelUpdate ] = useState();
-  const [ onLabelCreate, setOnLabelCreate ] = useState();
-  // const [ onLabelDelete, setOnLabelDelete ] = useState();
 
   const removeLabel = (id) => {
-    console.log('remove id', id);
+    console.log('remove label id', id);
     const response = window.confirm(
       'Click OK to delete the label, Cancel if you changed your mind'
     );
@@ -53,14 +52,16 @@ const LabelsList = (props) => {
     // alert('this functionality has not been implemented yet');
   };
   const onLabelSaved = newLabel => {
+    console.log("Inside index/onLabelSaved...")
     // if updated - labelId is diff from null
-    // if (newLabel.id) {
-    //   onLabelUpdate(newLabel);
-    // }
-    // // if created
-    // else {
-    //   onLabelCreate(newLabel);
-    // }
+    if (newLabel.id) {
+      onLabelUpdate(newLabel);
+    }
+    // if created
+    else {
+      onLabelCreate(newLabel);
+      console.log("Inside index/onLabelSaved... Creating new label...")
+    }
   };
 
   const showLabelModal = () => {
@@ -426,7 +427,8 @@ class LabelsList2 extends Component {
 LabelsList.propTypes = {
   labelsOptions: PropTypes.any,
   isLabelsListOpen: PropTypes.any,
-  onLabelDelete: PropTypes.any
+  onLabelDelete: PropTypes.any,
+  onLabelCreate: PropTypes.any
 };
 
 export default LabelsList;

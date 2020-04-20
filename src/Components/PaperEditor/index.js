@@ -164,6 +164,7 @@ const PaperEditor = (props) => {
       projectId={ projectId }
       transcripts={ transcripts }
       labelsOptions={ labels }
+      firebase={ props.firebase }
     />;
   }
 

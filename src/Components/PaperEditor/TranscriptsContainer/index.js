@@ -13,7 +13,7 @@ import cuid from 'cuid';
 
 import Transcript from './Transcript.js';
 
-const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotations }) => {
+const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotations, firebase }) => {
   const getStatusIcon = (status) => {
     if (status === 'in-progress') {
       return <FontAwesomeIcon icon={ faClock } />;
@@ -50,6 +50,7 @@ const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotatio
           transcript={ transcript }
           mediaType={ mediaType }
           url={ url }
+          firebase={ firebase }
         />
       </Tab.Pane>
     );

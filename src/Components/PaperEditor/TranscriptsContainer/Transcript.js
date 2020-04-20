@@ -44,6 +44,7 @@ function makeListOfUniqueSpeakers(array) {
 }
 
 const Transcript = (props) => {
+  console.log('transcript props', props);
   const videoRef = useRef();
   const transcriptId = props.transcriptId;
   const projectId = props.projectId;
@@ -60,6 +61,9 @@ const Transcript = (props) => {
   const [ labelsOptions, setLabelsOptions ] = useState(props.labelsOptions);
   const [ currentTime, setCurrentTime ] = useState();
 
+  const LabelsCollection = new Collection(props.firebase,
+    `/projects/${ projectId }/labels`);
+
   useEffect(() => {
     // const api = this.context;
     // api
@@ -75,7 +79,14 @@ const Transcript = (props) => {
     transcriptId
   ]);
 
+
   const onLabelCreate = (newLabel) => {
+    console.log('new label', newLabel);
+    const tempLabels = labelsOptions;
+    tempLabels.push(newLabel);
+    setLabelsOptions(tempLabels);
+    LabelsCollection.postItem(newLabel);
+
     // const api = this.context;
     // api
     //   .createLabel(this.props.projectId, newLabel)
@@ -85,10 +96,10 @@ const Transcript = (props) => {
     //       labelsOptions: json.labels
     //     });
     //   });
-    setLabelsOptions(projectId, newLabel);
   };
 
   const onLabelUpdate = (updatedLabel) => {
+    console.log('updated', updatedLabel);
     // const api = this.context;
     // console.log("updatedLabel", updatedLabel);
     // // TODO: PUT with API Wrapper
@@ -102,8 +113,15 @@ const Transcript = (props) => {
     //   });
   };
 
-  const onLabelDelete = (labelId) => {
-    console.log('labelsoptions!', labelsOptions);
+  const onLabelDelete = async (labelId) => {
+    console.log('labelsoptions', labelsOptions);
+    const tempLabels = labelsOptions;
+    tempLabels.splice(labelId, 1);
+    setLabelsOptions(tempLabels);
+    console.log('labelsoptions after deleting', labelsOptions);
+    // handleSaveLabels();
+    await LabelsCollection.deleteItem(labelId);
+
     // labelsOptions.splice(labelId, 1);
     // const api = this.context;
     // api
