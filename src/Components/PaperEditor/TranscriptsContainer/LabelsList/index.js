@@ -23,19 +23,19 @@ const LabelsList = (props) => {
 
   const labelsOptions = props.labelsOptions;
   const isLabelsListOpen = props.isLabelsListOpen;
+  const onLabelDelete = props.onLabelDelete;
 
-  // const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(false);
   const [ isLabelmodalShown, setIsLabelmodalShown ] = useState(false);
   const [ onLabelUpdate, setOnLabelUpdate ] = useState();
   const [ onLabelCreate, setOnLabelCreate ] = useState();
-  const [ onLabelDelete, setOnLabelDelete ] = useState();
+  // const [ onLabelDelete, setOnLabelDelete ] = useState();
 
-  const removeLabel = (id, e) => {
-    // eslint-disable-next-line no-restricted-globals
-    const response = confirm(
+  const removeLabel = (id) => {
+    console.log('remove id', id);
+    const response = window.confirm(
       'Click OK to delete the label, Cancel if you changed your mind'
     );
-    if (response === true) {
+    if (response) {
       onLabelDelete(id);
     } else {
       alert('Your label was not deleted');
@@ -64,7 +64,6 @@ const LabelsList = (props) => {
   };
 
   const showLabelModal = () => {
-    console.log('islabelshown', isLabelmodalShown);
     setIsLabelmodalShown(true);
   };
 
@@ -426,6 +425,8 @@ class LabelsList2 extends Component {
 
 LabelsList.propTypes = {
   labelsOptions: PropTypes.any,
+  isLabelsListOpen: PropTypes.any,
+  onLabelDelete: PropTypes.any
 };
 
 export default LabelsList;

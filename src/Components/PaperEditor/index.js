@@ -94,7 +94,7 @@ const PaperEditor = (props) => {
     console.log('labels', labels);
 
     return () => {};
-  }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId, annotations, labels ]);
+  }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId, annotations, Labels.collectionRef, labels ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {

@@ -9,12 +9,13 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Paragraphs from './Paragraphs/index.js';
-import LabelsList from './LabelsList';
+import LabelsList from './LabelsList/index.js';
 import onlyCallOnce from '../../../Util/only-call-once/index.js';
 import getTimeFromUserWordsSelection from './get-user-selection.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
 import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
+import Collection from '../../Firebase/Collection';
 
 /**
  * Makes list of unique speakers
@@ -75,7 +76,7 @@ const Transcript = (props) => {
   ]);
 
   const onLabelCreate = (newLabel) => {
-     // const api = this.context;
+    // const api = this.context;
     // api
     //   .createLabel(this.props.projectId, newLabel)
     //   // TODO: add error handling
@@ -101,7 +102,11 @@ const Transcript = (props) => {
     //   });
   };
 
-  const onLabelDelete = (labelIid) => {
+  const onLabelDelete = (labelId) => {
+    console.log('BLAH!');
+    console.log('labelsoptions!', labelsOptions);
+    // labelsOptions.splice(labelId, 1);
+    console.log('after deleting', labelsOptions);
     // const api = this.context;
     // api
     //   .deleteLabel(this.props.projectId, labelIid)
@@ -282,10 +287,10 @@ const Transcript = (props) => {
               ? makeListOfUniqueSpeakers(props.transcript.paragraphs)
               : null
           }
-          // handleSearch={ handleSearch }
-          // handleLabelsSearchChange={ handleLabelsSearchChange }
-          // handleSpeakersSearchChange={ handleSpeakersSearchChange }
-          // handleShowParagraphsMatchingSearch={ handleShowParagraphsMatchingSearch }
+        // handleSearch={ handleSearch }
+        // handleLabelsSearchChange={ handleLabelsSearchChange }
+        // handleSpeakersSearchChange={ handleSpeakersSearchChange }
+        // handleShowParagraphsMatchingSearch={ handleShowParagraphsMatchingSearch }
         />
 
         <Card.Body
