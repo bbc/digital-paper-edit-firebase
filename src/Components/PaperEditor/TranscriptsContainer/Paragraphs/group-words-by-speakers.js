@@ -85,33 +85,37 @@ function groupWordsInParagraphsBySpeakers(words, segments) {
 };
 
 function addWordsToSpeakersParagraphs (words, segments) {
+  console.log('Inside add words...');
   const results = [];
   let currentSegmentIndex = 0;
   let previousSegmentIndex = 0;
   let paragraph = { words: [], text: '', speaker: '' };
-  words.forEach((word) => {
-    const currentSegment = findSegmentForWord(word, segments);
-    // if a segment exists for the word
-    if (currentSegment !== undefined) {
-      currentSegmentIndex = segments.indexOf(currentSegment);
-      if (currentSegmentIndex === previousSegmentIndex) {
-        paragraph.words.push(word);
-        paragraph.text += word.text + ' ';
-        paragraph.speaker = currentSegment.speaker;
+  console.log('Words: ', words);
+  if (words) {
+    words.forEach((word) => {
+      const currentSegment = findSegmentForWord(word, segments);
+      // if a segment exists for the word
+      if (currentSegment !== undefined) {
+        currentSegmentIndex = segments.indexOf(currentSegment);
+        if (currentSegmentIndex === previousSegmentIndex) {
+          paragraph.words.push(word);
+          paragraph.text += word.text + ' ';
+          paragraph.speaker = currentSegment.speaker;
+        }
+        else {
+          previousSegmentIndex = currentSegmentIndex;
+          paragraph.text.trim();
+          results.push(paragraph);
+          paragraph = { words: [], text: '', speaker: '' };
+          paragraph.words.push(word);
+          paragraph.text += word.text + ' ';
+          paragraph.speaker = currentSegment.speaker;
+        }
       }
-      else {
-        previousSegmentIndex = currentSegmentIndex;
-        paragraph.text.trim();
-        results.push(paragraph);
-        paragraph = { words: [], text: '', speaker: '' };
-        paragraph.words.push(word);
-        paragraph.text += word.text + ' ';
-        paragraph.speaker = currentSegment.speaker;
-      }
-    }
-  });
-  results.push(paragraph);
+    });
+    results.push(paragraph);
   // console.log('results', results);
+  }
 
   return results;
 }
