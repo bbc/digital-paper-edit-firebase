@@ -5,13 +5,10 @@ import Row from 'react-bootstrap/Row';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import arrayMove from 'array-move';
-import { SortableContainer, } from 'react-sortable-hoc';
+import { SortableContainer } from 'react-sortable-hoc';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faPlus,
-  faSave,
-} from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faSave } from '@fortawesome/free-solid-svg-icons';
 
 import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 import ProgrammeElements from '@bbc/digital-paper-edit-storybook/ProgrammeElements';
@@ -22,11 +19,14 @@ import { withAuthorization } from '../../Session';
 import ExportDropdown from './ExportDropdown/index';
 import ElementsDropdown from './ElementsDropdown/index';
 import getDataFromUserWordsSelection from './get-data-from-user-selection';
-import { divideWordsSelectionsIntoParagraphs, isOneParagraph } from './divide-words-selections-into-paragraphs';
+import {
+  divideWordsSelectionsIntoParagraphs,
+  isOneParagraph,
+} from './divide-words-selections-into-paragraphs';
 
 import PropTypes from 'prop-types';
 
-const ProgrammeScript = props => {
+const ProgrammeScriptContainer = (props) => {
   const transcripts = props.transcripts;
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
@@ -36,11 +36,9 @@ const ProgrammeScript = props => {
   const [ title, setTitle ] = useState('');
   const [ resetPreview, setResetPreview ] = useState(false);
 
-  const SortableList = SortableContainer(({ children }) =>
-    <ul style={ { listStyle: 'none', padding: '0px' } }>
-      {children}
-    </ul>
-  );
+  const SortableList = SortableContainer(({ children }) => (
+    <ul style={ { listStyle: 'none', padding: '0px' } }>{children}</ul>
+  ));
 
   // Video Context Preview
   const [ width, setWidth ] = useState(150);
@@ -56,9 +54,8 @@ const ProgrammeScript = props => {
     console.log('Saving...');
     if (elements) {
       const newElements = JSON.parse(JSON.stringify(elements));
-      const insertPointElement = newElements.find(el => {
-        return el.type === 'insert';
-      });
+      const insertPointElement = newElements.find((el) => el.type === 'insert');
+
       if (insertPointElement) {
         const insertElementIndex = newElements.indexOf(insertPointElement);
         newElements.splice(insertElementIndex, 1);
@@ -70,10 +67,7 @@ const ProgrammeScript = props => {
       };
 
       try {
-        await PaperEditsCollection.putItem(
-          papereditsId,
-          paperEditDocument
-        );
+        await PaperEditsCollection.putItem(papereditsId, paperEditDocument);
         console.log('Successfully saved');
       } catch (error) {
         console.error('Error saving document', error);
@@ -86,18 +80,18 @@ const ProgrammeScript = props => {
       try {
         const paperEdit = await PaperEditsCollection.getItem(papereditsId);
         setTitle(paperEdit.title);
-        const newElements = paperEdit.elements ?
-          JSON.parse(JSON.stringify(paperEdit.elements)) :
-          [];
+
+        const newElements = paperEdit.elements
+          ? JSON.parse(JSON.stringify(paperEdit.elements))
+          : [];
         const insertElement = {
           type: 'insert',
-          text: 'Insert point to add selection'
+          text: 'Insert point to add selection',
         };
 
         newElements.push(insertElement);
         setElements(newElements);
         setResetPreview(true);
-
       } catch (error) {
         console.error('Error getting paper edits: ', error);
       }
@@ -109,50 +103,55 @@ const ProgrammeScript = props => {
   }, [ PaperEditsCollection, elements, papereditsId ]);
 
   useEffect(() => {
-    const getTranscript = transcriptId => {
-      return transcripts.find(tr => tr.id === transcriptId);
+    const getPlaylistItem = (element) => {
+      return {
+        type: 'video',
+        sourceStart: element.start,
+        duration: element.end - element.start,
+      };
     };
 
-    const getPlaylist = () => {
-      console.log('Inside get playlist...');
-      let startTime = 0;
+    const getPlaylist = async (els) => {
+      console.log('Inside get playlist...', els);
+      const paperEdits = els.filter((element) => element.type === 'paper-cut');
 
-      return elements
-        .filter(element => element.type === 'paper-cut')
-        .map(element => {
-          console.log('Found a paper-cut..');
-          const transcript = getTranscript(element.transcriptId);
-          console.log('Found a transcript:: ', transcript);
+      const results = await paperEdits.reduce(
+        async (acc, paperEdit) => {
+          const transcriptId = paperEdit.transcriptId;
+          const transcript = transcripts.find((tr) => tr.id === transcriptId);
+          const playlistItem = getPlaylistItem(paperEdit);
 
-          const playlistItem = {
-            type: 'video',
-            start: startTime,
-            sourceStart: element.start,
-            duration: element.end - element.start,
-            src: element.media.url
-          };
+          playlistItem.src = await firebase.storage.storage
+            .ref(transcript.media.ref)
+            .getDownloadURL();
+          playlistItem.start = acc.startTime;
 
-          startTime += playlistItem.duration;
-          console.log('Here is my playlist item:: ', playlistItem);
+          acc.playlist.push(playlistItem);
+          acc.startTime += playlistItem.duration;
 
-          return playlistItem;
-        });
+          return acc;
+        },
+        { startTime: 0, playlist: [] }
+      );
+
+      console.log('res', results);
+
+      return results.playlist;
     };
 
-    const handleUpdatePreview = () => {
-      const currentPlaylist = getPlaylist();
+    const handleUpdatePreview = async () => {
+      const currentPlaylist = await getPlaylist(elements);
+      console.log('currentPlaylist', currentPlaylist);
       setPlaylist(currentPlaylist);
     };
 
-    if (resetPreview) {
+    if (resetPreview && elements && elements.length > 0) {
       handleUpdatePreview();
       setResetPreview(false);
     }
-
-  }, [ elements, resetPreview, transcripts ]);
+  }, [ elements, resetPreview, firebase.storage.storage, transcripts ]);
 
   useEffect(() => {
-
     const updateVideoContextWidth = () => {
       setWidth(previewCardRef.current.offsetWidth - 10);
     };
@@ -171,7 +170,7 @@ const ProgrammeScript = props => {
     console.log('Reordered');
   };
 
-  const handleDelete = i => {
+  const handleDelete = (i) => {
     console.log('Handling delete...');
     const confirmDelete = window.confirm('Are you sure you want to delete?');
     // Using confirm() breaks it so we use window.confirm()
@@ -188,7 +187,7 @@ const ProgrammeScript = props => {
     }
   };
 
-  const handleEdit = i => {
+  const handleEdit = (i) => {
     console.log('Handling edit...');
     const newElements = JSON.parse(JSON.stringify(elements));
     const currentElement = newElements[i];
@@ -213,7 +212,7 @@ const ProgrammeScript = props => {
   };
 
   const getInsertElementIndex = () => {
-    const insertElement = elements.find(el => {
+    const insertElement = elements.find((el) => {
       return el.type === 'insert';
     });
 
@@ -246,11 +245,11 @@ const ProgrammeScript = props => {
           speaker: result.speaker,
           words: result.words,
           transcriptId: result.transcriptId,
-          labelId: []
+          labelId: [],
         };
       } else {
         const paragraphs = divideWordsSelectionsIntoParagraphs(result.words);
-        paragraphs.reverse().forEach(paragraph => {
+        paragraphs.reverse().forEach((paragraph) => {
           newElement = {
             id: cuid(),
             index: newElements.length,
@@ -261,7 +260,7 @@ const ProgrammeScript = props => {
             words: paragraph,
             transcriptId: paragraph[0].transcriptId,
             // TODO: ignoring labels for now
-            labelId: []
+            labelId: [],
           };
         });
       }
@@ -270,11 +269,13 @@ const ProgrammeScript = props => {
       setResetPreview(true);
     } else {
       console.log('nothing selected');
-      alert('Select some text in the transcript to add to the programme script');
+      alert(
+        'Select some text in the transcript to add to the programme script'
+      );
     }
   };
 
-  const handleDoubleClickOnProgrammeScript = e => {
+  const handleDoubleClickOnProgrammeScript = (e) => {
     console.log('Handling double click...');
     if (e.target.className === 'words') {
       const wordCurrentTime = e.target.dataset.start;
@@ -285,7 +286,7 @@ const ProgrammeScript = props => {
     }
   };
 
-  const handleAddTranscriptElementToProgrammeScript = elementType => {
+  const handleAddTranscriptElementToProgrammeScript = (elementType) => {
     console.log('Handling add transcript element...');
     const newElements = JSON.parse(JSON.stringify(elements));
     if (
@@ -305,7 +306,7 @@ const ProgrammeScript = props => {
           id: cuid(),
           index: elements.length,
           type: elementType,
-          text: text
+          text: text,
         };
         newElements.splice(insertElementIndex, 0, newElement);
         setElements(newElements);
@@ -328,7 +329,7 @@ const ProgrammeScript = props => {
       <Card>
         <Card.Header ref={ previewCardRef }>
           {playlist ? (
-            <PreviewCanvas width={ width } playlist={ playlist }/>
+            <PreviewCanvas width={ width } playlist={ playlist } />
           ) : null}
         </Card.Header>
         <Card.Header>
@@ -344,13 +345,16 @@ const ProgrammeScript = props => {
               </Button>
             </Col>
             <Col sm={ 12 } md={ 2 }>
-              <ElementsDropdown handleAdd={ handleAddTranscriptElementToProgrammeScript } />
+              <ElementsDropdown
+                handleAdd={ handleAddTranscriptElementToProgrammeScript }
+              />
             </Col>
             <Col sm={ 12 } md={ 3 }>
               <ExportDropdown
                 transcripts={ transcripts }
                 title={ title }
-                elements={ elements }></ExportDropdown>
+                elements={ elements }
+              ></ExportDropdown>
             </Col>
             <Col sm={ 12 } md={ 1 }>
               <Button
@@ -373,7 +377,7 @@ const ProgrammeScript = props => {
           >
             {elements ? (
               <SortableList useDragHandle onSortEnd={ onSortEnd }>
-                { ProgrammeElements(elements, handleEdit, handleDelete) }
+                {ProgrammeElements(elements, handleEdit, handleDelete)}
               </SortableList>
             ) : null}
           </article>
@@ -383,11 +387,11 @@ const ProgrammeScript = props => {
   );
 };
 
-ProgrammeScript.propTypes = {
+ProgrammeScriptContainer.propTypes = {
   firebase: PropTypes.any,
   match: PropTypes.any,
   transcripts: PropTypes.any,
 };
 
-const condition = authUser => !!authUser;
-export default withAuthorization(condition)(ProgrammeScript);
+const condition = (authUser) => !!authUser;
+export default withAuthorization(condition)(ProgrammeScriptContainer);
