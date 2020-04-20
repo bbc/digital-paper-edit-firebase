@@ -85,12 +85,10 @@ function groupWordsInParagraphsBySpeakers(words, segments) {
 };
 
 function addWordsToSpeakersParagraphs (words, segments) {
-  console.log('Inside add words...');
   const results = [];
   let currentSegmentIndex = 0;
   let previousSegmentIndex = 0;
   let paragraph = { words: [], text: '', speaker: '' };
-  console.log('Words: ', words);
   if (words) {
     words.forEach((word) => {
       const currentSegment = findSegmentForWord(word, segments);
@@ -114,7 +112,6 @@ function addWordsToSpeakersParagraphs (words, segments) {
       }
     });
     results.push(paragraph);
-  // console.log('results', results);
   }
 
   return results;
