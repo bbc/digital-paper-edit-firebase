@@ -103,10 +103,8 @@ const Transcript = (props) => {
   };
 
   const onLabelDelete = (labelId) => {
-    console.log('BLAH!');
     console.log('labelsoptions!', labelsOptions);
     // labelsOptions.splice(labelId, 1);
-    console.log('after deleting', labelsOptions);
     // const api = this.context;
     // api
     //   .deleteLabel(this.props.projectId, labelIid)
