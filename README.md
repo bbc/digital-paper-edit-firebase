@@ -87,6 +87,14 @@ let firebaseConfig = {
 
 If you do change this and you want Travis to run deployment, you will need to encrypt it using Travis CLI's `encrypt-file` feature and recommit `.env.enc`.
 
+#### CORS
+
+The `cors.json` file in root has been used to update the setting for GCP Storage to get the media file for playback.
+
+```
+gsutil cors set cors.json gs://dev-digital-paper-edit
+```
+
 ## Local Development
 
 You must setup the Firebase credentials in order to develop the project - as mentioned in above [section](#Firebase-specific-configuration). If you are BBC staff, please sign into the corporate GCP account. Firebase can be free, but some parts of the app may not work.

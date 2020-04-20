@@ -1,10 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useRef, useState, useEffect } from 'react';
 import { withAuthorization } from '../../Session';
-// import './index.module.css';
-// import styles from './Transcript.module.css';
-// TODO: perhaps import TranscriptEditor on componentDidMount(?) to defer the load for later
-// https://facebook.github.io/create-react-app/docs/code-splitting
 import { TranscriptEditor as ReactTranscriptEditor } from '@bbc/react-transcript-editor';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -16,9 +12,9 @@ import Collection from '../../Firebase/Collection';
 import CustomAlert from '@bbc/digital-paper-edit-storybook/CustomAlert';
 import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 
-const TranscriptEditor = props => {
-  const projectId = props.match.params.projectId;
-  const transcriptId = props.match.params.transcriptId;
+const TranscriptEditor = ({ match, firebase }) => {
+  const projectId = match.params.projectId;
+  const transcriptId = match.params.transcriptId;
 
   const [ transcriptData, setTranscriptData ] = useState();
   const [ mediaUrl, setMediaUrl ] = useState('');
@@ -30,24 +26,29 @@ const TranscriptEditor = props => {
   const transcriptEditorRef = useRef();
 
   const TranscriptsCollection = new Collection(
-    props.firebase,
+    firebase,
     `/projects/${ projectId }/transcripts`
   );
 
-  const ProjectsCollection = new Collection(props.firebase, '/projects');
+  const ProjectsCollection = new Collection(firebase, '/projects');
 
   useEffect(() => {
     const getTranscript = async () => {
       try {
-        const data = await TranscriptsCollection.getItem(transcriptId);
-        setMediaUrl(data.media.url);
-        setMediaType(data.media.type);
+        const { media, paragraphs, words, title } = await TranscriptsCollection.getItem(transcriptId);
+        const url = await firebase.storage.storage
+          .ref(media.ref)
+          .getDownloadURL();
+
+        setMediaUrl(url);
+        setMediaType(media.type.split('/')[0]);
+
         setTranscriptData({
-          paragraphs: data.paragraphs,
-          words: data.words
+          paragraphs: paragraphs,
+          words: words,
         });
 
-        setTranscriptTitle(data.title);
+        setTranscriptTitle(title);
       } catch (error) {
         console.error('Error getting documents: ', error);
       }
@@ -70,8 +71,15 @@ const TranscriptEditor = props => {
     }
 
     return () => {};
-  },
-  [ ProjectsCollection, TranscriptsCollection, projectId, projectTitle, transcriptData, transcriptId ]);
+  }, [
+    ProjectsCollection,
+    TranscriptsCollection,
+    projectId,
+    projectTitle,
+    transcriptData,
+    transcriptId,
+    firebase.storage,
+  ]);
 
   const updateTranscript = async (id, item) => {
     await TranscriptsCollection.putItem(id, item);
@@ -101,24 +109,30 @@ const TranscriptEditor = props => {
       setSavedNotification(
         <CustomAlert
           dismissable={ true }
-          variant='success'
-          heading='Transcript saved'
-          message=
-            { <p>Transcript: <b>{transcriptTitle}</b> has been saved</p> }
+          variant="success"
+          heading="Transcript saved"
+          message={
+            <p>
+              Transcript: <b>{transcriptTitle}</b> has been saved
+            </p>
+          }
         />
       );
     } catch (error) {
-      console.error('error saving transcript:: ', error);
-      setSavedNotification(<CustomAlert
-        dismissable={ true }
-        variant='danger'
-        heading='Error saving transcript'
-        message={
-          <p>
-            There was an error trying to save this transcript: <b>{transcriptTitle}</b>
-          </p>
-        }
-      />);
+      console.error('Error saving transcript::', error);
+      setSavedNotification(
+        <CustomAlert
+          dismissable={ true }
+          variant="danger"
+          heading="Error saving transcript"
+          message={
+            <p>
+              There was an error trying to save this transcript:{' '}
+              <b>{transcriptTitle}</b>
+            </p>
+          }
+        />
+      );
     }
   };
 
@@ -132,18 +146,18 @@ const TranscriptEditor = props => {
               items={ [
                 {
                   name: 'Projects',
-                  link: '/projects'
+                  link: '/projects',
                 },
                 {
                   name: `Project: ${ projectTitle }`,
-                  link: `/projects/${ projectId }`
+                  link: `/projects/${ projectId }`,
                 },
                 {
-                  name: `Transcript: ${ transcriptTitle }`
+                  name: `Transcript: ${ transcriptTitle }`,
                 },
                 {
-                  name: 'Correct'
-                }
+                  name: 'Correct',
+                },
               ] }
             />
           </Col>
@@ -182,8 +196,8 @@ const TranscriptEditor = props => {
 
 TranscriptEditor.propTypes = {
   firebase: PropTypes.any,
-  match: PropTypes.any
+  match: PropTypes.any,
 };
 
-const condition = authUser => !!authUser;
+const condition = (authUser) => !!authUser;
 export default withAuthorization(condition)(TranscriptEditor);
