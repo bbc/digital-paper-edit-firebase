@@ -28,10 +28,14 @@ const PaperEditor = (props) => {
   const [ isProgramScriptShown, setIsProgramScriptShown ] = useState(true);
 
   const Projects = new Collection(props.firebase, 'projects');
-  const PaperEdits = new Collection(props.firebase,
-    `/projects/${ projectId }/paperedits`);
-  const Transcriptions = new Collection(props.firebase,
-    `/projects/${ projectId }/transcripts`);
+  const PaperEdits = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/paperedits`
+  );
+  const Transcriptions = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/transcripts`
+  );
 
   useEffect(() => {
     const getProject = async () => {
@@ -42,6 +46,7 @@ const PaperEditor = (props) => {
         console.error('Could not get Project Id: ', papereditId, e);
       }
     };
+
     const getPaperEdit = async () => {
       try {
         const paperEdit = await PaperEdits.getItem(papereditId);
@@ -52,10 +57,12 @@ const PaperEditor = (props) => {
     };
     const getTranscripts = async () => {
       try {
-        Transcriptions.collectionRef.onSnapshot(snapshot => {
-          setTranscripts(snapshot.docs.map(doc => {
-            return { ...doc.data(), id: doc.id, display: true };
-          }));
+        Transcriptions.collectionRef.onSnapshot((snapshot) => {
+          setTranscripts(
+            snapshot.docs.map((doc) => {
+              return { ...doc.data(), id: doc.id, display: true };
+            })
+          );
         });
       } catch (error) {
         console.error('Error getting documents: ', error);
@@ -77,7 +84,15 @@ const PaperEditor = (props) => {
     }
 
     return () => {};
-  }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId, annotations ]);
+  }, [
+    transcripts,
+    PaperEdits,
+    Projects,
+    Transcriptions.collectionRef,
+    papereditId,
+    projectId,
+    annotations,
+  ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
@@ -104,12 +119,10 @@ const PaperEditor = (props) => {
       actionText = 'show';
     }
 
-    const Icon = <FontAwesomeIcon icon={ icon }/>;
+    const Icon = <FontAwesomeIcon icon={ icon } />;
 
     return (
-      <Button
-        onClick={ toggle }
-        variant={ variant }>
+      <Button onClick={ toggle } variant={ variant }>
         {text} {Icon} {actionText}
       </Button>
     );
@@ -120,44 +133,51 @@ const PaperEditor = (props) => {
       items={ [
         {
           name: 'Projects',
-          link: '/projects'
+          link: '/projects',
         },
         {
           name: `Project: ${ projectTitle }`,
-          link: `/projects/${ projectId }`
+          link: `/projects/${ projectId }`,
         },
         {
-          name: 'PaperEdits'
+          name: 'PaperEdits',
         },
         {
-          name: `${ paperEditTitle }`
-        }
+          name: `${ paperEditTitle }`,
+        },
       ] }
     />
   );
 
-  let TranscriptEl = <>
-    <br />
-    <br />
-    <i>No Transcripts, create a transcript to get started</i>
-  </>;
+  let TranscriptEl = (
+    <>
+      <br />
+      <br />
+      <i>No Transcripts, create a transcript to get started</i>
+    </>
+  );
 
   if (transcripts) {
-    TranscriptEl = <TranscriptsContainer
-      projectId={ projectId }
-      transcripts={ transcripts }
-      labelsOptions={ labelsOptions }
-    />;
+    TranscriptEl = (
+      <TranscriptsContainer
+        projectId={ projectId }
+        transcripts={ transcripts }
+        labelsOptions={ labelsOptions }
+        firebase={ props.firebase }
+      />
+    );
   }
 
   let ProgrammeScriptEl = null;
   if (transcripts) {
-    ProgrammeScriptEl = <ProgrammeScriptContainer
-      projectId={ projectId }
-      papereditId={ papereditId }
-      transcripts={ transcripts }
-      videoHeight={ videoHeight }
-    />;
+    ProgrammeScriptEl = (
+      <ProgrammeScriptContainer
+        projectId={ projectId }
+        papereditId={ papereditId }
+        transcripts={ transcripts }
+        videoHeight={ videoHeight }
+      />
+    );
   }
 
   const transcriptsColumn = (el) => {
@@ -166,7 +186,7 @@ const PaperEditor = (props) => {
       return (
         <Col
           xs={ { span: 12, offset: 0 } }
-          sm={ { span:  7, offset: 0 } }
+          sm={ { span: 7, offset: 0 } }
           md={ { span: 7, offset: 0 } }
           lg={ { span: 7, offset: 0 } }
           xl={ { span: 7, offset: 0 } }
@@ -179,7 +199,7 @@ const PaperEditor = (props) => {
       return (
         <Col
           xs={ { span: 12, offset: 0 } }
-          sm={ { span:  12, offset: 0 } }
+          sm={ { span: 12, offset: 0 } }
           md={ { span: 12, offset: 0 } }
           lg={ { span: 10, offset: 1 } }
           xl={ { span: 10, offset: 1 } }
@@ -197,7 +217,7 @@ const PaperEditor = (props) => {
       return (
         <Col
           xs={ { span: 12, offset: 0 } }
-          sm={ { span:  5, offset: 0 } }
+          sm={ { span: 5, offset: 0 } }
           md={ { span: 5, offset: 0 } }
           lg={ { span: 5, offset: 0 } }
           xl={ { span: 5, offset: 0 } }
@@ -210,7 +230,7 @@ const PaperEditor = (props) => {
       return (
         <Col
           xs={ { span: 12, offset: 0 } }
-          sm={ { span:  12, offset: 0 } }
+          sm={ { span: 12, offset: 0 } }
           md={ { span: 12, offset: 0 } }
           lg={ { span: 10, offset: 1 } }
           xl={ { span: 8, offset: 2 } }
@@ -226,16 +246,18 @@ const PaperEditor = (props) => {
     <Container style={ { marginBottom: '5em' } } fluid>
       <br />
       <Row>
-        <Col sm={ 12 }>
-          {breadcrumb}
-        </Col>
+        <Col sm={ 12 }>{breadcrumb}</Col>
       </Row>
 
       <Container fluid={ true }>
         <div className="d-flex flex-column">
           <ButtonGroup size="sm" className="mt-12">
             {toggleButton('Transcripts', isTranscriptsShown, toggleTranscripts)}
-            {toggleButton('Program Script', isProgramScriptShown, toggleProgramScript)}
+            {toggleButton(
+              'Program Script',
+              isProgramScriptShown,
+              toggleProgramScript
+            )}
           </ButtonGroup>
         </div>
 
@@ -252,8 +274,8 @@ PaperEditor.propTypes = {
   match: PropTypes.any,
   videoHeight: PropTypes.any,
   firebase: PropTypes.any,
-  labelsOptions: PropTypes.any
+  labelsOptions: PropTypes.any,
 };
 
-const condition = authUser => !!authUser;
+const condition = (authUser) => !!authUser;
 export default withAuthorization(condition)(PaperEditor);

@@ -6,14 +6,20 @@ import Tab from 'react-bootstrap/Tab';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faClock,
-  faExclamationTriangle
+  faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
 import cuid from 'cuid';
 
 import Transcript from './Transcript.js';
 
-const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotations }) => {
+const TranscriptsContainer = ({
+  transcripts,
+  projectId,
+  labelsOptions,
+  annotations,
+  firebase,
+}) => {
   const getStatusIcon = (status) => {
     if (status === 'in-progress') {
       return <FontAwesomeIcon icon={ faClock } />;
@@ -39,8 +45,7 @@ const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotatio
   };
 
   const getTranscriptTab = (transcript) => {
-    const { id, media, title, url, paragraphs, words } = transcript;
-    const mediaType = media.type;
+    const { id, paragraphs, words, media, title, url } = transcript;
 
     return (
       <Tab.Pane key={ cuid() } eventKey={ id }>
@@ -48,25 +53,28 @@ const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotatio
           projectId={ projectId }
           transcriptId={ id }
           labelsOptions={ labelsOptions }
-          annotations = { annotations }
+          annotations={ annotations }
           title={ title }
-          transcript={ { words, paragraphs } }
-          mediaType={ mediaType }
+          transcript={ { words: words, paragraphs: paragraphs } }
+          mediaType={ media.type }
           url={ url }
+          firebase={ firebase }
         />
       </Tab.Pane>
     );
   };
 
-  const transcriptsElNav = transcripts.map(transcript => getTranscriptNav(transcript));
-  const transcriptsElTab = transcripts.map(transcript => getTranscriptTab(transcript));
+  const transcriptsElNav = transcripts.map((transcript) =>
+    getTranscriptNav(transcript)
+  );
+  const transcriptsElTab = transcripts.map((transcript) =>
+    getTranscriptTab(transcript)
+  );
 
   return (
     <>
       <Tab.Container
-        defaultActiveKey={
-          transcripts[0] ? transcripts[0].id : 'first'
-        }
+        defaultActiveKey={ transcripts[0] ? transcripts[0].id : 'first' }
       >
         <Row>
           <Col sm={ 3 }>
@@ -82,9 +90,7 @@ const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotatio
             </Nav>
           </Col>
           <Col sm={ 9 }>
-            <Tab.Content>
-              {transcriptsElTab}
-            </Tab.Content>
+            <Tab.Content>{transcriptsElTab}</Tab.Content>
           </Col>
         </Row>
       </Tab.Container>
@@ -96,7 +102,7 @@ TranscriptsContainer.propTypes = {
   labelsOptions: PropTypes.any,
   projectId: PropTypes.any,
   transcripts: PropTypes.any,
-  annotations: PropTypes.any
+  annotations: PropTypes.any,
 };
 
 export default TranscriptsContainer;

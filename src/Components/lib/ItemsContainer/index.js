@@ -94,7 +94,7 @@ const ItemsContainer = props => {
 
   const Cards = showingItems.map(item => {
     const key = 'card-' + cuid();
-
+    item.url = item.url ? item.url : '';
     if (type === 'Transcript') {
       const progress = props.uploadTasks.get(item.id);
 

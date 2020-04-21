@@ -1,25 +1,19 @@
-const isAnnotationWithinWord = ( annotations, wordStartTime, wordEndTime) => {
-//   console.log('annotations', annotations, wordStartTime, wordEndTime);
-  const results = annotations.find(annotation => {
-    return (
-      wordStartTime >= annotation.start &&
-        wordEndTime <= annotation.end
-    );
-  });
-  //   console.log('isAnnotationWithinWord-results', results);
+const isAnnotationInWord = (annotation, word) => {
+  const { start, end } = word;
 
-  return results;
+  return (
+    start >= annotation.start &&
+        end <= annotation.end
+  );
 };
 
-const addAnnotationToWordsInOneParagraph = (words, annotations) => {
+const wordsWithAnnotations = (words, annotations) => {
   return words.map((word) => {
-    const annotationForWord = isAnnotationWithinWord(annotations, word.start, word.end);
-    if (annotationForWord) {
-      word.annotation = annotationForWord;
-      // console.log(word.annotation);
-    }
-    else {
-      // this is needed, for when a annotation is being removed from a word
+    const annotation = annotations.find(anno => isAnnotationInWord(anno, word));
+    if (annotation) {
+      word.annotation = annotation;
+    } else {
+      // this is needed, for when an annotation is being removed from a word
       delete word.annotation;
     }
 
@@ -28,12 +22,14 @@ const addAnnotationToWordsInOneParagraph = (words, annotations) => {
 
 };
 
-const addAnnotationsToWordsInParagraphs = (paragraphsWithWordsSpeakerText, annotations) => {
-  return paragraphsWithWordsSpeakerText.map(paragraph => {
-    paragraph.words = addAnnotationToWordsInOneParagraph(paragraph.words, annotations);
+const paragraphWithAnnotations = (paragraphs, annotations) => {
+  const newParagraphs = JSON.parse(JSON.stringify(paragraphs));
+
+  return newParagraphs.map(paragraph => {
+    paragraph.words = wordsWithAnnotations(paragraph.words, annotations);
 
     return paragraph;
   });
 };
 
-export default addAnnotationsToWordsInParagraphs;
+export default paragraphWithAnnotations;
