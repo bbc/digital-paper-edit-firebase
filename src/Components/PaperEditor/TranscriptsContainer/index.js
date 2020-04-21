@@ -38,7 +38,10 @@ const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotatio
     );
   };
 
-  const getTranscriptTab = ({ id, transcript, mediaType, title, url }) => {
+  const getTranscriptTab = (transcript) => {
+    const { id, media, title, url, paragraphs, words } = transcript;
+    const mediaType = media.type;
+
     return (
       <Tab.Pane key={ cuid() } eventKey={ id }>
         <Transcript
@@ -47,7 +50,7 @@ const TranscriptsContainer = ({ transcripts, projectId, labelsOptions, annotatio
           labelsOptions={ labelsOptions }
           annotations = { annotations }
           title={ title }
-          transcript={ transcript }
+          transcript={ { words, paragraphs } }
           mediaType={ mediaType }
           url={ url }
         />
