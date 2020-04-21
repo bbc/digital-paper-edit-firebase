@@ -25,9 +25,9 @@ const LabelsList = (props) => {
   const isLabelsListOpen = props.isLabelsListOpen;
   const onLabelDelete = props.onLabelDelete;
   const onLabelCreate = props.onLabelCreate;
+  const onLabelUpdate = props.onLabelUpdate;
 
   const [ isLabelmodalShown, setIsLabelmodalShown ] = useState(false);
-  const [ onLabelUpdate, setOnLabelUpdate ] = useState();
 
   const removeLabel = (id) => {
     console.log('remove label id', id);
@@ -48,6 +48,10 @@ const LabelsList = (props) => {
     const labelToEdit = labelsOptions.filter(label => {
       return label.id === id;
     });
+console.log('editlabel id', id, labelToEdit);
+    onLabelUpdate(labelToEdit.id, labelToEdit);
+
+    console.log("Label to edit: : :", labelToEdit);
     // this.props.onLabelsUpdate(newLabelsOptions);
     // alert('this functionality has not been implemented yet');
   };
@@ -55,7 +59,7 @@ const LabelsList = (props) => {
     console.log("Inside index/onLabelSaved...")
     // if updated - labelId is diff from null
     if (newLabel.id) {
-      onLabelUpdate(newLabel);
+      onLabelUpdate(newLabel.id, newLabel);
     }
     // if created
     else {
@@ -122,7 +126,9 @@ const LabelsList = (props) => {
                   title={ 'edit label' }
                   variant="link"
                   size="sm"
-                  disabled
+                  onClick={ e => {
+                    editLabel(label.id, e);
+                  } }
                 >
                   <FontAwesomeIcon icon={ faPen } />{' '}
                 </Button>
@@ -428,7 +434,8 @@ LabelsList.propTypes = {
   labelsOptions: PropTypes.any,
   isLabelsListOpen: PropTypes.any,
   onLabelDelete: PropTypes.any,
-  onLabelCreate: PropTypes.any
+  onLabelCreate: PropTypes.any,
+  onLabelUpdate: PropTypes.any
 };
 
 export default LabelsList;

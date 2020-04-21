@@ -78,39 +78,28 @@ const Transcript = (props) => {
     transcriptId
   ]);
 
+  const onLabelCreate = async (newLabel) => {
+    console.log('newlabl', newLabel)
+    const docRef = await LabelsCollection.postItem(newLabel);
+    newLabel.id = docRef.id;
 
-  const onLabelCreate = (newLabel) => {
+    docRef.update({
+      id: docRef.id
+    });
+
     console.log('new label', newLabel);
     const tempLabels = labelsOptions;
     tempLabels.push(newLabel);
     setLabelsOptions(tempLabels);
-    LabelsCollection.postItem(newLabel);
-    console.log('new label', newLabel);
-
-    // const api = this.context;
-    // api
-    //   .createLabel(this.props.projectId, newLabel)
-    //   // TODO: add error handling
-    //   .then(json => {
-    //     this.setState({
-    //       labelsOptions: json.labels
-    //     });
-    //   });
   };
 
-  const onLabelUpdate = (updatedLabel) => {
-    console.log('updated', updatedLabel);
-    // const api = this.context;
-    // console.log("updatedLabel", updatedLabel);
-    // // TODO: PUT with API Wrapper
-    // api
-    //   .updateLabel(this.props.projectId, updatedLabel.id, updatedLabel)
-    //   // TODO: add error handling
-    //   .then(json => {
-    //     this.setState({
-    //       labelsOptions: json.labels
-    //     });
-    //   });
+  const onLabelUpdate = async (labelId, updatedLabel) => {
+    console.log('updated label id', updatedLabel, labelId);
+    const tempLabels = labelsOptions;
+    tempLabels.push(updatedLabel);
+    setLabelsOptions(tempLabels);
+    console.log("LABEL ID: ", labelId, "UPDATED LABEL: : ", updatedLabel)
+    LabelsCollection.putItem(labelId, updatedLabel);
   };
 
   const onLabelDelete = async (labelId) => {
@@ -188,7 +177,7 @@ const Transcript = (props) => {
           controls
         />
       </Card.Header>
-    )
+    );
   } else {
     transcriptMediaCard = (
       <Card.Header>

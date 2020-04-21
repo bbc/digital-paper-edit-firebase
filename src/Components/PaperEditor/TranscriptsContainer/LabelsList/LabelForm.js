@@ -17,22 +17,38 @@ const LabelForm = (props) => {
   const labelId = props.labelId;
   const [ color, setColor ] = useState(props.color);
   const [ label, setLabel ] = useState({});
+  const [ name, setName ] = useState(props.label);
   const [ description, setDescription ] = useState(props.description);
 
   useEffect(() => {
-    if (!label) {
-      const tempLabel = {
-        label: '',
-        description: ''
-      };
-
+    const setTempLabel = () => {
+      console.log('Use effect label', label);
+      let tempLabel;
+      if (!label) {
+        tempLabel = {
+          label: '',
+          description: ''
+        };
+      } else {
+        tempLabel = {
+          value: color,
+          label: name,
+          color: color,
+          description: description,
+          id: labelId
+        };
+      }
       setLabel(tempLabel);
-      console.log('Set label to equal', tempLabel, label);
-    }
+      console.log('Label after update: : : ', label);
+    };
+
+    if (!label) {
+      setTempLabel();
+    };
   }, [ label ]);
 
   const handleRandomiseColor = () => {
-    setColor({ color: randomColor() });
+    setColor(randomColor());
   };
 
   const handleColorPickerChangeComplete = () => {
@@ -54,7 +70,6 @@ const LabelForm = (props) => {
   // };
 
   const handleSave = () => {
-    console.log('i aM HERE');
     console.log('description in handle save: : :', description);
     // checks color in color picker input is valid - can be color name in letters or hex
     // if (chroma.valid(color)) {
@@ -62,13 +77,13 @@ const LabelForm = (props) => {
     if (label !== '') {
       const tempLabel = {
         value: color,
-        label: label.label,
+        label: name,
         color: color,
-        description: description.description,
+        description: description,
         id: labelId
       };
 
-      console.log("Temporary label: : : ", tempLabel);
+      console.log('Temporary label: : : ', tempLabel);
 
       setLabel(tempLabel);
 
@@ -93,8 +108,8 @@ const LabelForm = (props) => {
           <Form.Control
             type="text"
             placeholder="Enter label name"
-            defaultValue={ label }
-            onInput={ (e) => { setLabel({ label: e.target.value }); } }
+            defaultValue={ name }
+            onInput={ (e) => setName(e.target.value) }
           />
           <Form.Text className="text-muted">
             Required label name
@@ -105,9 +120,9 @@ const LabelForm = (props) => {
           <Form.Control
             type="text"
             placeholder="Enter label description"
-            defaultValue={ label.description }
+            defaultValue={ description }
             as="textarea" rows="3"
-            onInput={ (e) => { setDescription({ description: e.target.value }); } }
+            onInput={ (e) => setDescription(e.target.value) }
           />
           <Form.Text className="text-muted">
             Optional label description
