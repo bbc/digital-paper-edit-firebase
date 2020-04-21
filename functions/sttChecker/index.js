@@ -46,7 +46,7 @@ const filterValidJobs = (transcripts, execTimestamp) =>
 const filterInvalidJobs = (transcripts, execTimestamp) =>
   transcripts.filter((transcript) => !isValidJob(execTimestamp, transcript));
 
-const successfulHTTPStatus= (status) => status < 400;
+const successfulHTTPStatus = (status) => status < 400;
 
 const getJobStatus = async (objectKey, config) => {
   const request = {
@@ -108,12 +108,12 @@ const updateTranscriptsStatus = async (
   let validJobs = filterValidJobs(projectTranscripts, execTimestamp);
 
   await validJobs.forEach(async (job) => {
-    let update;
+    let response;
     const userId = usersAudioData[job.id]["user"];
     const objectKey = `dpe/users/${userId}/audio/${job.id}.wav`;
 
     try {
-      update = await getJobStatus(objectKey, config);
+      response = await getJobStatus(objectKey, config);
     } catch (err) {
       console.error(
         `[ERROR] Failed to get STT jobs status for ${objectKey}:`,
@@ -122,10 +122,14 @@ const updateTranscriptsStatus = async (
       return;
     }
 
-    if (update.status === "in-progress") {
+    if (response.status === "in-progress") {
       return;
-    } else if (update.status === "success") {
-      const { words, paragraphs } = psttAdapter(update.transcript.items);
+    }
+
+    let update = { payload: response.transcript, status: response.status };
+
+    if (update.status === "success") {
+      const { words, paragraphs } = psttAdapter(update.payload.items);
       update.words = words;
       update.paragraphs = paragraphs;
       update.status = "done";
