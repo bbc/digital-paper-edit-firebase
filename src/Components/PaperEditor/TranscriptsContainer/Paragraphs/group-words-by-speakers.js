@@ -80,29 +80,24 @@ and handle edge case where it doesn't find a match
  */
 
 const findWordsInParagraph = (paragraph, words) =>
-  words.filter((word) =>
-    word.start >= paragraph.start &&
-   word.end <= paragraph.end
+  words.filter(
+    (word) => word.start >= paragraph.start && word.end <= paragraph.end
   );
 
-const addWordsToSpeakersParagraphs = (words, paragraphs) => {
+const groupWordsInParagraphsBySpeakers = (words, paragraphs) => {
   return paragraphs.reduce((newParagraphs, paragraph) => {
     const newParagraph = { speaker: '', text: '', words: [] };
     const wordsInParagraph = findWordsInParagraph(paragraph, words);
 
     if (wordsInParagraph && wordsInParagraph.length > 0) {
       newParagraph.speaker = paragraph.speaker;
-      newParagraph.text = wordsInParagraph.map(w => w.text).join(' ');
+      newParagraph.text = wordsInParagraph.map((w) => w.text).join(' ');
       newParagraph.words = wordsInParagraph;
       newParagraphs.push(newParagraph);
     }
 
     return newParagraphs;
   }, []);
-
-};
-const groupWordsInParagraphsBySpeakers = (words, paragraphs) => {
-  return addWordsToSpeakersParagraphs(words, paragraphs);
 };
 
 export default groupWordsInParagraphsBySpeakers;
