@@ -13,7 +13,7 @@ import {
   faSave,
 } from '@fortawesome/free-solid-svg-icons';
 
-import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
+import PreviewCanvas from './PreviewCanvas';
 import ProgrammeElements from '@bbc/digital-paper-edit-storybook/ProgrammeElements';
 
 import Collection from '../../Firebase/Collection';
@@ -35,6 +35,7 @@ const ProgrammeScript = props => {
   const [ elements, setElements ] = useState();
   const [ title, setTitle ] = useState('');
   const [ resetPreview, setResetPreview ] = useState(false);
+  const [ timeOnClick, setTimeOnClick ] = useState();
 
   const SortableList = SortableContainer(({ children }) =>
     <ul style={ { listStyle: 'none', padding: '0px' } }>
@@ -190,17 +191,13 @@ const ProgrammeScript = props => {
   });
 
   const handleReorder = (newElements) => {
-    console.log('Handling reorder...');
     setElements(newElements);
     setResetPreview(true);
-    console.log('Reordered');
   };
 
   const handleDelete = i => {
     console.log('Handling delete...');
     const confirmDelete = window.confirm('Are you sure you want to delete?');
-    // Using confirm() breaks it so we use window.confirm()
-    // See last comment https://helperbyte.com/questions/72323/how-to-work-with-a-confirm-to-react
     if (confirmDelete) {
       console.log('Deleting');
       const newElements = JSON.parse(JSON.stringify(elements));
@@ -214,20 +211,15 @@ const ProgrammeScript = props => {
   };
 
   const handleEdit = i => {
-    console.log('Handling edit...');
     const newElements = JSON.parse(JSON.stringify(elements));
     const currentElement = newElements[i];
     const newText = prompt('Edit', currentElement.text);
     if (newText) {
-      console.log('Editing...');
       currentElement.text = newText;
       newElements[i] = currentElement;
       setElements(newElements);
       setResetPreview(true);
-      console.log('Edited');
     } else {
-      // either newText is empty or they hit cancel
-      console.log('Not editing');
     }
   };
 
@@ -307,6 +299,7 @@ const ProgrammeScript = props => {
       // Video context probably needs more info like, which clip/track in the sequence?
       // investigate how to set currentTime in video context
       console.log('wordCurrentTime::', wordCurrentTime);
+      setTimeOnClick(wordCurrentTime);
     }
   };
 
@@ -353,7 +346,7 @@ const ProgrammeScript = props => {
       <Card>
         <Card.Header ref={ previewCardRef }>
           {playlist ? (
-            <PreviewCanvas width={ width } playlist={ playlist }/>
+            <PreviewCanvas width={ width } playlist={ playlist } currentTime={ timeOnClick }/>
           ) : null}
         </Card.Header>
         <Card.Header>
