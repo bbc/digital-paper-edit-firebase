@@ -45,7 +45,7 @@ const TranscriptsContainer = ({
   };
 
   const getTranscriptTab = (transcript) => {
-    const { id, paragraphs, words, media, title, url } = transcript;
+    const { id, paragraphs, words, media, title } = transcript;
 
     return (
       <Tab.Pane key={ cuid() } eventKey={ id }>
@@ -56,8 +56,7 @@ const TranscriptsContainer = ({
           annotations={ annotations }
           title={ title }
           transcript={ { words: words, paragraphs: paragraphs } } // Words and Paragraphs are the fields we want to get from Firestore
-          mediaType={ media.type }
-          url={ url }
+          media={ media }
           firebase={ firebase }
         />
       </Tab.Pane>
@@ -103,6 +102,7 @@ TranscriptsContainer.propTypes = {
   projectId: PropTypes.any,
   transcripts: PropTypes.any,
   annotations: PropTypes.any,
+  firebase: PropTypes.any
 };
 
 export default TranscriptsContainer;
