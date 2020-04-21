@@ -13,7 +13,7 @@ import {
   faSave,
 } from '@fortawesome/free-solid-svg-icons';
 
-import PreviewCanvas from './PreviewCanvas';
+import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 import ProgrammeElements from '@bbc/digital-paper-edit-storybook/ProgrammeElements';
 
 import Collection from '../../Firebase/Collection';
