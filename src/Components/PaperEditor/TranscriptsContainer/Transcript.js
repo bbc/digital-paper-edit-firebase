@@ -44,7 +44,6 @@ function makeListOfUniqueSpeakers(array) {
 }
 
 const Transcript = (props) => {
-  console.log('transcript props', props);
   const videoRef = useRef();
   const transcriptId = props.transcriptId;
   const projectId = props.projectId;
@@ -86,6 +85,7 @@ const Transcript = (props) => {
     tempLabels.push(newLabel);
     setLabelsOptions(tempLabels);
     LabelsCollection.postItem(newLabel);
+    console.log('new label', newLabel);
 
     // const api = this.context;
     // api
@@ -114,11 +114,9 @@ const Transcript = (props) => {
   };
 
   const onLabelDelete = async (labelId) => {
-    console.log('labelsoptions', labelsOptions);
     const tempLabels = labelsOptions;
     tempLabels.splice(labelId, 1);
     setLabelsOptions(tempLabels);
-    console.log('labelsoptions after deleting', labelsOptions);
     // handleSaveLabels();
     await LabelsCollection.deleteItem(labelId);
 

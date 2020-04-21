@@ -102,7 +102,7 @@ const LabelsList = (props) => {
             <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
               {/* Edit label */}
 
-              {label.label.toLowerCase() !== 'default' ? (
+              {label.label !== 'Default' ? (
                 <LabelModal
                   color={ label.color }
                   label={ label.label }
@@ -137,7 +137,7 @@ const LabelsList = (props) => {
                   removeLabel(label.id, e);
                 } }
                 disabled={
-                  label.label.toLowerCase() === 'default' ? true : false
+                  label.label === 'Default' ? true : false
                 }
               >
                 <FontAwesomeIcon icon={ faTimes } />

@@ -91,7 +91,6 @@ const PaperEditor = (props) => {
       getAnnotations();
       getLabels();
     }
-    console.log('labels', labels);
 
     return () => {};
   }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId, annotations, Labels.collectionRef, labels ]);

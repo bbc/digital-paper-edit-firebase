@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSyncAlt
@@ -13,18 +13,30 @@ import chroma from 'chroma-js';
 import PropTypes from 'prop-types';
 
 const LabelForm = (props) => {
-console.log('labelform props', props);
+  console.log('labelform props', props);
   const labelId = props.labelId;
   const [ color, setColor ] = useState(props.color);
-  const [ label, setLabel ] = useState(props.label);
+  const [ label, setLabel ] = useState({});
   const [ description, setDescription ] = useState(props.description);
+
+  useEffect(() => {
+    if (!label) {
+      const tempLabel = {
+        label: '',
+        description: ''
+      };
+
+      setLabel(tempLabel);
+      console.log('Set label to equal', tempLabel, label);
+    }
+  }, [ label ]);
 
   const handleRandomiseColor = () => {
     setColor({ color: randomColor() });
   };
 
   const handleColorPickerChangeComplete = () => {
-    setColor({ color: chroma(color.hex ).name() });
+    setColor({ color: chroma(color.hex).name() });
   };
 
   const handleManualColorChange = (e) => {
@@ -43,26 +55,31 @@ console.log('labelform props', props);
 
   const handleSave = () => {
     console.log('i aM HERE');
+    console.log('description in handle save: : :', description);
     // checks color in color picker input is valid - can be color name in letters or hex
-    if (chroma.valid(color)) {
-      // checks label name is not empty
-      if ( label !== '') {
-        setLabel({
-          value: color,
-          label: label,
-          color: color,
-          description: description,
-          id: labelId
-        });
+    // if (chroma.valid(color)) {
+    // checks label name is not empty
+    if (label !== '') {
+      const tempLabel = {
+        value: color,
+        label: label.label,
+        color: color,
+        description: description.description,
+        id: labelId
+      };
 
-        props.onLabelSaved(label);
+      console.log("Temporary label: : : ", tempLabel);
 
-        // handleClose();
-      }
-      else {
-        alert('add a name to the label to be able to save');
-      }
+      setLabel(tempLabel);
+
+      props.onLabelSaved(tempLabel);
+
+      // handleClose();
     }
+    // else {
+    //   alert('add a name to the label to be able to save');
+    // }
+    // }
     else {
       alert('choose a valid color');
     }
@@ -77,7 +94,7 @@ console.log('labelform props', props);
             type="text"
             placeholder="Enter label name"
             defaultValue={ label }
-            onInput={ (e) => {setLabel({ label: e.target.value });} }
+            onInput={ (e) => { setLabel({ label: e.target.value }); } }
           />
           <Form.Text className="text-muted">
             Required label name
@@ -88,9 +105,9 @@ console.log('labelform props', props);
           <Form.Control
             type="text"
             placeholder="Enter label description"
-            defaultValue={ description }
+            defaultValue={ label.description }
             as="textarea" rows="3"
-            onInput={ (e) => { setDescription({ description: e.target.value });} }
+            onInput={ (e) => { setDescription({ description: e.target.value }); } }
           />
           <Form.Text className="text-muted">
             Optional label description
@@ -117,7 +134,7 @@ console.log('labelform props', props);
               style={ {
                 backgroundColor: color,
                 border: 'solid',
-                borderWidth:'0.01em',
+                borderWidth: '0.01em',
                 borderColor: 'grey',
                 padding: '0'
               } }>
