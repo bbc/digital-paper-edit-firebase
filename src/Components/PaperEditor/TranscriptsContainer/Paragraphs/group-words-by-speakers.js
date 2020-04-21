@@ -78,63 +78,31 @@ and handle edge case where it doesn't find a match
 ]
 ```
  */
-function groupWordsInParagraphsBySpeakers(words, segments) {
-  const result = addWordsToSpeakersParagraphs(words, segments);
 
-  return result;
-}
+const findWordsInParagraph = (paragraph, words) =>
+  words.filter((word) =>
+    word.start >= paragraph.start &&
+   word.end <= paragraph.end
+  );
 
-function addWordsToSpeakersParagraphs(words, segments) {
-  const results = [];
-  let currentSegmentIndex = 0;
-  let previousSegmentIndex = 0;
-  let paragraph = { words: [], text: '', speaker: '' };
-  words.forEach((word) => {
-    const currentSegment = findSegmentForWord(word, segments);
-    // if a segment exists for the word
-    if (currentSegment !== undefined) {
-      currentSegmentIndex = segments.indexOf(currentSegment);
-      if (currentSegmentIndex === previousSegmentIndex) {
-        paragraph.words.push(word);
-        paragraph.text += word.text + ' ';
-        paragraph.speaker = currentSegment.speaker;
-      } else {
-        previousSegmentIndex = currentSegmentIndex;
-        paragraph.text.trim();
-        results.push(paragraph);
-        paragraph = { words: [], text: '', speaker: '' };
-        paragraph.words.push(word);
-        paragraph.text += word.text + ' ';
-        paragraph.speaker = currentSegment.speaker;
-      }
+const addWordsToSpeakersParagraphs = (words, paragraphs) => {
+  return paragraphs.reduce((newParagraphs, paragraph) => {
+    const newParagraph = { speaker: '', text: '', words: [] };
+    const wordsInParagraph = findWordsInParagraph(paragraph, words);
+
+    if (wordsInParagraph && wordsInParagraph.length > 0) {
+      newParagraph.speaker = paragraph.speaker;
+      newParagraph.text = wordsInParagraph.map(w => w.text).join(' ');
+      newParagraph.words = wordsInParagraph;
+      newParagraphs.push(newParagraph);
     }
-  });
-  results.push(paragraph);
 
-  return results;
-}
+    return newParagraphs;
+  }, []);
 
-/**
- * Helper functions
- */
-
-/**
- * given word start and end time attributes
- * looks for segment range that contains that word
- * if it doesn't find any it returns a segment with `UKN`
- * speaker attributes.
- * @param {object} word - word object
- * @param {array} segments - list of segments objects
- * @return {object} - a single segment whose range contains the word
- */
-function findSegmentForWord(word, segments) {
-  const tmpSegment = segments.find((seg) => {
-    if (word.start >= seg.start && word.end <= seg.end) {
-      return seg;
-    }
-  });
-
-  return tmpSegment;
-}
+};
+const groupWordsInParagraphsBySpeakers = (words, paragraphs) => {
+  return addWordsToSpeakersParagraphs(words, paragraphs);
+};
 
 export default groupWordsInParagraphsBySpeakers;
