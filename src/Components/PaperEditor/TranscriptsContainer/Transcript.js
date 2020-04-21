@@ -200,8 +200,6 @@ const Transcript = (props) => {
     );
   }
 
-  console.log('props.transcript', props.transcript);
-
   return (
     <>
       <style scoped>

@@ -131,9 +131,7 @@ Paragraphs.propTypes = {
   handleTimecodeClick: PropTypes.func,
   handleWordClick: PropTypes.func,
   labelsOptions: PropTypes.any,
-  searchString: PropTypes.shape({
-    toLowerCase: PropTypes.func
-  }),
+  searchString: PropTypes.string,
   selectedOptionLabelSearch: PropTypes.shape({
     find: PropTypes.func,
     length: PropTypes.number
