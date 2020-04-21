@@ -23,20 +23,16 @@ const Paragraphs = (props) => {
      * client side or server side?
      * using paragraphs attribute of transcript json
      */
-  // console.log('this.props.transcript.words', this.props.transcript.words);
-  // console.log('this.props.transcript.paragraphs', this.props.transcript.paragraphs);
 
   const paragraphsWithWordsSpeakerText = groupWordsInParagraphsBySpeakers(
     props.transcript.words,
     props.transcript.paragraphs
   );
-    // console.log('paragraphsWithWordsSpeakerText', paragraphsWithWordsSpeakerText);
 
   const paragraphsWithWordsSpeakersAnnotations = paragraphWithAnnotations(paragraphsWithWordsSpeakerText, props.annotations);
   /**
      * Loop over paragraphs
      */
-  console.log('paragraphsWithWordsSpeakersAnnotations', paragraphsWithWordsSpeakersAnnotations);
   const textResult = paragraphsWithWordsSpeakersAnnotations.map((paragraph, index) => {
 
     const annotationInCurrentParagraph = findAnnotationsInWords(props.annotations, paragraph.words);
