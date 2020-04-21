@@ -60,7 +60,7 @@ const isAnnotationAcrossParagraph = ( annotations, paragraphFirstWordTime, parag
 /**
  *
  * @param {array} annotations
- * @param {object} paragraph
+ * @param {object} words
  * @returns annotation object found in the paragraph - false if it doesn't contain
  * example annotation object
  ```
@@ -73,9 +73,9 @@ const isAnnotationAcrossParagraph = ( annotations, paragraphFirstWordTime, parag
 ```
  * TODO: This assumes the annotation is included in the paragraph, and doesn't span across multiple lines
  */
-const findAnnotationInParagraph = (annotations, paragraph) => {
-  const paragraphFirstWordTime = paragraph[0].start;
-  const paragraphLastWordTime = paragraph[paragraph.length - 1].end;
+const findAnnotationsInWords = (annotations, words) => {
+  const paragraphFirstWordTime = words[0].start;
+  const paragraphLastWordTime = words[words.length - 1].end;
   // Case 1 - there is an annotation within the boundaries of the current paragraph
   const resultsCaseOne = isAnnotationWithinParagraph(annotations, paragraphFirstWordTime, paragraphLastWordTime);
   if (resultsCaseOne) {
@@ -100,4 +100,4 @@ const findAnnotationInParagraph = (annotations, paragraph) => {
   return false;
 };
 
-export default findAnnotationInParagraph;
+export default findAnnotationsInWords;

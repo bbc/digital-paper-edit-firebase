@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
+import React, { useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import React, { Component, useRef, useEffect, useState } from 'react';
 import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -15,6 +15,7 @@ import getTimeFromUserWordsSelection from './get-user-selection.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
 import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
+import Collection from '../../Firebase/Collection';
 
 /**
  * Makes list of unique speakers
@@ -26,23 +27,17 @@ import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
  *
  * https://codeburst.io/javascript-array-distinct-5edc93501dc4
  */
-const makeListOfUniqueSpeakers = (paragraphs) => {
-  const result = [];
-  const map = new Map();
-  console.log('ARRAY', paragraphs);
-  if (paragraphs) {
-    for (const paragraph of paragraphs) {
-      if (!map.has(paragraph.speaker)) {
-        map.set(paragraph.speaker, true); // set any value to Map
-        result.push({
-          value: paragraph.speaker,
-          label: paragraph.speaker,
-        });
-      }
-    }
-  }
+const getSpeakerLabels = (paragraphs) => {
+  const speakerSet = paragraphs.reduce((uniqueSpeakers, p) => {
+    uniqueSpeakers.add(p.speaker);
 
-  return result;
+    return uniqueSpeakers;
+  }, new Set());
+
+  return Array.from(speakerSet).map((speaker) => ({
+    value: speaker,
+    label: speaker,
+  }));
 };
 
 const Transcript = (props) => {
@@ -52,30 +47,103 @@ const Transcript = (props) => {
   // isVideoTranscriptPreviewShow: false,
 
   const [ searchString, setSearchString ] = useState('');
-  const [ showParagraphsMatchingSearch, setShowParagraphsMatchingSearch ] = useState(false);
-  const [ selectedOptionLabelSearch, setSelectedOptionLabelSearch ] = useState(false);
-  const [ selectedOptionSpeakerSearch, setSelectedOptionSpeakerSearch ] = useState([]);
+  const [
+    showParagraphsMatchingSearch,
+    setShowParagraphsMatchingSearch,
+  ] = useState(false);
+  const [ selectedOptionLabelSearch, setSelectedOptionLabelSearch ] = useState(
+    false
+  );
+  const [
+    selectedOptionSpeakerSearch,
+    setSelectedOptionSpeakerSearch,
+  ] = useState([]);
   const [ sentenceToSearchCSS, setSentenceToSearchCSS ] = useState('');
-  const [ sentenceToSearchCSSInHighlights, setSentenceToSearchCSSInHighlights ] = useState('');
-  const [ annotations, handleCreateAnnotation ] = useState([]);
+  const [
+    sentenceToSearchCSSInHighlights,
+    setSentenceToSearchCSSInHighlights,
+  ] = useState('');
+  const [ annotations, setAnnotations ] = useState(null);
   const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
   const [ labelsOptions, setLabelsOptions ] = useState(props.labelsOptions);
   const [ currentTime, setCurrentTime ] = useState();
 
-  useEffect(() => {
-    // const api = this.context;
-    // api
-    //   .getAllAnnotations(this.props.projectId, this.props.transcriptId)
-    //   .then(json => {
-    //     // console.log(' api.getAllAnnotations', json);
-    //     this.setState({
-    //       annotations: json.annotations
-    //     });
-    //   });
-  }, [
-    projectId,
-    transcriptId
-  ]);
+  const LabelsCollection = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/labels`
+  );
+
+  useEffect(() => {}, [ projectId, transcriptId ]);
+
+  const onLabelCreate = (newLabel) => {
+    console.log('new label', newLabel);
+    const tempLabels = labelsOptions;
+    tempLabels.push(newLabel);
+    setLabelsOptions(tempLabels);
+    LabelsCollection.postItem(newLabel);
+  };
+
+  const onLabelUpdate = (updatedLabel) => {
+    console.log('updated', updatedLabel);
+  };
+
+  const onLabelDelete = async (labelId) => {
+    console.log('labelsoptions', labelsOptions);
+    const tempLabels = labelsOptions;
+    tempLabels.splice(labelId, 1);
+    setLabelsOptions(tempLabels);
+    console.log('labelsoptions after deleting', labelsOptions);
+    // handleSaveLabels();
+    await LabelsCollection.deleteItem(labelId);
+  };
+
+  const showLabelsReference = () => {};
+
+  const handleLabelsSearchChange = (selectedOptionLabelSearch) => {};
+
+  const handleTimecodeClick = (e) => {
+    if (e.target.classList.contains('timecode')) {
+      const wordEl = e.target;
+      videoRef.current.currentTime = wordEl.dataset.start;
+      videoRef.current.play();
+    }
+  };
+
+  const handleWordClick = (e) => {
+    if (e.target.className === 'words') {
+      const wordEl = e.target;
+      this.videoRef.current.currentTime = wordEl.dataset.start;
+      this.videoRef.current.play();
+    }
+  };
+
+  const handleDeleteAnnotation = (annotationId) => {
+    const newAnnotationsSet = annotations.filter((annotation) => {
+      return annotation.id !== annotationId;
+    });
+
+    // const deepCloneOfNestedObjectNewAnnotationsSet = JSON.parse(
+    //   JSON.stringify(newAnnotationsSet)
+    // );
+    // delete using Firebase
+  };
+
+  const handleEditAnnotation = (annotationId) => {
+    const newAnnotationToEdit = annotations.find((annotation) => {
+      return annotation.id === annotationId;
+    });
+
+    const newNote = prompt(
+      'Edit the text note of the annotation',
+      newAnnotationToEdit.note
+    );
+    if (newNote) {
+      newAnnotationToEdit.note = newNote;
+      // crud annotation
+    } else {
+      alert('all good nothing changed');
+    }
+  };
 
   const currentWordTime = currentTime;
   const unplayedColor = 'grey';
@@ -132,16 +200,14 @@ const Transcript = (props) => {
     );
   }
 
+  console.log('props.transcript', props.transcript);
+
   return (
     <>
       <style scoped>
         {/* This is to style of the Paragraph component programmatically */}
-        {`${
-          sentenceToSearchCSS
-        } { background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
-        {`${
-          sentenceToSearchCSSInHighlights
-        } { background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
+        {`${ sentenceToSearchCSS } { background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
+        {`${ sentenceToSearchCSSInHighlights } { background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
       </style>
 
       <h2
@@ -162,7 +228,7 @@ const Transcript = (props) => {
                   <Button
                     variant="outline-secondary"
                     data-label-id={ 'default' }
-                    onClick={ handleCreateAnnotation }
+                    onClick={ setAnnotations }
                   >
                     <FontAwesomeIcon icon={ faHighlighter } flip="horizontal" />{' '}
                     Highlight
@@ -173,7 +239,7 @@ const Transcript = (props) => {
                     variant="outline-secondary"
                     data-lable-id={ 0 }
                   />
-                  <Dropdown.Menu onClick={ handleCreateAnnotation }>
+                  <Dropdown.Menu onClick={ setAnnotations }>
                     {labelsOptions &&
                       labelsOptions.map((label) => {
                         return (
@@ -205,13 +271,13 @@ const Transcript = (props) => {
                   variant="outline-secondary"
                 >
                   <LabelsList
-                    // isLabelsListOpen={ isLabelsListOpen }
-                    // labelsOptions={
-                    //   labelsOptions && labelsOptions
-                    // }
-                    // onLabelUpdate={ onLabelUpdate }
-                    // onLabelCreate={ onLabelCreate }
-                    // onLabelDelete={ onLabelDelete }
+                  // isLabelsListOpen={ isLabelsListOpen }
+                  // labelsOptions={
+                  //   labelsOptions && labelsOptions
+                  // }
+                  // onLabelUpdate={ onLabelUpdate }
+                  // onLabelCreate={ onLabelCreate }
+                  // onLabelDelete={ onLabelDelete }
                   />
                 </DropdownButton>
               </ButtonGroup>
@@ -222,7 +288,7 @@ const Transcript = (props) => {
           labelsOptions={ labelsOptions }
           speakersOptions={
             props.transcript && props.transcript.paragraphs
-              ? makeListOfUniqueSpeakers(props.transcript.paragraphs)
+              ? getSpeakerLabels(props.transcript.paragraphs)
               : null
           }
           // handleSearch={ handleSearch }
@@ -238,38 +304,26 @@ const Transcript = (props) => {
         >
           {highlights}
 
-          {props.transcript && (
+          {props.transcript && props.transcript.paragraphs ? (
             <Paragraphs
-              labelsOptions={
-                labelsOptions && labelsOptions
+              labelsOptions={ labelsOptions && labelsOptions }
+              annotations={ annotations ? annotations : [] }
+              transcript={ props.transcript }
+              searchString={ searchString ? searchString : '' }
+              showParagraphsMatchingSearch={ showParagraphsMatchingSearch }
+              selectedOptionLabelSearch={
+                selectedOptionLabelSearch ? selectedOptionLabelSearch : []
               }
-              // annotations={
-              //   annotations ? annotations : []
-              // }
-              transcriptJson={ props.transcript }
-              // searchString={
-              //   searchString ? searchString : ''
-              // }
-              // showParagraphsMatchingSearch={
-              //   showParagraphsMatchingSearch
-              // }
-              // selectedOptionLabelSearch={
-              //   selectedOptionLabelSearch
-              //     ? selectedOptionLabelSearch
-              //     : []
-              // }
-              // selectedOptionSpeakerSearch={
-              //   selectedOptionSpeakerSearch
-              //     ? selectedOptionSpeakerSearch
-              //     : []
-              // }
+              selectedOptionSpeakerSearch={
+                selectedOptionSpeakerSearch ? selectedOptionSpeakerSearch : []
+              }
               transcriptId={ props.transcriptId }
               // handleTimecodeClick={ handleTimecodeClick }
               // handleWordClick={ handleWordClick }
               // handleDeleteAnnotation={ handleDeleteAnnotation }
               // handleEditAnnotation={ handleEditAnnotation }
             />
-          )}
+          ) : null}
         </Card.Body>
       </Card>
     </>
@@ -281,7 +335,7 @@ Transcript.propTypes = {
   mediaType: PropTypes.any,
   projectId: PropTypes.any,
   title: PropTypes.any,
-  transcript: PropTypes.any,
+  paragraphs: PropTypes.any,
   transcriptId: PropTypes.any,
   url: PropTypes.any,
 };
