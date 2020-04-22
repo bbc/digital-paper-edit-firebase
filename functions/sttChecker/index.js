@@ -145,7 +145,7 @@ const updateTranscriptsStatus = async (
 
     const { projectId } = job.data();
     await updateTranscription(admin, job.id, projectId, update);
-    // console.debug(`Updated ${job.id} with data`, update);
+    console.debug(`Updated ${job.id} with data`, update);
   });
 };
 
