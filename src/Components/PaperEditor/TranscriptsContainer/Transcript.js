@@ -72,6 +72,10 @@ const Transcript = (props) => {
     firebase,
     `/projects/${ projectId }/labels`
   );
+  const AnnotationsCollection = new Collection(
+    firebase,
+    `projects/${ projectId }/annotations`
+  );
 
   useEffect(() => {
     const getUrl = async () => {
@@ -141,18 +145,40 @@ const Transcript = (props) => {
     }
   };
 
-  const handleDeleteAnnotation = (annotationId) => {
-    const newAnnotationsSet = annotations.filter((annotation) => {
-      return annotation.id !== annotationId;
-    });
+  const handleCreateAnnotation = async (e) => {
+    const element = e.target;
+    const selection = getTimeFromUserWordsSelection();
+    console.log('handle create annotation - selection: ', selection);
+    if (selection) {
+      selection.labelId = element.dataset.labelId;
+      selection.note = '';
+      const newAnnotation = selection;
+      console.log('newAnnotation', newAnnotation);
 
-    // const deepCloneOfNestedObjectNewAnnotationsSet = JSON.parse(
-    //   JSON.stringify(newAnnotationsSet)
-    // );
-    // delete using Firebase
+      const docRef = await AnnotationsCollection.postItem(newAnnotation);
+      newAnnotation.id = docRef.id;
+
+      docRef.update({
+        id: docRef.id
+      });
+
+      const tempAnnotations = annotations;
+      tempAnnotations.push(newAnnotation);
+      setAnnotations(tempAnnotations);
+    } else {
+      alert('Select some text in the transcript to highlight ');
+    }
+  };
+
+  const handleDeleteAnnotation = async (annotationId) => {
+    const tempAnnotations = annotations;
+    tempAnnotations.splice(annotationId, 1);
+    setAnnotations(tempAnnotations);
+    await AnnotationsCollection.deleteItem(annotationId);
   };
 
   const handleEditAnnotation = (annotationId) => {
+
     const newAnnotationToEdit = annotations.find((annotation) => {
       return annotation.id === annotationId;
     });
@@ -163,7 +189,10 @@ const Transcript = (props) => {
     );
     if (newNote) {
       newAnnotationToEdit.note = newNote;
-      // crud annotation
+      AnnotationsCollection.putItem(annotationId, newAnnotationToEdit);
+      const tempAnnotations = annotations;
+      tempAnnotations.push(newAnnotationToEdit);
+      setAnnotations(tempAnnotations);
     } else {
       alert('all good nothing changed');
     }
@@ -372,6 +401,7 @@ const Transcript = (props) => {
               }
               handleTimecodeClick={ handleTimecodeClick }
               handleWordClick={ handleWordClick }
+              handleCreateAnnotation={ handleCreateAnnotation }
               handleDeleteAnnotation={ handleDeleteAnnotation }
               handleEditAnnotation={ handleEditAnnotation }
             />
