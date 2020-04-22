@@ -115,15 +115,12 @@ const ProgrammeScriptContainer = (props) => {
       console.log('Inside get playlist...', els);
       const paperEdits = els.filter((element) => element.type === 'paper-cut');
 
-      const results = await paperEdits.reduce(
-        async (acc, paperEdit) => {
+      const results = paperEdits.reduce(
+        (acc, paperEdit) => {
           const transcriptId = paperEdit.transcriptId;
           const transcript = transcripts.find((tr) => tr.id === transcriptId);
           const playlistItem = getPlaylistItem(paperEdit);
-
-          playlistItem.src = await firebase.storage.storage
-            .ref(transcript.media.ref)
-            .getDownloadURL();
+          playlistItem.ref = transcript.media.ref;
           playlistItem.start = acc.startTime;
 
           acc.playlist.push(playlistItem);
@@ -134,9 +131,17 @@ const ProgrammeScriptContainer = (props) => {
         { startTime: 0, playlist: [] }
       );
 
-      console.log('res', results);
+      const { playlist: playlistItems } = results;
+      playlistItems = await Promise.all(
+        playlistItems.map(async item => {
+          item.src = await firebase.storage.storage
+            .ref(item.ref)
+            .getDownloadURL();
 
-      return results.playlist;
+          return item;
+        }));
+
+      return playlistItems;
     };
 
     const handleUpdatePreview = async () => {
@@ -152,9 +157,12 @@ const ProgrammeScriptContainer = (props) => {
   }, [ elements, resetPreview, firebase.storage.storage, transcripts ]);
 
   useEffect(() => {
+
     const updateVideoContextWidth = () => {
       setWidth(previewCardRef.current.offsetWidth - 10);
     };
+
+    updateVideoContextWidth();
 
     window.addEventListener('resize', updateVideoContextWidth);
 
