@@ -36,7 +36,7 @@ const TranscriptTabContent = (props) => {
   // isVideoTranscriptPreviewShow: false,
 
   const { transcriptId, projectId, title, firebase, media, transcript } = props;
-  const mediaType = media.type;
+  const mediaType = media ? media.type : '';
   const [ url, setUrl ] = useState();
 
   const [ searchString, setSearchString ] = useState('');
@@ -70,7 +70,10 @@ const TranscriptTabContent = (props) => {
   console.log('showParagraphsMatchingSearch', showParagraphsMatchingSearch);
   console.log('selectedOptionLabelSearch', selectedOptionLabelSearch);
   console.log('sentenceToSearchCSS', sentenceToSearchCSS);
-  console.log('sentenceToSearchCSSInHighlights', sentenceToSearchCSSInHighlights);
+  console.log(
+    'sentenceToSearchCSSInHighlights',
+    sentenceToSearchCSSInHighlights
+  );
   console.log('annotations', annotations);
   console.log('isLabelsListOpen', isLabelsListOpen);
   console.log('labelsOptions', labelsOptions);
@@ -87,7 +90,6 @@ const TranscriptTabContent = (props) => {
     if (!url) {
       getUrl();
     }
-
   }, [ projectId, transcriptId, firebase.storage, media.ref, url ]);
 
   const onLabelCreate = (newLabel) => {
@@ -120,7 +122,7 @@ const TranscriptTabContent = (props) => {
     // TODO: debounce to optimise
     if (e.target.value !== '') {
       const text = e.target.value;
-      setSearchString( text.toLowerCase() );
+      setSearchString(text.toLowerCase());
       //  "debounce" to optimise
       onlyCallOnce(highlightWords(searchString), 500);
     }
@@ -131,17 +133,24 @@ const TranscriptTabContent = (props) => {
     }
   };
 
-  const highlightWords = text => {
+  const highlightWords = (text) => {
     const words = text.toLowerCase().trim().split(' ');
     const cssName = words.join(' ');
     const paragraphCSS = `.paragraph[data-paragraph-text*="${ cssName }"]`;
 
-    const css = words.reduce((res, word) => {
-      res.paragraphs.push(`${ paragraphCSS } > div > span.words[data-text="${ word }"]`);
-      res.search.push(`${ paragraphCSS } > div > span >span.words[data-text="${ word }"]`);
+    const css = words.reduce(
+      (res, word) => {
+        res.paragraphs.push(
+          `${ paragraphCSS } > div > span.words[data-text="${ word }"]`
+        );
+        res.search.push(
+          `${ paragraphCSS } > div > span >span.words[data-text="${ word }"]`
+        );
 
-      return res;
-    }, { paragraphs: [], search: [] });
+        return res;
+      },
+      { paragraphs: [], search: [] }
+    );
     const wordsToSearchCSS = css.paragraphs.join(', ');
     // Need to add an extra span to search annotation hilights
     // TODO: refactor to make more DRY
@@ -220,9 +229,7 @@ const TranscriptTabContent = (props) => {
           src={ url }
           type={ mediaType }
           ref={ videoRef }
-          onTimeUpdate={ (e) =>
-            setCurrentTime( e.target.currentTime )
-          }
+          onTimeUpdate={ (e) => setCurrentTime(e.target.currentTime) }
           style={ {
             width: '100%',
             backgroundColor: 'black',
@@ -238,9 +245,7 @@ const TranscriptTabContent = (props) => {
           src={ url }
           type={ mediaType }
           ref={ videoRef }
-          onTimeUpdate={ (e) =>
-            setCurrentTime( e.target.currentTime )
-          }
+          onTimeUpdate={ (e) => setCurrentTime(e.target.currentTime) }
           style={ {
             width: '100%',
             backgroundColor: 'black',
@@ -304,12 +309,8 @@ const TranscriptTabContent = (props) => {
               transcript={ transcript }
               searchString={ searchString }
               showParagraphsMatchingSearch={ showParagraphsMatchingSearch }
-              selectedOptionLabelSearch={
-                selectedOptionLabelSearch
-              }
-              selectedOptionSpeakerSearch={
-                selectedOptionSpeakerSearch
-              }
+              selectedOptionLabelSearch={ selectedOptionLabelSearch }
+              selectedOptionSpeakerSearch={ selectedOptionSpeakerSearch }
               // handleTimecodeClick={ handleTimecodeClick }
               // handleWordClick={ handleWordClick }
               // handleDeleteAnnotation={ handleDeleteAnnotation }
@@ -326,9 +327,9 @@ TranscriptTabContent.propTypes = {
   firebase: PropTypes.shape({
     storage: PropTypes.shape({
       storage: PropTypes.shape({
-        ref: PropTypes.func
-      })
-    })
+        ref: PropTypes.func,
+      }),
+    }),
   }),
   labelsOptions: PropTypes.any,
   media: PropTypes.shape({
@@ -338,9 +339,9 @@ TranscriptTabContent.propTypes = {
   projectId: PropTypes.any,
   title: PropTypes.any,
   transcript: PropTypes.shape({
-    paragraphs: PropTypes.any
+    paragraphs: PropTypes.any,
   }),
-  transcriptId: PropTypes.any
+  transcriptId: PropTypes.any,
 };
 
 export default TranscriptTabContent;
