@@ -11,7 +11,7 @@ import {
 import PropTypes from 'prop-types';
 import cuid from 'cuid';
 
-import Transcript from './Transcript.js';
+import TranscriptTabContent from './TranscriptTabContent';
 
 const TranscriptsContainer = ({
   transcripts,
@@ -44,12 +44,12 @@ const TranscriptsContainer = ({
     );
   };
 
-  const getTranscriptTab = (transcript) => {
+  const getTranscriptTabContents = (transcript) => {
     const { id, paragraphs, words, media, title } = transcript;
 
     return (
       <Tab.Pane key={ cuid() } eventKey={ id }>
-        <Transcript
+        <TranscriptTabContent
           projectId={ projectId }
           transcriptId={ id }
           labelsOptions={ labelsOptions }
@@ -67,7 +67,7 @@ const TranscriptsContainer = ({
     getTranscriptNav(transcript)
   );
   const transcriptsElTab = transcripts.map((transcript) =>
-    getTranscriptTab(transcript)
+    getTranscriptTabContents(transcript)
   );
 
   return (

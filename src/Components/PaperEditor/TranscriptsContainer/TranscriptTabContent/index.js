@@ -2,20 +2,11 @@
 import React, { useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Dropdown from 'react-bootstrap/Dropdown';
-import Button from 'react-bootstrap/Button';
-import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import DropdownButton from 'react-bootstrap/DropdownButton';
-import Paragraphs from './Paragraphs/index.js';
-import LabelsList from './LabelsList/index.js';
-import onlyCallOnce from '../../../Util/only-call-once/index.js';
-import getTimeFromUserWordsSelection from './get-user-selection.js';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Paragraphs from '../Paragraphs';
+import onlyCallOnce from '../../../../Util/only-call-once/index.js';
 import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
-import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
-import Collection from '../../Firebase/Collection';
+import Collection from '../../../Firebase/Collection';
+import TranscriptMenu from './TranscriptMenu';
 
 /**
  * Makes list of unique speakers
@@ -40,7 +31,7 @@ const getSpeakerLabels = (paragraphs) => {
   }));
 };
 
-const Transcript = (props) => {
+const TranscriptTabContent = (props) => {
   const videoRef = useRef();
   // isVideoTranscriptPreviewShow: false,
 
@@ -74,6 +65,16 @@ const Transcript = (props) => {
     firebase,
     `/projects/${ projectId }/labels`
   );
+
+  console.log('all the booleans');
+  console.log('showParagraphsMatchingSearch', showParagraphsMatchingSearch);
+  console.log('selectedOptionLabelSearch', selectedOptionLabelSearch);
+  console.log('sentenceToSearchCSS', sentenceToSearchCSS);
+  console.log('sentenceToSearchCSSInHighlights', sentenceToSearchCSSInHighlights);
+  console.log('annotations', annotations);
+  console.log('isLabelsListOpen', isLabelsListOpen);
+  console.log('labelsOptions', labelsOptions);
+  console.log('currentTime', currentTime);
 
   useEffect(() => {
     const getUrl = async () => {
@@ -203,7 +204,7 @@ const Transcript = (props) => {
       {`span.words[data-prev-times~="${ Math.floor(
         time
       ) }"][data-transcript-id="${
-        Transcript.transcriptId
+        TranscriptTabContent.transcriptId
       }"] { color: ${ unplayedColor } }`}
     </style>
   );
@@ -274,68 +275,10 @@ const Transcript = (props) => {
       <Card>
         {transcriptMediaCard}
         <Card.Header>
-          <Row>
-            <Col xs={ 12 }>
-              <ButtonGroup style={ { width: '100%' } }>
-                <Dropdown as={ ButtonGroup } style={ { width: '100%' } }>
-                  <Button
-                    variant="outline-secondary"
-                    data-label-id={ 'default' }
-                    onClick={ setAnnotations }
-                  >
-                    <FontAwesomeIcon icon={ faHighlighter } flip="horizontal" />{' '}
-                    Highlight
-                    {/* */}
-                  </Button>
-                  <Dropdown.Toggle
-                    split
-                    variant="outline-secondary"
-                    data-lable-id={ 0 }
-                  />
-                  <Dropdown.Menu onClick={ setAnnotations }>
-                    {labelsOptions &&
-                      labelsOptions.map((label) => {
-                        return (
-                          <Dropdown.Item
-                            key={ `label_id_${ label.id }` }
-                            data-label-id={ label.id }
-                          >
-                            <Row data-label-id={ label.id }>
-                              <Col
-                                xs={ 1 }
-                                style={ { backgroundColor: label.color } }
-                                data-label-id={ label.id }
-                              ></Col>
-                              <Col xs={ 1 } data-label-id={ label.id }>
-                                {label.label}
-                              </Col>
-                            </Row>
-                          </Dropdown.Item>
-                        );
-                      })}
-                  </Dropdown.Menu>
-                </Dropdown>
-
-                <DropdownButton
-                  drop={ 'right' }
-                  as={ ButtonGroup }
-                  title={ <FontAwesomeIcon icon={ faCog } /> }
-                  id="bg-nested-dropdown"
-                  variant="outline-secondary"
-                >
-                  <LabelsList
-                  // isLabelsListOpen={ isLabelsListOpen }
-                  // labelsOptions={
-                  //   labelsOptions && labelsOptions
-                  // }
-                  // onLabelUpdate={ onLabelUpdate }
-                  // onLabelCreate={ onLabelCreate }
-                  // onLabelDelete={ onLabelDelete }
-                  />
-                </DropdownButton>
-              </ButtonGroup>
-            </Col>
-          </Row>
+          <TranscriptMenu
+            labels={ labelsOptions }
+            handleClick={ () => setAnnotations() }
+          />
         </Card.Header>
         <SearchBar
           labelsOptions={ labelsOptions }
@@ -379,7 +322,7 @@ const Transcript = (props) => {
   );
 };
 
-Transcript.propTypes = {
+TranscriptTabContent.propTypes = {
   firebase: PropTypes.shape({
     storage: PropTypes.shape({
       storage: PropTypes.shape({
@@ -389,10 +332,8 @@ Transcript.propTypes = {
   }),
   labelsOptions: PropTypes.any,
   media: PropTypes.shape({
-    ref: PropTypes.any,
-    type: PropTypes.shape({
-      startsWith: PropTypes.func
-    })
+    ref: PropTypes.string,
+    type: PropTypes.string,
   }),
   projectId: PropTypes.any,
   title: PropTypes.any,
@@ -402,4 +343,4 @@ Transcript.propTypes = {
   transcriptId: PropTypes.any
 };
 
-export default Transcript;
+export default TranscriptTabContent;
