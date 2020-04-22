@@ -73,8 +73,6 @@ const LabelForm = (props) => {
       };
       setLabel(tempLabel);
       props.onLabelSaved(tempLabel);
-
-      // handleClose();
     }
     else {
       alert('choose a valid color');

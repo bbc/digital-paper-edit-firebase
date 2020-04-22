@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import PropTypes from 'prop-types';
-import React, { Component, useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -10,8 +10,6 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Paragraphs from './Paragraphs/index.js';
 import LabelsList from './LabelsList/index.js';
-import onlyCallOnce from '../../../Util/only-call-once/index.js';
-import getTimeFromUserWordsSelection from './get-user-selection.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
 import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
@@ -79,7 +77,6 @@ const Transcript = (props) => {
   ]);
 
   const onLabelCreate = async (newLabel) => {
-    console.log('newlabl', newLabel)
     const docRef = await LabelsCollection.postItem(newLabel);
     newLabel.id = docRef.id;
 
@@ -87,18 +84,15 @@ const Transcript = (props) => {
       id: docRef.id
     });
 
-    console.log('new label', newLabel);
     const tempLabels = labelsOptions;
     tempLabels.push(newLabel);
     setLabelsOptions(tempLabels);
   };
 
   const onLabelUpdate = async (labelId, updatedLabel) => {
-    console.log('updated label id', updatedLabel, labelId);
     const tempLabels = labelsOptions;
     tempLabels.push(updatedLabel);
     setLabelsOptions(tempLabels);
-    console.log("LABEL ID: ", labelId, "UPDATED LABEL: : ", updatedLabel)
     LabelsCollection.putItem(labelId, updatedLabel);
   };
 
@@ -106,19 +100,7 @@ const Transcript = (props) => {
     const tempLabels = labelsOptions;
     tempLabels.splice(labelId, 1);
     setLabelsOptions(tempLabels);
-    // handleSaveLabels();
     await LabelsCollection.deleteItem(labelId);
-
-    // labelsOptions.splice(labelId, 1);
-    // const api = this.context;
-    // api
-    //   .deleteLabel(this.props.projectId, labelIid)
-    //   // TODO: add error handling
-    //   .then(json => {
-    //     this.setState({
-    //       labelsOptions: json.labels
-    //     });
-    //   });
   };
 
   const showLabelsReference = () => {
