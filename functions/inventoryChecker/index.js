@@ -1,53 +1,99 @@
 const { getUserCollection } = require("../utils/firebase");
-
+const { getTranscriptsCollection } = require("../utils/firebase");
 const deleteFirestore = async (admin, object) => {
-  const uid = object.metadata.userId;
-  const id = object.metadata.id;
-  const folder = object.metadata.folder;
-
-  console.log(`[START] Deleting item ${id} for user ${uid} in ${folder}`);
+  const { id: transcriptId, userId, folder } = object.metadata;
+  console.log(
+    `[START] Deleting item ${transcriptId} for user ${userId} in ${folder}`
+  );
 
   try {
-    await getUserCollection(admin, uid, folder).doc(id).delete();
-    console.log(`[COMPLETE] Deleted item ${id} for user ${uid} in ${folder}`);
+    await getUserCollection(admin, userId, folder).doc(transcriptId).delete();
+    console.log(
+      `[COMPLETE] Deleted item ${transcriptId} for user ${userId} in ${folder}`
+    );
   } catch (e) {
     console.error(
-      `[ERROR] Failed to delete item ${id} for user ${uid} in ${folder}: `,
+      `[ERROR] Failed to delete item ${transcriptId} for user ${userId} in ${folder}: `,
+      e
+    );
+  }
+};
+
+const getUserUpdate = (object) => {
+  const { metadata, size, contentType, md5Hash, timeCreated, name } = object;
+  const { originalName, duration } = metadata;
+
+  return {
+    originalName: originalName ? originalName : "",
+    size: size,
+    contentType: contentType,
+    md5Hash: md5Hash,
+    timeCreated: timeCreated,
+    duration: duration ? duration : 0,
+    ref: name,
+  };
+};
+
+const getTranscriptionUpdate = (object) => {
+  const { name, contentType } = object;
+  return {
+    media: { type: contentType, ref: name },
+  };
+};
+
+const updateUserWithFile = async (admin, userUpdate, id, userId, folder) => {
+  try {
+    console.log(
+      `[START] Setting item ${id} for user ${userId} in ${folder} with: ${JSON.stringify(
+        userUpdate
+      )}`
+    );
+    await getUserCollection(admin, userId, folder).doc(id).set(userUpdate);
+    console.log(`[COMPLETE] Set item ${id} for user ${userId} in ${folder}`);
+  } catch (e) {
+    console.error(
+      `[ERROR] Failed to set item ${id} for user ${userId} in ${folder}: `,
+      e
+    );
+  }
+  return userUpdate;
+};
+
+const updateTranscription = async (admin, update, transcriptId, projectId) => {
+  try {
+    console.log(
+      `[START] Updating transcription item ${transcriptId} in project ${projectId} with: ${JSON.stringify(
+        update
+      )}`
+    );
+    await getTranscriptsCollection(admin, projectId)
+      .doc(transcriptId)
+      .update(update);
+
+    console.log(
+      `[COMPLETE] Updating transcription item ${transcriptId} in project ${projectId}`
+    );
+  } catch (e) {
+    console.error(
+      `[ERROR] Failed transcription item ${transcriptId} in project ${projectId}:`,
       e
     );
   }
 };
 
 const updateFirestore = async (admin, object) => {
-  const uid = object.metadata.userId;
-  const id = object.metadata.id;
-  const folder = object.metadata.folder;
-  const originalName = object.metadata.originalName
-    ? object.metadata.originalName
-    : "";
-  const duration = object.metadata.duration ? object.metadata.duration : 0;
+  const { id: transcriptId, userId, projectId, folder } = object.metadata;
 
-  const update = {
-    originalName: originalName,
-    size: object.size,
-    contentType: object.contentType,
-    md5Hash: object.md5Hash,
-    timeCreated: object.timeCreated,
-    duration: duration,
-  };
+  const userUpdate = getUserUpdate(object);
+  await updateUserWithFile(admin, userUpdate, transcriptId, userId, folder);
 
-  console.log(
-    `[START] Setting item ${id} for user ${uid} in ${folder} with: ${JSON.stringify(
-      update
-    )}`
-  );
-  try {
-    await getUserCollection(admin, uid, folder).doc(id).set(update);
-    console.log(`[COMPLETE] Set item ${id} for user ${uid} in ${folder}`);
-  } catch (e) {
-    console.error(
-      `[ERROR] Failed to set item ${id} for user ${uid} in ${folder}: `,
-      e
+  if (folder === "uploads") {
+    const transcriptionUpdate = getTranscriptionUpdate(object);
+    await updateTranscription(
+      admin,
+      transcriptionUpdate,
+      transcriptId,
+      projectId
     );
   }
 };

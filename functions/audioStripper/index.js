@@ -36,33 +36,27 @@ const convertStreamToAudio = (inputStream, outputStream) => {
   });
 };
 
-const getWriteStreamMetadata = (userId, itemId, originalName, duration) => {
-  return {
+exports.createHandler = async (snap, bucket, context) => {
+  const { userId, itemId } = context.params;
+  const { projectId, originalName, duration } = snap.data();
+
+  const srcFile = bucket.file(`users/${userId}/uploads/${itemId}`);
+  const outFile = bucket.file(`users/${userId}/audio/${itemId}`);
+
+  const metadata = {
     metadata: {
-      userId: userId,
       id: itemId,
+      userId: userId,
+      projectId: projectId,
       folder: "audio",
       originalName: originalName,
       duration: duration,
     },
     contentType: "audio/wav",
   };
-};
-
-exports.createHandler = async (snap, bucket, context) => {
-  const { userId, itemId } = context.params;
-  const upload = snap.data();
-
-  const srcFile = bucket.file(`users/${userId}/uploads/${itemId}`);
-  const outFile = bucket.file(`users/${userId}/audio/${itemId}`);
 
   const writeStream = outFile.createWriteStream({
-    metadata: getWriteStreamMetadata(
-      userId,
-      itemId,
-      upload.originalName,
-      upload.duration
-    ),
+    metadata: metadata,
   });
 
   try {
