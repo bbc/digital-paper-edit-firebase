@@ -63,7 +63,7 @@ const LabelForm = (props) => {
   };
 
   const handleSave = () => {
-    if (label !== '') {
+    if (label) {
       const tempLabel = {
         value: color,
         label: name,
