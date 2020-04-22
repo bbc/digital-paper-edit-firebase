@@ -132,14 +132,8 @@ Paragraphs.propTypes = {
   handleWordClick: PropTypes.func,
   labelsOptions: PropTypes.any,
   searchString: PropTypes.string,
-  selectedOptionLabelSearch: PropTypes.shape({
-    find: PropTypes.func,
-    length: PropTypes.number
-  }),
-  selectedOptionSpeakerSearch: PropTypes.shape({
-    find: PropTypes.func,
-    length: PropTypes.number
-  }),
+  selectedOptionLabelSearch: PropTypes.array,
+  selectedOptionSpeakerSearch: PropTypes.array,
   showParagraphsMatchingSearch: PropTypes.any,
   transcriptId: PropTypes.any,
   transcript: PropTypes.shape({
