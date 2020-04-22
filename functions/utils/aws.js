@@ -11,11 +11,11 @@ const getSignedUrl = async (aws, params) => {
     });
     s3.getSignedUrl("putObject", params, (err, url) => {
     if (err) {
-      console.log("err", err);
+      console.log("[Error] Error getting signed url", err);
       reject(err)
     }
 
-    console.log("url", url);
+    console.log("[Success] Signed url received:", url);
     resolve(url);
     })
   });
@@ -29,6 +29,8 @@ const uploadS3Stream = (url) => {
   }
 
   const promise = fetch(url, params);
+
+  console.log("Sent PUT request to signed url");
 
   return {
     writeStream: pass,
