@@ -1,20 +1,35 @@
 const AWS = require("aws-sdk");
 const stream = require("stream");
+const fetch = require("node-fetch");
 
-const uploadS3Stream = ({ AWSConfig, Key, Metadata }) => {
-  const Bucket = AWSConfig.name;
-  const s3 = new AWS.S3({
-    region: AWSConfig.region,
-    accessKeyId: AWSConfig.key,
-    secretAccessKey: AWSConfig.secret,
+const getSignedUrl = async (params) => {
+  return new Promise((resolve, reject) => {
+    s3.getSignedUrl("putObject", params, (err, url) => {
+      if (err) {
+        console.log("err", err);
+        reject(err)
+      }
+
+      console.log("url", url);
+      resolve(url);
+    })
   });
+}
+
+const uploadS3Stream = (url) => {
+  const params = {
+    method: 'PUT',
+    body: stream,
+  }
   const pass = new stream.PassThrough();
+
+  const promise = fetch(url, params);
 
   return {
     writeStream: pass,
-    promise: s3.upload({ Bucket, Key, Body: pass, Metadata }).promise(),
-  };
-};
+    promise: promise,
+  }
+}
 
 const getMetadata = (snap) => {
   const durationSeconds = Math.ceil(snap.data().duration);
@@ -28,18 +43,19 @@ exports.createHandler = async (admin, snap, bucket, aws, context) => {
   const srcPath = `users/${userId}/audio/${itemId}`;
   const destPath = `dpe/${srcPath}.wav`;
   const readStream = bucket.file(srcPath).createReadStream();
+  const metadata = getMetadata(snap);
+  const params = {
+    "service": "dpe",
+    "fileName": destPath,
+    "duration": metadata.duration,
+  }
+  const signedUrl = await getSignedUrl(params);
 
   console.log("[START] Upload to S3");
-  const metadata = getMetadata(snap);
   try {
-    const { writeStream, promise } = uploadS3Stream({
-      AWSConfig: aws,
-      Key: destPath,
-      Metadata: metadata,
-    });
-
-    readStream.pipe(writeStream);
+    const { writeStream, promise } = uploadS3Stream(signedUrl);
     await promise;
+    readStream.pipe(writeStream);
   } catch (err) {
     return console.error("[ERROR] Failed to upload to S3:", err);
   }
