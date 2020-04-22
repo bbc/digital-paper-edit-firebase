@@ -19,13 +19,11 @@ const LabelModal = (props) => {
   const [ show, setShow ] = useState(false);
 
   const handleClose = () => {
-    setShow({
-      show: false,
-    });
+    setShow(false);
   };
 
   const handleShow = () => {
-    setShow({ show: true });
+    setShow(true);
   };
 
   return (
@@ -34,7 +32,7 @@ const LabelModal = (props) => {
         { openBtn }
       </Button>
       <Modal show={ show } onHide={ handleClose }>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton onClick={ handleClose }>
           <Modal.Title><FontAwesomeIcon icon={ faTag } />  Label </Modal.Title>
         </Modal.Header>
         <Modal.Body>

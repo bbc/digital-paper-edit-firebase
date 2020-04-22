@@ -13,7 +13,6 @@ import chroma from 'chroma-js';
 import PropTypes from 'prop-types';
 
 const LabelForm = (props) => {
-  console.log('labelform props', props);
   const labelId = props.labelId;
   const [ color, setColor ] = useState(props.color);
   const [ label, setLabel ] = useState({});
@@ -22,7 +21,6 @@ const LabelForm = (props) => {
 
   useEffect(() => {
     const setTempLabel = () => {
-      console.log('Use effect label', label);
       let tempLabel;
       if (!label) {
         tempLabel = {
@@ -39,13 +37,12 @@ const LabelForm = (props) => {
         };
       }
       setLabel(tempLabel);
-      console.log('Label after update: : : ', label);
     };
 
     if (!label) {
       setTempLabel();
     };
-  }, [ label ]);
+  }, [ label, color, description, labelId, name ]);
 
   const handleRandomiseColor = () => {
     setColor(randomColor());
@@ -65,15 +62,7 @@ const LabelForm = (props) => {
     }
   };
 
-  // const handleColorSelectChange = newColor => {
-  //   setColor({ color: newColor.color });
-  // };
-
   const handleSave = () => {
-    console.log('description in handle save: : :', description);
-    // checks color in color picker input is valid - can be color name in letters or hex
-    // if (chroma.valid(color)) {
-    // checks label name is not empty
     if (label !== '') {
       const tempLabel = {
         value: color,
@@ -82,19 +71,11 @@ const LabelForm = (props) => {
         description: description,
         id: labelId
       };
-
-      console.log('Temporary label: : : ', tempLabel);
-
       setLabel(tempLabel);
-
       props.onLabelSaved(tempLabel);
 
       // handleClose();
     }
-    // else {
-    //   alert('add a name to the label to be able to save');
-    // }
-    // }
     else {
       alert('choose a valid color');
     }
@@ -185,6 +166,7 @@ LabelForm.propTypes = {
   label: PropTypes.any,
   description: PropTypes.any,
   labelId: PropTypes.any,
+  onLabelSaved: PropTypes.any
 };
 
 export default LabelForm;

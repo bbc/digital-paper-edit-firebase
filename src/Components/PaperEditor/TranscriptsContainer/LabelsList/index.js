@@ -29,6 +29,10 @@ const LabelsList = (props) => {
 
   const [ isLabelmodalShown, setIsLabelmodalShown ] = useState(false);
 
+  const showLabelModal = () => {
+    setIsLabelmodalShown(true);
+  };
+
   const removeLabel = (id) => {
     console.log('remove label id', id);
     const response = window.confirm(
@@ -56,20 +60,13 @@ console.log('editlabel id', id, labelToEdit);
     // alert('this functionality has not been implemented yet');
   };
   const onLabelSaved = newLabel => {
-    console.log("Inside index/onLabelSaved...")
-    // if updated - labelId is diff from null
     if (newLabel.id) {
       onLabelUpdate(newLabel.id, newLabel);
     }
     // if created
     else {
       onLabelCreate(newLabel);
-      console.log("Inside index/onLabelSaved... Creating new label...")
     }
-  };
-
-  const showLabelModal = () => {
-    setIsLabelmodalShown(true);
   };
 
   // TODO: add CSS to label and description to constrain width?
