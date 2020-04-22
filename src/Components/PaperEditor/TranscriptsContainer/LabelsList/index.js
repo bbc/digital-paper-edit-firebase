@@ -25,7 +25,7 @@ const LabelsList = (props) => {
   const onLabelCreate = props.onLabelCreate;
   const onLabelUpdate = props.onLabelUpdate;
 
-  const [ isLabelModalShown, setIsLabelModalShown ] = useState(false);
+  const [ isLabelmodalShown, setIsLabelmodalShown ] = useState(false);
 
   const showLabelModal = () => {
     setIsLabelmodalShown(true);
