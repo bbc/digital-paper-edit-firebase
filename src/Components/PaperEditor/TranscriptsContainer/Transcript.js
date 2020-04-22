@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
 import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
 import Collection from '../../Firebase/Collection';
+import getTimeFromUserWordsSelection from './get-user-selection.js';
 
 /**
  * Makes list of unique speakers
@@ -313,7 +314,7 @@ const Transcript = (props) => {
                   <Button
                     variant="outline-secondary"
                     data-label-id={ 'default' }
-                    onClick={ setAnnotations }
+                    onClick={ e => handleCreateAnnotation(e) }
                   >
                     <FontAwesomeIcon icon={ faHighlighter } flip="horizontal" />{' '}
                     Highlight

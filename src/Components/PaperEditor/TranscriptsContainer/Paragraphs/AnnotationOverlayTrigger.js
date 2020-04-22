@@ -22,9 +22,9 @@ const AnnotationOverlayTrigger = (props) => {
   let overlayContent;
 
   if (props.labelsOptions) {
-    const label = props.labelsOptions.find((label) => {
+    let label = props.labelsOptions.find((l) => {
 
-      return label.id === props.annotationLabelId;
+      return l.id === props.annotationLabelId;
     });
 
     if (!label) {

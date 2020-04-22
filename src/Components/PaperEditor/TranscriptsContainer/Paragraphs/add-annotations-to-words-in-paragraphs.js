@@ -8,6 +8,7 @@ const isAnnotationInWord = (annotation, word) => {
 };
 
 const wordsWithAnnotations = (words, annotations) => {
+
   return words.map((word) => {
     const annotation = annotations.find(anno => isAnnotationInWord(anno, word));
     if (annotation) {
