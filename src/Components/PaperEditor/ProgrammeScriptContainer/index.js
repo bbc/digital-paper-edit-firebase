@@ -42,8 +42,8 @@ const ProgrammeScriptContainer = (props) => {
 
   // Video Context Preview
   const [ width, setWidth ] = useState(150);
-  const [ playlist, setPlaylist ] = useState();
-  const previewCardRef = useRef(null);
+  const [ playlist, setPlaylist ] = useState([]);
+  const previewCardRef = useRef();
 
   const PaperEditsCollection = new Collection(
     firebase,
@@ -103,30 +103,29 @@ const ProgrammeScriptContainer = (props) => {
   }, [ PaperEditsCollection, elements, papereditsId ]);
 
   useEffect(() => {
-    const getPlaylistItem = (element) => {
-      return {
+    const getPlaylistItem = (element) => (
+      {
         type: 'video',
         sourceStart: element.start,
         duration: element.end - element.start,
-      };
-    };
+      }
+    );
 
     const getPlaylist = async (els) => {
-      console.log('Inside get playlist...', els);
       const paperEdits = els.filter((element) => element.type === 'paper-cut');
 
       const results = paperEdits.reduce(
-        (acc, paperEdit) => {
+        (prevResult, paperEdit) => {
           const transcriptId = paperEdit.transcriptId;
           const transcript = transcripts.find((tr) => tr.id === transcriptId);
           const playlistItem = getPlaylistItem(paperEdit);
           playlistItem.ref = transcript.media.ref;
-          playlistItem.start = acc.startTime;
+          playlistItem.start = prevResult.startTime;
 
-          acc.playlist.push(playlistItem);
-          acc.startTime += playlistItem.duration;
+          prevResult.playlist.push(playlistItem);
+          prevResult.startTime += playlistItem.duration;
 
-          return acc;
+          return prevResult;
         },
         { startTime: 0, playlist: [] }
       );
@@ -145,9 +144,8 @@ const ProgrammeScriptContainer = (props) => {
     };
 
     const handleUpdatePreview = async () => {
-      const currentPlaylist = await getPlaylist(elements);
-      console.log('currentPlaylist', currentPlaylist);
-      setPlaylist(currentPlaylist);
+      const newPlaylist = await getPlaylist(elements);
+      setPlaylist(newPlaylist);
     };
 
     if (resetPreview && elements && elements.length > 0) {
@@ -336,9 +334,7 @@ const ProgrammeScriptContainer = (props) => {
       </h2>
       <Card>
         <Card.Header ref={ previewCardRef }>
-          {playlist ? (
-            <PreviewCanvas width={ width } playlist={ playlist } />
-          ) : null}
+          <PreviewCanvas width={ width } playlist={ playlist } />
         </Card.Header>
         <Card.Header>
           <Row noGutters>
