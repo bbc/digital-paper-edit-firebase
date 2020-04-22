@@ -42,9 +42,11 @@ const getSpeakerLabels = (paragraphs) => {
 
 const Transcript = (props) => {
   const videoRef = useRef();
-  const transcriptId = props.transcriptId;
-  const projectId = props.projectId;
   // isVideoTranscriptPreviewShow: false,
+
+  const { transcriptId, projectId, title, firebase, media, transcript } = props;
+  const mediaType = media.type;
+  const [ url, setUrl ] = useState();
 
   const [ searchString, setSearchString ] = useState('');
   const [
@@ -52,7 +54,7 @@ const Transcript = (props) => {
     setShowParagraphsMatchingSearch,
   ] = useState(false);
   const [ selectedOptionLabelSearch, setSelectedOptionLabelSearch ] = useState(
-    false
+    []
   );
   const [
     selectedOptionSpeakerSearch,
@@ -63,17 +65,29 @@ const Transcript = (props) => {
     sentenceToSearchCSSInHighlights,
     setSentenceToSearchCSSInHighlights,
   ] = useState('');
-  const [ annotations, setAnnotations ] = useState(null);
+  const [ annotations, setAnnotations ] = useState([]);
   const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
   const [ labelsOptions, setLabelsOptions ] = useState(props.labelsOptions);
   const [ currentTime, setCurrentTime ] = useState();
 
   const LabelsCollection = new Collection(
-    props.firebase,
+    firebase,
     `/projects/${ projectId }/labels`
   );
 
-  useEffect(() => {}, [ projectId, transcriptId ]);
+  useEffect(() => {
+    const getUrl = async () => {
+      const dlUrl = await firebase.storage.storage
+        .ref(media.ref)
+        .getDownloadURL();
+      setUrl(dlUrl);
+    };
+
+    if (!url) {
+      getUrl();
+    }
+
+  }, [ projectId, transcriptId, firebase.storage, media.ref, url ]);
 
   const onLabelCreate = (newLabel) => {
     console.log('new label', newLabel);
@@ -101,6 +115,40 @@ const Transcript = (props) => {
 
   const handleLabelsSearchChange = (selectedOptionLabelSearch) => {};
 
+  const handleSearch = (e) => {
+    // TODO: debounce to optimise
+    if (e.target.value !== '') {
+      const text = e.target.value;
+      setSearchString( text.toLowerCase() );
+      //  "debounce" to optimise
+      onlyCallOnce(highlightWords(searchString), 500);
+    }
+    // if empty string reset
+    else if (e.target.value === '') {
+      setSentenceToSearchCSS('');
+      setSearchString('');
+    }
+  };
+
+  const highlightWords = text => {
+    const words = text.toLowerCase().trim().split(' ');
+    const cssName = words.join(' ');
+    const paragraphCSS = `.paragraph[data-paragraph-text*="${ cssName }"]`;
+
+    const css = words.reduce((res, word) => {
+      res.paragraphs.push(`${ paragraphCSS } > div > span.words[data-text="${ word }"]`);
+      res.search.push(`${ paragraphCSS } > div > span >span.words[data-text="${ word }"]`);
+
+      return res;
+    }, { paragraphs: [], search: [] });
+    const wordsToSearchCSS = css.paragraphs.join(', ');
+    // Need to add an extra span to search annotation hilights
+    // TODO: refactor to make more DRY
+    const wordsToSearchCSSInHighlights = css.search.join(', ');
+    setSentenceToSearchCSS(wordsToSearchCSS);
+    setSentenceToSearchCSSInHighlights(wordsToSearchCSSInHighlights);
+  };
+
   const handleTimecodeClick = (e) => {
     if (e.target.classList.contains('timecode')) {
       const wordEl = e.target;
@@ -112,8 +160,8 @@ const Transcript = (props) => {
   const handleWordClick = (e) => {
     if (e.target.className === 'words') {
       const wordEl = e.target;
-      this.videoRef.current.currentTime = wordEl.dataset.start;
-      this.videoRef.current.play();
+      videoRef.current.currentTime = wordEl.dataset.start;
+      videoRef.current.play();
     }
   };
 
@@ -160,19 +208,20 @@ const Transcript = (props) => {
     </style>
   );
 
-  const cardBodyHeight = props.mediaType === 'audio' ? '100vh' : '60vh';
+  const cardBodyHeight = mediaType.startsWith('audio') ? '100vh' : '60vh';
 
   let transcriptMediaCard;
 
-  if (props.mediaType === 'audio') {
+  if (mediaType.startsWith('audio')) {
     transcriptMediaCard = (
       <Card.Header>
         <audio
-          src={ props.url }
+          src={ url }
+          type={ mediaType }
           ref={ videoRef }
-          onTimeUpdate={ (e) => {
-            setState({ currentTime: e.target.currentTime });
-          } }
+          onTimeUpdate={ (e) =>
+            setCurrentTime( e.target.currentTime )
+          }
           style={ {
             width: '100%',
             backgroundColor: 'black',
@@ -185,11 +234,12 @@ const Transcript = (props) => {
     transcriptMediaCard = (
       <Card.Header>
         <video
-          src={ props.url }
+          src={ url }
+          type={ mediaType }
           ref={ videoRef }
-          onTimeUpdate={ (e) => {
-            setState({ currentTime: e.target.currentTime });
-          } }
+          onTimeUpdate={ (e) =>
+            setCurrentTime( e.target.currentTime )
+          }
           style={ {
             width: '100%',
             backgroundColor: 'black',
@@ -198,6 +248,11 @@ const Transcript = (props) => {
         />
       </Card.Header>
     );
+  }
+
+  let speakersOptions = null;
+  if (transcript && transcript.paragraphs) {
+    speakersOptions = getSpeakerLabels(transcript.paragraphs);
   }
 
   return (
@@ -210,10 +265,10 @@ const Transcript = (props) => {
 
       <h2
         className={ [ 'text-truncate', 'text-muted' ].join(' ') }
-        title={ `Transcript Title: ${ props.title }` }
+        title={ `Transcript Title: ${ title }` }
       >
         {/* <FontAwesomeIcon icon={ this.state.isVideoTranscriptPreviewShow === 'none' ? faEye : faEyeSlash } onClick={ this.handleVideoTranscriptPreviewDisplay }/> */}
-        {props.title}
+        {title}
       </h2>
 
       <Card>
@@ -284,11 +339,7 @@ const Transcript = (props) => {
         </Card.Header>
         <SearchBar
           labelsOptions={ labelsOptions }
-          speakersOptions={
-            props.transcript && props.transcript.paragraphs
-              ? getSpeakerLabels(props.transcript.paragraphs)
-              : null
-          }
+          speakersOptions={ speakersOptions }
           // handleSearch={ handleSearch }
           // handleLabelsSearchChange={ handleLabelsSearchChange }
           // handleSpeakersSearchChange={ handleSpeakersSearchChange }
@@ -302,20 +353,20 @@ const Transcript = (props) => {
         >
           {highlights}
 
-          {props.transcript && props.transcript.paragraphs ? (
+          {transcript && transcript.paragraphs ? (
             <Paragraphs
-              labelsOptions={ labelsOptions && labelsOptions }
-              annotations={ annotations ? annotations : [] }
-              transcript={ props.transcript }
-              searchString={ searchString ? searchString : '' }
+              transcriptId={ transcriptId }
+              labelsOptions={ labelsOptions }
+              annotations={ annotations }
+              transcript={ transcript }
+              searchString={ searchString }
               showParagraphsMatchingSearch={ showParagraphsMatchingSearch }
               selectedOptionLabelSearch={
-                selectedOptionLabelSearch ? selectedOptionLabelSearch : []
+                selectedOptionLabelSearch
               }
               selectedOptionSpeakerSearch={
-                selectedOptionSpeakerSearch ? selectedOptionSpeakerSearch : []
+                selectedOptionSpeakerSearch
               }
-              transcriptId={ props.transcriptId }
               // handleTimecodeClick={ handleTimecodeClick }
               // handleWordClick={ handleWordClick }
               // handleDeleteAnnotation={ handleDeleteAnnotation }
@@ -329,13 +380,26 @@ const Transcript = (props) => {
 };
 
 Transcript.propTypes = {
+  firebase: PropTypes.shape({
+    storage: PropTypes.shape({
+      storage: PropTypes.shape({
+        ref: PropTypes.func
+      })
+    })
+  }),
   labelsOptions: PropTypes.any,
-  mediaType: PropTypes.any,
+  media: PropTypes.shape({
+    ref: PropTypes.any,
+    type: PropTypes.shape({
+      startsWith: PropTypes.func
+    })
+  }),
   projectId: PropTypes.any,
   title: PropTypes.any,
-  paragraphs: PropTypes.any,
-  transcriptId: PropTypes.any,
-  url: PropTypes.any,
+  transcript: PropTypes.shape({
+    paragraphs: PropTypes.any
+  }),
+  transcriptId: PropTypes.any
 };
 
 export default Transcript;
