@@ -389,10 +389,8 @@ Transcript.propTypes = {
   }),
   labelsOptions: PropTypes.any,
   media: PropTypes.shape({
-    ref: PropTypes.any,
-    type: PropTypes.shape({
-      startsWith: PropTypes.func
-    })
+    ref: PropTypes.string,
+    type: PropTypes.string
   }),
   projectId: PropTypes.any,
   title: PropTypes.any,
