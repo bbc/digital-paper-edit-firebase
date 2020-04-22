@@ -10,8 +10,6 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Paragraphs from './Paragraphs/index.js';
 import LabelsList from './LabelsList/index.js';
-import onlyCallOnce from '../../../Util/only-call-once/index.js';
-import getTimeFromUserWordsSelection from './get-user-selection.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
 import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
@@ -88,28 +86,6 @@ const Transcript = (props) => {
     }
 
   }, [ projectId, transcriptId, firebase.storage, media.ref, url ]);
-
-  const onLabelCreate = (newLabel) => {
-    console.log('new label', newLabel);
-    const tempLabels = labelsOptions;
-    tempLabels.push(newLabel);
-    setLabelsOptions(tempLabels);
-    LabelsCollection.postItem(newLabel);
-  };
-
-  const onLabelUpdate = (updatedLabel) => {
-    console.log('updated', updatedLabel);
-  };
-
-  const onLabelDelete = async (labelId) => {
-    console.log('labelsoptions', labelsOptions);
-    const tempLabels = labelsOptions;
-    tempLabels.splice(labelId, 1);
-    setLabelsOptions(tempLabels);
-    console.log('labelsoptions after deleting', labelsOptions);
-    // handleSaveLabels();
-    await LabelsCollection.deleteItem(labelId);
-  };
 
   const showLabelsReference = () => {};
 
@@ -191,6 +167,33 @@ const Transcript = (props) => {
     } else {
       alert('all good nothing changed');
     }
+  };
+
+  const onLabelCreate = async (newLabel) => {
+    const docRef = await LabelsCollection.postItem(newLabel);
+    newLabel.id = docRef.id;
+
+    docRef.update({
+      id: docRef.id
+    });
+
+    const tempLabels = labelsOptions;
+    tempLabels.push(newLabel);
+    setLabelsOptions(tempLabels);
+  };
+
+  const onLabelUpdate = async (labelId, updatedLabel) => {
+    const tempLabels = labelsOptions;
+    tempLabels.push(updatedLabel);
+    setLabelsOptions(tempLabels);
+    LabelsCollection.putItem(labelId, updatedLabel);
+  };
+
+  const onLabelDelete = async (labelId) => {
+    const tempLabels = labelsOptions;
+    tempLabels.splice(labelId, 1);
+    setLabelsOptions(tempLabels);
+    await LabelsCollection.deleteItem(labelId);
   };
 
   const currentWordTime = currentTime;
@@ -324,13 +327,13 @@ const Transcript = (props) => {
                   variant="outline-secondary"
                 >
                   <LabelsList
-                  // isLabelsListOpen={ isLabelsListOpen }
-                  // labelsOptions={
-                  //   labelsOptions && labelsOptions
-                  // }
-                  // onLabelUpdate={ onLabelUpdate }
-                  // onLabelCreate={ onLabelCreate }
-                  // onLabelDelete={ onLabelDelete }
+                    isLabelsListOpen={ isLabelsListOpen }
+                    labelsOptions={
+                      labelsOptions && labelsOptions
+                    }
+                    onLabelUpdate={ onLabelUpdate }
+                    onLabelCreate={ onLabelCreate }
+                    onLabelDelete={ onLabelDelete }
                   />
                 </DropdownButton>
               </ButtonGroup>
@@ -367,10 +370,11 @@ const Transcript = (props) => {
               selectedOptionSpeakerSearch={
                 selectedOptionSpeakerSearch
               }
-              // handleTimecodeClick={ handleTimecodeClick }
-              // handleWordClick={ handleWordClick }
-              // handleDeleteAnnotation={ handleDeleteAnnotation }
-              // handleEditAnnotation={ handleEditAnnotation }
+              transcriptId={ transcriptId }
+              handleTimecodeClick={ handleTimecodeClick }
+              handleWordClick={ handleWordClick }
+              handleDeleteAnnotation={ handleDeleteAnnotation }
+              handleEditAnnotation={ handleEditAnnotation }
             />
           ) : null}
         </Card.Body>
@@ -378,6 +382,237 @@ const Transcript = (props) => {
     </>
   );
 };
+
+// class Transcript2 extends Component {
+//   constructor(props) {
+//     super(props);
+//     this.videoRef = React.createRef();
+//     this.state = {
+//       // isVideoTranscriptPreviewShow: false,
+//       searchString: '',
+//       showParagraphsMatchingSearch: false,
+//       selectedOptionLabelSearch: false,
+//       selectedOptionSpeakerSearch: [],
+//       sentenceToSearchCSS: '',
+//       sentenceToSearchCSSInHighlights: '',
+//       annotations: [],
+//       isLabelsListOpen: true,
+//       labelsOptions: this.props.labelsOptions,
+//       currentTime: 0,
+//     };
+//   }
+
+//   componentDidMount = () => {
+//     // const api = this.context;
+//     // api
+//     //   .getAllAnnotations(this.props.projectId, this.props.transcriptId)
+//     //   .then(json => {
+//     //     // console.log(' api.getAllAnnotations', json);
+//     //     this.setState({
+//     //       annotations: json.annotations
+//     //     });
+//     //   });
+//   };
+
+//   // functions repeadrted from TranscriptAnnotate/index.js
+//   handleTimecodeClick = (e) => {
+//     if (e.target.classList.contains('timecode')) {
+//       const wordEl = e.target;
+//       this.videoRef.current.currentTime = wordEl.dataset.start;
+//       this.videoRef.current.play();
+//     }
+//   };
+
+//   handleWordClick = (e) => {
+//     if (e.target.className === 'words') {
+//       const wordEl = e.target;
+//       this.videoRef.current.currentTime = wordEl.dataset.start;
+//       this.videoRef.current.play();
+//     }
+//   };
+
+//   handleShowParagraphsMatchingSearch = () => {
+//     this.setState((state) => {
+//       return {
+//         showParagraphsMatchingSearch: !state.showParagraphsMatchingSearch,
+//       };
+//     });
+//   };
+
+//   handleSpeakersSearchChange = (selectedOptionSpeakerSearch) => {
+//     this.setState({
+//       selectedOptionSpeakerSearch,
+//     });
+//   };
+
+//   handleSearch = (e) => {
+//     // TODO: debounce to optimise
+//     if (e.target.value !== '') {
+//       const searchString = e.target.value;
+//       this.setState({ searchString: searchString.toLowerCase() });
+//       //  "debounce" to optimise
+//       onlyCallOnce(this.highlightWords(searchString), 500);
+//     }
+//     // if empty string reset
+//     else if (e.target.value === '') {
+//       this.setState({
+//         sentenceToSearchCSS: '',
+//         searchString: '',
+//       });
+//     }
+//   };
+
+//   highlightWords = (searchString) => {
+//     const listOfSearchWords = searchString.toLowerCase().trim().split(' ');
+//     const pCSS = `.paragraph[data-paragraph-text*="${ listOfSearchWords.join(
+//       ' '
+//     ) }"]`;
+
+//     const wordsToSearchCSS = listOfSearchWords.map((searchWord, index) => {
+//       let res = `${ pCSS } > div > span.words[data-text="${ searchWord
+//         .toLowerCase()
+//         .trim() }"]`;
+//       if (index < listOfSearchWords.length - 1) {
+//         res += ', ';
+//       }
+
+//       return res;
+//     });
+//     // Need to add an extra span to search annotation hilights
+//     // TODO: refactor to make more DRY
+//     const wordsToSearchCSSInHighlights = listOfSearchWords.map(
+//       (searchWord, index) => {
+//         let res = `${ pCSS } > div  > span >span.words[data-text="${ searchWord
+//           .toLowerCase()
+//           .trim() }"]`;
+//         if (index < listOfSearchWords.length - 1) {
+//           res += ', ';
+//         }
+
+//         return res;
+//       }
+//     );
+//     this.setState({
+//       sentenceToSearchCSS: wordsToSearchCSS.join(' '),
+//       sentenceToSearchCSSInHighlights: wordsToSearchCSSInHighlights.join(' '),
+//     });
+//   };
+
+//   handleCreateAnnotation = (e) => {
+//     const api = this.context;
+//     const element = e.target;
+//     // window.element = element;
+//     const selection = getTimeFromUserWordsSelection();
+//     if (selection) {
+//       const { annotations } = this.state;
+//       selection.labelId = element.dataset.labelId;
+//       selection.note = '';
+//       const newAnnotation = selection;
+//       console.log('newAnnotation', newAnnotation);
+//       api
+//         .createAnnotation(
+//           this.props.projectId,
+//           this.props.transcriptId,
+//           newAnnotation
+//         )
+//         .then((json) => {
+//           const newAnnotationFromServer = json.annotation;
+//           console.log('newAnnotationFromServer', newAnnotationFromServer);
+//           // console.log('handleCreateAnnotation', newAnnotation);
+//           // this.setState({
+//           //   labelsOptions: json.labels
+//           // });
+//           const newAnnotationsSet = JSON.parse(JSON.stringify(annotations));
+//           // newAnnotation.id = json.annotation.id;
+//           // newAnnotationsList.push(newAnnotation);
+//           newAnnotationsSet.push(newAnnotationFromServer);
+
+//           this.setState({ annotations: newAnnotationsSet });
+//         });
+//     } else {
+//       alert('Select some text in the transcript to highlight ');
+//     }
+//   };
+
+//   handleDeleteAnnotation = (annotationId) => {
+//     const api = this.context;
+//     const { annotations } = this.state;
+//     const newAnnotationsSet = annotations.filter((annotation) => {
+//       return annotation.id !== annotationId;
+//     });
+
+//     const deepCloneOfNestedObjectNewAnnotationsSet = JSON.parse(
+//       JSON.stringify(newAnnotationsSet)
+//     );
+//     api
+//       .deleteAnnotation(
+//         this.props.projectId,
+//         this.props.transcriptId,
+//         annotationId
+//       )
+//       .then(() => {
+//         this.setState({
+//           annotations: deepCloneOfNestedObjectNewAnnotationsSet,
+//         });
+//       });
+//   };
+
+//   // TODO: add server side via api
+//   // similar to handleDeleteAnnotation filter to find annotation then replace text
+//   handleEditAnnotation = (annotationId) => {
+//     const api = this.context;
+//     const { annotations } = this.state;
+//     const newAnnotationToEdit = annotations.find((annotation) => {
+//       return annotation.id === annotationId;
+//     });
+//     const newNote = prompt(
+//       'Edit the text note of the annotation',
+//       newAnnotationToEdit.note
+//     );
+//     if (newNote) {
+//       newAnnotationToEdit.note = newNote;
+//       api
+//         .updateAnnotation(
+//           this.state.projectId,
+//           this.props.transcriptId,
+//           annotationId,
+//           newAnnotationToEdit
+//         )
+//         .then((json) => {
+//           const newAnnotation = json.annotation;
+//           // updating annotations client side by removing updating one
+//           // and re-adding to array
+//           // could be refactored using `findindex`
+//           const newAnnotationsSet = annotations.filter((annotation) => {
+//             return annotation.id !== annotationId;
+//           });
+//           newAnnotationsSet.push(newAnnotation);
+//           this.setState({ annotations: newAnnotationsSet });
+//         });
+//     } else {
+//       alert('all good nothing changed');
+//     }
+//   };
+
+//   getCurrentWordTime = () => {
+//     const { words } = this.props.transcript;
+
+//     const currentTime = this.state.currentTime;
+//     // if (this.videoRef && this.videoRef.current && this.videoRef.current.currentTime) {
+//     //   currentTime = this.videoRef.current.currentTime;
+//     // }
+//     const currentWordTime = words.find((word) => {
+//       if (currentTime >= word.start && currentTime <= word.end) {
+//         return word.start;
+//       }
+//     });
+//     if (currentWordTime !== undefined) {
+//       return currentWordTime[0];
+//     }
+
+//     return 0;
+//   };
+// }
 
 Transcript.propTypes = {
   firebase: PropTypes.shape({
