@@ -1,23 +1,32 @@
-const getSignedUrl = async (params) => {
-  return new Promise((resolve, reject) => {
-      s3.getSignedUrl("putObject", params, (err, url) => {
-      if (err) {
-          console.log("err", err);
-          reject(err)
-      }
+const AWS = require("aws-sdk");
+const fetch = require("node-fetch");
+const stream = require("stream");
 
-      console.log("url", url);
-      resolve(url);
-      })
+const getSignedUrl = async (aws, params) => {
+  return new Promise((resolve, reject) => {
+    const s3 = new AWS.S3({
+      region: aws.region,
+      accessKeyId: aws.key,
+      secretAccessKey: aws.secret,
+    });
+    s3.getSignedUrl("putObject", params, (err, url) => {
+    if (err) {
+      console.log("err", err);
+      reject(err)
+    }
+
+    console.log("url", url);
+    resolve(url);
+    })
   });
 }
   
 const uploadS3Stream = (url) => {
+  const pass = new stream.PassThrough();
   const params = {
     method: 'PUT',
-    body: stream,
+    body: pass,
   }
-  const pass = new stream.PassThrough();
 
   const promise = fetch(url, params);
 
@@ -28,4 +37,4 @@ const uploadS3Stream = (url) => {
 }
 
 exports.getSignedUrl = getSignedUrl;
-exports.uploadS3Stream = uploadS3Stream;
+exports.uploadS3Stream = uploadS3Stream;  

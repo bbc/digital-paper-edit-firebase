@@ -1,21 +1,24 @@
-const AWS = require("aws-sdk");
-const stream = require("stream");
-const fetch = require("node-fetch");
 const { getSignedUrl, uploadS3Stream } = require("../utils/aws");
 const { getMetadata } = require("../utils");
 
 exports.createHandler = async (admin, snap, bucket, aws, context) => {
   const { userId, itemId } = context.params;
   const srcPath = `users/${userId}/audio/${itemId}`;
-  const destPath = `dpe/${srcPath}.wav`;
+  const fileName = `${srcPath}.wav`;
   const readStream = bucket.file(srcPath).createReadStream();
   const metadata = getMetadata(snap);
+  const serviceName = "dpe";
+  const destPath = `${serviceName}/${fileName}`;
+  const duration = `${metadata.duration}`;
   const params = {
-    "service": "dpe",
-    "fileName": destPath,
-    "duration": metadata.duration,
+    Bucket: aws.name,
+    Key: destPath,
+    Expires: 60 * 5,
+    Metadata: {
+      "duration": duration,
+    }
   }
-  const signedUrl = await getSignedUrl(params);
+  const signedUrl = await getSignedUrl(aws, params);
 
   console.log("[START] Upload to S3");
   try {
