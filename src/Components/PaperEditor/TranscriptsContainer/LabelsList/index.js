@@ -118,6 +118,9 @@ const LabelsList = (props) => {
                   onClick={ e => {
                     editLabel(label.id, e);
                   } }
+                  disabled={
+                    label.label === 'Default' ? true : false
+                  }
                 >
                   <FontAwesomeIcon icon={ faPen } />{' '}
                 </Button>
