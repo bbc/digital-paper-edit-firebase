@@ -45,7 +45,7 @@ const Transcript = (props) => {
   // isVideoTranscriptPreviewShow: false,
 
   const { transcriptId, projectId, title, firebase, media, transcript } = props;
-  const mediaType = media.type;
+  const mediaType = media ? media.type : '';
   const [ url, setUrl ] = useState();
 
   const [ searchString, setSearchString ] = useState('');
