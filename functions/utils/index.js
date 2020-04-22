@@ -27,5 +27,13 @@ const secondsToDhms = (seconds) => {
   return dDisplay + hDisplay + mDisplay + sDisplay;
 };
 
+const getMetadata = (snap) => {
+  const durationSeconds = Math.ceil(snap.data().duration);
+  return {
+    duration: `${durationSeconds}`,
+  };
+};
+
 exports.getUrl = getUrl;
 exports.secondsToDhms = secondsToDhms;
+exports.getMetadata = getMetadata;
