@@ -20,7 +20,6 @@ const TranscriptsContainer = ({
   annotations,
   firebase,
 }) => {
-  console.log('PSC annotations', annotations);
   const getStatusIcon = (status) => {
     if (status === 'in-progress') {
       return <FontAwesomeIcon icon={ faClock } />;

@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Popover from 'react-bootstrap/Popover';
@@ -11,76 +12,67 @@ import {
   faTag
 } from '@fortawesome/free-solid-svg-icons';
 
-// const AnnotationOverlayTrigger = (props) => {
-//   console.log(props);
+const AnnotationOverlayTrigger = (props) => {
 
-//   const handleEditAnnotation = () => {
-
-//   }
-
-// }
-
-class AnnotationOverlayTrigger extends Component {
-
-  handleEditAnnotation = () => {
+  const handleEdit = () => {
     let text;
-    this.props.handleEditAnnotation(this.props.annotationId, text );
-  }
+    props.handleEditAnnotation(props.annotationId, text);
+  };
 
-  render() {
-    // console.log('render - AnnotationOverlayTrigger - props', this.props);
-    // const { annotationLabelId } = this.props;
-    let overlayContent;
-    // handling edge case when labels are not available
-    if (this.props.labelsOptions) {
-      console.log('this.props.labelOptions', this.props.labelsOptions);
-      console.log('this.props.annotationLabelId', this.props.annotationLabelId);
-      let label = this.props.labelsOptions.find((label) => {
+  let overlayContent;
 
-        return label.id === this.props.annotationLabelId;
-      });
+  if (props.labelsOptions) {
+    const label = props.labelsOptions.find((label) => {
 
-      console.log('AOT', label);
-      // console.log('label:: ', label, annotationLabelId, this.props.labelsOptions, 'this.props.words', this.props.words, this.props.annotationNote);
-      // TODO: Quick fix - needs digging into why sometimes adding a new label crashes, and the `find` function above returns undefined
-      if (!label) {
-        label = this.props.labelsOptions[0];
-      }
+      return label.id === props.annotationLabelId;
+    });
 
-      overlayContent = <OverlayTrigger rootClose={ true } trigger="click" placement="bottom"
-        overlay={
-          <Popover id="popover-basic">
-            <Row>
-              <Col md={ 1 } style={ { backgroundColor: label.color, marginLeft:'1em' } }></Col>
-              <Col >
-                <FontAwesomeIcon icon={ faTag } />  {label.label}
-              </Col>
-              <Col md={ 1 } style={ { marginRight:'1em' } }
-                onClick={ () => {this.props.handleDeleteAnnotation(this.props.annotationId);} }>
-                <FontAwesomeIcon icon={ faTrashAlt } />
-              </Col>
-            </Row>
-            <hr/>
-            <FontAwesomeIcon icon={ faStickyNote }
-              onClick={ this.handleEditAnnotation }
-            />   { this.props.annotationNote }
-            <br/>
-            <FontAwesomeIcon icon={ faPen }
-              onClick={ this.handleEditAnnotation }
-            />
-          </Popover>
-        }
-      >
-        <span style={ { borderBottom: `0.1em ${ label.color } solid` } } className={ 'highlight' }>{this.props.words}</span>
-      </OverlayTrigger>;
-
+    if (!label) {
+      label = props.labelsOptions[0];
     }
 
-    return (<>
-      {overlayContent}
-    </>
-    );
-  }
-}
+    overlayContent = <OverlayTrigger rootClose={ true } trigger="click" placement="bottom"
+      overlay={
+        <Popover id="popover-basic">
+          <Row>
+            <Col md={ 1 } style={ { backgroundColor: label.color, marginLeft: '1em' } }></Col>
+            <Col >
+              <FontAwesomeIcon icon={ faTag } />  {label.label}
+            </Col>
+            <Col md={ 1 } style={ { marginRight: '1em' } }
+              onClick={ () => { props.handleDeleteAnnotation(props.annotationId); } }>
+              <FontAwesomeIcon icon={ faTrashAlt } />
+            </Col>
+          </Row>
+          <hr />
+          <FontAwesomeIcon icon={ faStickyNote }
+            onClick={ handleEdit }
+          />   {props.annotationNote}
+          <br />
+          <FontAwesomeIcon icon={ faPen }
+            onClick={ handleEdit }
+          />
+        </Popover>
+      }
+    >
+      <span style={ { borderBottom: `0.1em ${ label.color } solid` } } className={ 'highlight' }>{props.words}</span>
+    </OverlayTrigger>;
+  };
+
+  return (<>
+    {overlayContent}
+  </>
+  );
+};
+
+AnnotationOverlayTrigger.propTypes = {
+  annotationId: PropTypes.string,
+  annotationLabelId: PropTypes.string,
+  annotationNote: PropTypes.string,
+  handleDeleteAnnotation: PropTypes.any,
+  handleEditAnnotation: PropTypes.any,
+  labelsOptions: PropTypes.any,
+  words: PropTypes.any
+};
 
 export default AnnotationOverlayTrigger;

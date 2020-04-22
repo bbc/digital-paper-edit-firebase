@@ -55,6 +55,12 @@ const PaperEditor = (props) => {
       }
     };
 
+    if (!transcripts) {
+      getProject();
+    }
+  }, [ Projects, papereditId, projectId, transcripts ]);
+
+  useEffect(() => {
     const getPaperEdit = async () => {
       try {
         const paperEdit = await PaperEdits.getItem(papereditId);
@@ -64,6 +70,12 @@ const PaperEditor = (props) => {
       }
     };
 
+    if (!transcripts) {
+      getPaperEdit();
+    }
+  }, [ PaperEdits, papereditId, transcripts ]);
+
+  useEffect(() => {
     const getLabels = async () => {
       try {
         Labels.collectionRef.onSnapshot((snapshot) => {
@@ -78,6 +90,31 @@ const PaperEditor = (props) => {
       }
     };
 
+    if (!transcripts) {
+      getLabels();
+    }
+  }, [ Labels.collectionRef, transcripts ]);
+
+  useEffect(() => {
+    const getAnnotations = async () => {
+      try {
+        Annotations.collectionRef.onSnapshot((snapshot) => {
+          setAnnotations(
+            snapshot.docs.map((doc) => {
+              return { ...doc.data(), id: doc.id, display: true };
+            })
+          );
+        });
+      } catch (error) {
+        console.error('Error getting annotations: ', error);
+      }
+    };
+    if (!transcripts) {
+      getAnnotations();
+    }
+  }, [ Annotations.collectionRef, transcripts ]);
+
+  useEffect(() => {
     const getTranscripts = async () => {
       try {
         Transcriptions.collectionRef.onSnapshot((snapshot) => {
@@ -91,31 +128,10 @@ const PaperEditor = (props) => {
         console.error('Error getting documents: ', error);
       }
     };
-
-    const getAnnotations = async () => {
-      try {
-        Annotations.collectionRef.onSnapshot((snapshot) => {
-          const tempAnnotations = snapshot.docs.map((doc) => {
-            return { ...doc.data(), id: doc.id, display: true };
-          });
-          console.log('tempAnnoatations', tempAnnotations);
-          setAnnotations(tempAnnotations);
-        });
-      } catch (error) {
-        console.error('Error getting annotations: ', error);
-      }
-    };
-
     if (!transcripts) {
-      getProject();
-      getPaperEdit();
       getTranscripts();
-      getAnnotations();
-      getLabels();
     }
-
-    return () => {};
-  }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId, annotations, Labels.collectionRef, labels, Annotations.collectionRef ]);
+  }, [ Transcriptions.collectionRef, transcripts ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
