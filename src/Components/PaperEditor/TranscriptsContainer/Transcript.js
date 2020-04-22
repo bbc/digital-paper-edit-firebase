@@ -63,7 +63,7 @@ const Transcript = (props) => {
     sentenceToSearchCSSInHighlights,
     setSentenceToSearchCSSInHighlights,
   ] = useState('');
-  const [ annotations, setAnnotations ] = useState([]);
+  const [ annotations, setAnnotations ] = useState(props.annotations);
   const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
   const [ labelsOptions, setLabelsOptions ] = useState(props.labelsOptions);
   const [ currentTime, setCurrentTime ] = useState();
@@ -356,7 +356,7 @@ const Transcript = (props) => {
         >
           {highlights}
 
-          {transcript && transcript.paragraphs ? (
+          {transcript ? (
             <Paragraphs
               transcriptId={ transcriptId }
               labelsOptions={ labelsOptions }
@@ -370,7 +370,6 @@ const Transcript = (props) => {
               selectedOptionSpeakerSearch={
                 selectedOptionSpeakerSearch
               }
-              transcriptId={ transcriptId }
               handleTimecodeClick={ handleTimecodeClick }
               handleWordClick={ handleWordClick }
               handleDeleteAnnotation={ handleDeleteAnnotation }

@@ -11,6 +11,15 @@ import {
   faTag
 } from '@fortawesome/free-solid-svg-icons';
 
+// const AnnotationOverlayTrigger = (props) => {
+//   console.log(props);
+
+//   const handleEditAnnotation = () => {
+
+//   }
+
+// }
+
 class AnnotationOverlayTrigger extends Component {
 
   handleEditAnnotation = () => {
@@ -24,10 +33,14 @@ class AnnotationOverlayTrigger extends Component {
     let overlayContent;
     // handling edge case when labels are not available
     if (this.props.labelsOptions) {
+      console.log('this.props.labelOptions', this.props.labelsOptions);
+      console.log('this.props.annotationLabelId', this.props.annotationLabelId);
       let label = this.props.labelsOptions.find((label) => {
 
         return label.id === this.props.annotationLabelId;
       });
+
+      console.log('AOT', label);
       // console.log('label:: ', label, annotationLabelId, this.props.labelsOptions, 'this.props.words', this.props.words, this.props.annotationNote);
       // TODO: Quick fix - needs digging into why sometimes adding a new label crashes, and the `find` function above returns undefined
       if (!label) {

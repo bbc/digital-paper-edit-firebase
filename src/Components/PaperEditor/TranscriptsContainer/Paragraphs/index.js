@@ -15,6 +15,7 @@ const removePunctuation = (string) => {
 
 const Paragraphs = (props) => {
   let paragraphDisplayPreference = {};
+  console.log('paragraphprops', props);
 
   /**
      *  Group words into paragraphs

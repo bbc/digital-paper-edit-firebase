@@ -40,6 +40,10 @@ const PaperEditor = (props) => {
     props.firebase,
     `/projects/${ projectId }/labels`
   );
+  const Annotations = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/annotations`
+  );
 
   useEffect(() => {
     const getProject = async () => {
@@ -90,6 +94,13 @@ const PaperEditor = (props) => {
 
     const getAnnotations = async () => {
       try {
+        Annotations.collectionRef.onSnapshot((snapshot) => {
+          const tempAnnotations = snapshot.docs.map((doc) => {
+            return { ...doc.data(), id: doc.id, display: true };
+          });
+          console.log('tempAnnoatations', tempAnnotations);
+          setAnnotations(tempAnnotations);
+        });
       } catch (error) {
         console.error('Error getting annotations: ', error);
       }
@@ -104,17 +115,7 @@ const PaperEditor = (props) => {
     }
 
     return () => {};
-  }, [
-    transcripts,
-    PaperEdits,
-    Projects,
-    Transcriptions.collectionRef,
-    papereditId,
-    projectId,
-    annotations,
-    Labels.collectionRef,
-    labels,
-  ]);
+  }, [ transcripts, PaperEdits, Projects, Transcriptions.collectionRef, papereditId, projectId, annotations, Labels.collectionRef, labels, Annotations.collectionRef ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
@@ -185,6 +186,7 @@ const PaperEditor = (props) => {
         projectId={ projectId }
         transcripts={ transcripts }
         labelsOptions={ labels }
+        annotations={ annotations }
         firebase={ props.firebase }
       />
     );
