@@ -48,16 +48,19 @@ const filterInvalidJobs = (transcripts, execTimestamp) =>
 
 const successfulHTTPStatus = (status) => status < 400;
 
-const getJobStatus = async (objectKey, config) => {
+const getJobStatus = async (fileName, config) => {
+  const headers = {
+    "Content-Type": "application/json",
+    "X-API-Key": config.key,
+  }
+  const body = {
+    "serviceName": "dpe",
+    "fileName": fileName,
+  }
   const request = {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": config.key,
-    },
-    body: JSON.stringify({
-      objectKey: objectKey,
-    }),
+    headers: headers,
+    body: JSON.stringify(body),
   };
   const response = await fetch(config.endpoint, request);
 
@@ -68,9 +71,7 @@ const getJobStatus = async (objectKey, config) => {
       transcript: responseData.transcript,
     };
   } else {
-    throw new Error(
-      `Received bad response for ${objectKey} from STT service - Status code ${response.status}: ${response.statusText}`
-    );
+    throw new Error(`Status code ${response.status}: ${response.statusText}`);
   }
 };
 
@@ -109,15 +110,19 @@ const updateTranscriptsStatus = async (
 
   await validJobs.forEach(async (job) => {
     let response;
-    const userId = usersAudioData[job.id]["user"];
-    const objectKey = `dpe/users/${userId}/audio/${job.id}.wav`;
+    const usersAudioDataJob = usersAudioData[job.id];
+    if (!usersAudioDataJob) {
+      console.log(`[ERROR] Job ID {job.id} not found`);
+      return;
+    }
+    const userId = usersAudioDataJob.user;
+    const fileName = `users/${userId}/audio/${job.id}.wav`;
 
     try {
-      response = await getJobStatus(objectKey, config);
+      response = await getJobStatus(fileName, config);
     } catch (err) {
       console.error(
-        `[ERROR] Failed to get STT jobs status for ${objectKey}:`,
-        err
+        `[ERROR] Failed to get STT jobs status for ${fileName}: ${err}`
       );
       return;
     }
