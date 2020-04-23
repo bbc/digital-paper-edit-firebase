@@ -21,21 +21,27 @@ const getSignedUrl = async (aws, params) => {
   });
 }
   
-const uploadS3Stream = (url) => {
-  const pass = new stream.PassThrough();
+const uploadS3Stream = (url, stream, size) => {
   const params = {
     method: 'PUT',
-    body: pass,
+    body: stream,
+    headers: {
+      "Content-length": size,
+    },
   }
 
-  const promise = fetch(url, params);
-
-  console.log("[INFO] Sent PUT request to signed url");
-
-  return {
-    writeStream: pass,
-    promise: promise,
-  }
+  return promise = fetch(url, params)
+    .then(res => {
+      if (res.ok) {
+        return console.log(
+          `[SUCCESS] File upload PUT request sent with status ${res.status}`
+        );
+      } else {
+        throw new Error(
+          `[ERROR] Error uploading file to S3: ${res.status} - ${res.statusText}`
+        );
+      }
+     });
 }
 
 exports.getSignedUrl = getSignedUrl;
