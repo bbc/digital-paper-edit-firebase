@@ -104,7 +104,7 @@ const Paragraphs = (props) => {
             <AnnotationOverlayTrigger
               key={ 'key----' + index }
               words={ wordEl }
-              labelsOptions={ props.labelsOptions }
+              labels={ props.labels }
               annotationLabelId={ word.annotation.labelId }
               annotationId={ word.annotation.id }
               annotationNote={ word.annotation.note }
@@ -148,7 +148,7 @@ Paragraphs.propTypes = {
   handleEditAnnotation: PropTypes.any,
   handleTimecodeClick: PropTypes.func,
   handleWordClick: PropTypes.func,
-  labelsOptions: PropTypes.any,
+  labels: PropTypes.any,
   searchString: PropTypes.string,
   selectedOptionLabelSearch: PropTypes.array,
   selectedOptionSpeakerSearch: PropTypes.array,

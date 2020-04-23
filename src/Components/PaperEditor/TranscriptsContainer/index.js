@@ -16,7 +16,7 @@ import TranscriptTabContent from './TranscriptTabContent';
 const TranscriptsContainer = ({
   transcripts,
   projectId,
-  labelsOptions,
+  labels,
   annotations,
   firebase,
 }) => {
@@ -52,7 +52,7 @@ const TranscriptsContainer = ({
         <TranscriptTabContent
           projectId={ projectId }
           transcriptId={ id }
-          labelsOptions={ labelsOptions }
+          labels={ labels }
           annotations={ annotations }
           title={ title }
           transcript={ { words: words, paragraphs: paragraphs } } // Words and Paragraphs are the fields we want to get from Firestore
@@ -98,7 +98,7 @@ const TranscriptsContainer = ({
 };
 
 TranscriptsContainer.propTypes = {
-  labelsOptions: PropTypes.any,
+  labels: PropTypes.any,
   projectId: PropTypes.any,
   transcripts: PropTypes.any,
   annotations: PropTypes.any,
