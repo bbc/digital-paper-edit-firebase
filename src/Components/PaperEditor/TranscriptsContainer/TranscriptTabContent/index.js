@@ -133,15 +133,19 @@ const TranscriptTabContent = (props) => {
     }
   };
 
-  const handleCreateAnnotation = async (e, selectedLabel) => {
-    // const element = e.target;
+  const handleCreateAnnotation = async (e) => {
     const selection = getTimeFromUserWordsSelection();
     if (selection) {
-      selection.labelId = selectedLabel.id;
+      const activeLabel = labels.find((label) => {
+        return label.active;
+      });
+      if (activeLabel) {
+        selection.labelId = activeLabel.id;
+      } else {
+        selection.labelId = labels[0].id;
+      }
       selection.note = '';
       const newAnnotation = selection;
-
-      console.log('new annotation', newAnnotation);
 
       const docRef = await AnnotationsCollection.postItem(newAnnotation);
       newAnnotation.id = docRef.id;
@@ -293,6 +297,7 @@ const TranscriptTabContent = (props) => {
         <Card.Header>
           <TranscriptMenu
             labels={ labels }
+            setLabels={ setLabels }
             handleCreateAnnotation={ handleCreateAnnotation }
             handleEditAnnotation={ handleEditAnnotation }
             handleDeleteAnnotation={ handleDeleteAnnotation }
