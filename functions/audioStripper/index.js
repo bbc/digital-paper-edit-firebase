@@ -1,5 +1,5 @@
 const ffmpeg = require("fluent-ffmpeg");
-const { getUrl } = require("../utils");
+const { getStorageSignedUrl } = require("../utils/firebase");
 
 // Will NOT work for MP4 Streams
 // https://stackoverflow.com/questions/23002316/ffmpeg-pipe0-could-not-find-codec-parameters/40028894#40028894
@@ -60,7 +60,7 @@ exports.createHandler = async (snap, bucket, context) => {
   });
 
   try {
-    const sourceUrl = await getUrl(srcFile);
+    const sourceUrl = await getStorageSignedUrl(srcFile);
     console.log(`[START] Streaming, transforming file ${sourceUrl} to audio`);
     await convertStreamToAudio(sourceUrl[0], writeStream);
   } catch (err) {

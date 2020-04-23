@@ -1,6 +1,6 @@
 const { getSignedUrl, uploadS3Stream } = require("../utils/aws");
 
-exports.createHandler = async (admin, snap, bucket, aws, context) => {
+exports.createHandler = async (snap, bucket, aws, context) => {
   const { userId, itemId } = context.params;
   const srcPath = `users/${userId}/audio/${itemId}`;
   const fileName = `${srcPath}.wav`;
@@ -23,7 +23,16 @@ exports.createHandler = async (admin, snap, bucket, aws, context) => {
   console.log("[START] Upload to S3");
   try {
     const promise = uploadS3Stream(signedUrl, readStream, fileSize);
-    await promise;
+    const res = await promise;
+    if (res.ok) {
+      console.log(
+        `[SUCCESS] File upload PUT request sent with status ${res.status}`
+      );
+    } else {
+      throw new Error(
+        `status ${res.status} - ${res.statusText}`
+      );
+    }
   } catch (err) {
     return console.error("[ERROR] Failed to upload to S3:", err);
   }
