@@ -325,7 +325,7 @@ const Transcript = (props) => {
                     variant="outline-secondary"
                     data-lable-id={ 0 }
                   />
-                  <Dropdown.Menu onClick={ setAnnotations }>
+                  <Dropdown.Menu>
                     {labelsOptions &&
                       labelsOptions.map((label) => {
                         return (

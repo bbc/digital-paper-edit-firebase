@@ -103,13 +103,11 @@ const ProgrammeScriptContainer = (props) => {
   }, [ PaperEditsCollection, elements, papereditsId ]);
 
   useEffect(() => {
-    const getPlaylistItem = (element) => (
-      {
-        type: 'video',
-        sourceStart: element.start,
-        duration: element.end - element.start,
-      }
-    );
+    const getPlaylistItem = (element) => ({
+      type: 'video',
+      sourceStart: element.start,
+      duration: element.end - element.start,
+    });
 
     const getPlaylist = async (els) => {
       const paperEdits = els.filter((element) => element.type === 'paper-cut');
@@ -132,13 +130,14 @@ const ProgrammeScriptContainer = (props) => {
 
       const { playlist: playlistItems } = results;
       playlistItems = await Promise.all(
-        playlistItems.map(async item => {
+        playlistItems.map(async (item) => {
           item.src = await firebase.storage.storage
             .ref(item.ref)
             .getDownloadURL();
 
           return item;
-        }));
+        })
+      );
 
       return playlistItems;
     };
@@ -155,7 +154,6 @@ const ProgrammeScriptContainer = (props) => {
   }, [ elements, resetPreview, firebase.storage.storage, transcripts ]);
 
   useEffect(() => {
-
     const updateVideoContextWidth = () => {
       setWidth(previewCardRef.current.offsetWidth - 10);
     };

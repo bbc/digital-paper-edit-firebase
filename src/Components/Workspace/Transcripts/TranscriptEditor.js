@@ -17,11 +17,11 @@ const TranscriptEditor = ({ match, firebase }) => {
   const transcriptId = match.params.transcriptId;
 
   const [ transcriptData, setTranscriptData ] = useState();
-  const [ mediaUrl, setMediaUrl ] = useState('');
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ transcriptTitle, setTranscriptTitle ] = useState('');
   const [ savedNotification, setSavedNotification ] = useState();
   const [ mediaType, setMediaType ] = useState('video');
+  const [ mediaUrl, setMediaUrl ] = useState('');
 
   const transcriptEditorRef = useRef();
 

@@ -21,14 +21,14 @@ const AnnotationOverlayTrigger = (props) => {
 
   let overlayContent;
 
-  if (props.labelsOptions) {
-    let label = props.labelsOptions.find((l) => {
+  if (props.labels) {
+    let label = props.labels.find((l) => {
 
       return l.id === props.annotationLabelId;
     });
 
     if (!label) {
-      label = props.labelsOptions[0];
+      label = props.labels[0];
     }
 
     overlayContent = <OverlayTrigger rootClose={ true } trigger="click" placement="bottom"
@@ -66,12 +66,12 @@ const AnnotationOverlayTrigger = (props) => {
 };
 
 AnnotationOverlayTrigger.propTypes = {
-  annotationId: PropTypes.string,
-  annotationLabelId: PropTypes.string,
-  annotationNote: PropTypes.string,
-  handleDeleteAnnotation: PropTypes.any,
-  handleEditAnnotation: PropTypes.any,
-  labelsOptions: PropTypes.any,
+  annotationId: PropTypes.any,
+  annotationLabelId: PropTypes.any,
+  annotationNote: PropTypes.any,
+  handleDeleteAnnotation: PropTypes.func,
+  handleEditAnnotation: PropTypes.func,
+  labels: PropTypes.array,
   words: PropTypes.any
 };
 
