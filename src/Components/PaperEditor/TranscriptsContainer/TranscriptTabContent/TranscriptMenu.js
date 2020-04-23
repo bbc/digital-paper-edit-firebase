@@ -11,9 +11,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
 
 const TranscriptMenu = (props) => {
+  const labels = props.labels;
   const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
-  const labels = props.labels; // rename from labelsOptiosn
-  // const labels = props.labels;
   const handleClick = (annotations) => {
     //setAnnotations
     props.handleClick(annotations);

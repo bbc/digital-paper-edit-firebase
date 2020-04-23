@@ -38,7 +38,7 @@ const TranscriptTabContent = (props) => {
   const { transcriptId, projectId, title, firebase, media, transcript } = props;
   const mediaType = media ? media.type : '';
   const [ url, setUrl ] = useState();
-
+  const [ labels, setLabels ] = useState(props.labels);
   const [ searchString, setSearchString ] = useState('');
   const [
     showParagraphsMatchingSearch,
@@ -57,7 +57,6 @@ const TranscriptTabContent = (props) => {
     setSentenceToSearchCSSInHighlights,
   ] = useState('');
   const [ annotations, setAnnotations ] = useState([]);
-  const [ labels, setlabels ] = useState(props.labels);
   const [ currentTime, setCurrentTime ] = useState();
 
   const LabelsCollection = new Collection(
@@ -177,20 +176,21 @@ const TranscriptTabContent = (props) => {
 
     const tempLabels = labels;
     tempLabels.push(newLabel);
-    setlabels(tempLabels);
+    setLabels(tempLabels);
+
   };
 
   const onLabelUpdate = async (labelId, updatedLabel) => {
     const tempLabels = labels;
     tempLabels.push(updatedLabel);
-    setlabels(tempLabels);
+    setLabels(tempLabels);
     LabelsCollection.putItem(labelId, updatedLabel);
   };
 
   const onLabelDelete = async (labelId) => {
     const tempLabels = labels;
     tempLabels.splice(labelId, 1);
-    setlabels(tempLabels);
+    setLabels(tempLabels);
     await LabelsCollection.deleteItem(labelId);
   };
 
