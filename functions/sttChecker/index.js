@@ -71,9 +71,7 @@ const getJobStatus = async (fileName, config) => {
       transcript: responseData.transcript,
     };
   } else {
-    throw new Error(
-      `Received bad response for ${fileName} from STT service - Status code ${response.status}: ${response.statusText}`
-    );
+    throw new Error(`Status code ${response.status}: ${response.statusText}`);
   }
 };
 
@@ -124,8 +122,7 @@ const updateTranscriptsStatus = async (
       response = await getJobStatus(fileName, config);
     } catch (err) {
       console.error(
-        `[ERROR] Failed to get STT jobs status for ${fileName}:`,
-        err
+        `[ERROR] Failed to get STT jobs status for ${fileName}: ${err}`
       );
       return;
     }
