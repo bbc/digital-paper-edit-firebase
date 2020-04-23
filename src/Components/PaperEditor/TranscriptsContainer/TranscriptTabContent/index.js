@@ -58,7 +58,7 @@ const TranscriptTabContent = (props) => {
   ] = useState('');
   const [ annotations, setAnnotations ] = useState([]);
   const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
-  const [ labelsOptions, setLabelsOptions ] = useState(props.labelsOptions);
+  const [ labels, setlabels ] = useState(props.labels);
   const [ currentTime, setCurrentTime ] = useState();
 
   const LabelsCollection = new Collection(
@@ -76,7 +76,7 @@ const TranscriptTabContent = (props) => {
   );
   console.log('annotations', annotations);
   console.log('isLabelsListOpen', isLabelsListOpen);
-  console.log('labelsOptions', labelsOptions);
+  console.log('labels', labels);
   console.log('currentTime', currentTime);
 
   useEffect(() => {
@@ -94,9 +94,9 @@ const TranscriptTabContent = (props) => {
 
   const onLabelCreate = (newLabel) => {
     console.log('new label', newLabel);
-    const tempLabels = labelsOptions;
+    const tempLabels = labels;
     tempLabels.push(newLabel);
-    setLabelsOptions(tempLabels);
+    setlabels(tempLabels);
     LabelsCollection.postItem(newLabel);
   };
 
@@ -105,11 +105,11 @@ const TranscriptTabContent = (props) => {
   };
 
   const onLabelDelete = async (labelId) => {
-    console.log('labelsoptions', labelsOptions);
-    const tempLabels = labelsOptions;
+    console.log('labels', labels);
+    const tempLabels = labels;
     tempLabels.splice(labelId, 1);
-    setLabelsOptions(tempLabels);
-    console.log('labelsoptions after deleting', labelsOptions);
+    setlabels(tempLabels);
+    console.log('labels after deleting', labels);
     // handleSaveLabels();
     await LabelsCollection.deleteItem(labelId);
   };
@@ -281,12 +281,12 @@ const TranscriptTabContent = (props) => {
         {transcriptMediaCard}
         <Card.Header>
           <TranscriptMenu
-            labels={ labelsOptions }
+            labels={ labels }
             handleClick={ () => setAnnotations() }
           />
         </Card.Header>
         <SearchBar
-          labelsOptions={ labelsOptions }
+          labels={ labels }
           speakersOptions={ speakersOptions }
           // handleSearch={ handleSearch }
           // handleLabelsSearchChange={ handleLabelsSearchChange }
@@ -304,7 +304,7 @@ const TranscriptTabContent = (props) => {
           {transcript && transcript.paragraphs ? (
             <Paragraphs
               transcriptId={ transcriptId }
-              labelsOptions={ labelsOptions }
+              labels={ labels }
               annotations={ annotations }
               transcript={ transcript }
               searchString={ searchString }
@@ -331,7 +331,7 @@ TranscriptTabContent.propTypes = {
       }),
     }),
   }),
-  labelsOptions: PropTypes.any,
+  labels: PropTypes.any,
   media: PropTypes.shape({
     ref: PropTypes.string,
     type: PropTypes.string,

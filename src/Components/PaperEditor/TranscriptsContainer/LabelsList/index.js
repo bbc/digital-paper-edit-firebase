@@ -43,10 +43,10 @@ class LabelsList extends Component {
   // if not then separate model to achieve same
   // https://stackoverflow.com/questions/43335452/pass-item-data-to-a-react-modal
   editLabel = (id, e) => {
-    const labelToEdit = this.props.labelsOptions.filter(label => {
+    const labelToEdit = this.props.labels.filter(label => {
       return label.id === id;
     });
-    // this.props.onLabelsUpdate(newLabelsOptions);
+    // this.props.onLabelsUpdate(newlabels);
     console.log('labelToEdit', labelToEdit);
     // alert('this functionality has not been implemented yet');
   };
@@ -75,8 +75,8 @@ class LabelsList extends Component {
     // move edit and X to the rigth
     let labelsListOptions;
     // Handle edge case if there's no labels
-    if (this.props.labelsOptions) {
-      labelsListOptions = this.props.labelsOptions.map((label, index) => {
+    if (this.props.labels) {
+      labelsListOptions = this.props.labels.map((label, index) => {
         return (
           <ListGroup.Item style={ { width: '100%' } } key={ 'label_' + index }>
             <Row>

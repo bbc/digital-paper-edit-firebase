@@ -12,7 +12,7 @@ import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
 
 const TranscriptMenu = (props) => {
   const labels = props.labels; // rename from labelsOptiosn
-  // const labels = props.labelsOptions;
+  // const labels = props.labels;
   const handleClick = (annotations) => {
     //setAnnotations
     props.handleClick(annotations);
@@ -38,8 +38,8 @@ const TranscriptMenu = (props) => {
     >
       <LabelsList
       // isLabelsListOpen={ isLabelsListOpen }
-      // labelsOptions={
-      //   labelsOptions && labelsOptions
+      // labels={
+      //   labels && labels
       // }
       // onLabelUpdate={ onLabelUpdate }
       // onLabelCreate={ onLabelCreate }
@@ -95,9 +95,7 @@ const TranscriptMenu = (props) => {
 
 TranscriptMenu.propTypes = {
   handleClick: PropTypes.func,
-  labels: PropTypes.shape({
-    map: PropTypes.func
-  })
+  labels: PropTypes.array
 };
 
 export default TranscriptMenu;
