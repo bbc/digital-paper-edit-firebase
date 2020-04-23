@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Paragraphs from '../Paragraphs';
 import onlyCallOnce from '../../../../Util/only-call-once/index.js';
-import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
+import SearchBar from '../SearchBar';
 import Collection from '../../../Firebase/Collection';
 import TranscriptMenu from './TranscriptMenu';
 
@@ -57,7 +57,6 @@ const TranscriptTabContent = (props) => {
     setSentenceToSearchCSSInHighlights,
   ] = useState('');
   const [ annotations, setAnnotations ] = useState([]);
-  const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
   const [ labels, setlabels ] = useState(props.labels);
   const [ currentTime, setCurrentTime ] = useState();
 
@@ -65,19 +64,6 @@ const TranscriptTabContent = (props) => {
     firebase,
     `/projects/${ projectId }/labels`
   );
-
-  console.log('all the booleans');
-  console.log('showParagraphsMatchingSearch', showParagraphsMatchingSearch);
-  console.log('selectedOptionLabelSearch', selectedOptionLabelSearch);
-  console.log('sentenceToSearchCSS', sentenceToSearchCSS);
-  console.log(
-    'sentenceToSearchCSSInHighlights',
-    sentenceToSearchCSSInHighlights
-  );
-  console.log('annotations', annotations);
-  console.log('isLabelsListOpen', isLabelsListOpen);
-  console.log('labels', labels);
-  console.log('currentTime', currentTime);
 
   useEffect(() => {
     const getUrl = async () => {
@@ -91,28 +77,6 @@ const TranscriptTabContent = (props) => {
       getUrl();
     }
   }, [ projectId, transcriptId, firebase.storage, media.ref, url ]);
-
-  const onLabelCreate = (newLabel) => {
-    console.log('new label', newLabel);
-    const tempLabels = labels;
-    tempLabels.push(newLabel);
-    setlabels(tempLabels);
-    LabelsCollection.postItem(newLabel);
-  };
-
-  const onLabelUpdate = (updatedLabel) => {
-    console.log('updated', updatedLabel);
-  };
-
-  const onLabelDelete = async (labelId) => {
-    console.log('labels', labels);
-    const tempLabels = labels;
-    tempLabels.splice(labelId, 1);
-    setlabels(tempLabels);
-    console.log('labels after deleting', labels);
-    // handleSaveLabels();
-    await LabelsCollection.deleteItem(labelId);
-  };
 
   const showLabelsReference = () => {};
 
@@ -203,6 +167,33 @@ const TranscriptTabContent = (props) => {
     }
   };
 
+  const onLabelCreate = async (newLabel) => {
+    const docRef = await LabelsCollection.postItem(newLabel);
+    newLabel.id = docRef.id;
+
+    docRef.update({
+      id: docRef.id
+    });
+
+    const tempLabels = labels;
+    tempLabels.push(newLabel);
+    setlabels(tempLabels);
+  };
+
+  const onLabelUpdate = async (labelId, updatedLabel) => {
+    const tempLabels = labels;
+    tempLabels.push(updatedLabel);
+    setlabels(tempLabels);
+    LabelsCollection.putItem(labelId, updatedLabel);
+  };
+
+  const onLabelDelete = async (labelId) => {
+    const tempLabels = labels;
+    tempLabels.splice(labelId, 1);
+    setlabels(tempLabels);
+    await LabelsCollection.deleteItem(labelId);
+  };
+
   const currentWordTime = currentTime;
   const unplayedColor = 'grey';
 
@@ -283,6 +274,9 @@ const TranscriptTabContent = (props) => {
           <TranscriptMenu
             labels={ labels }
             handleClick={ () => setAnnotations() }
+            onLabelCreate={ onLabelCreate }
+            onLabelUpdate={ onLabelUpdate }
+            onLabelDelete={ onLabelDelete }
           />
         </Card.Header>
         <SearchBar
@@ -309,12 +303,17 @@ const TranscriptTabContent = (props) => {
               transcript={ transcript }
               searchString={ searchString }
               showParagraphsMatchingSearch={ showParagraphsMatchingSearch }
-              selectedOptionLabelSearch={ selectedOptionLabelSearch }
-              selectedOptionSpeakerSearch={ selectedOptionSpeakerSearch }
-              // handleTimecodeClick={ handleTimecodeClick }
-              // handleWordClick={ handleWordClick }
-              // handleDeleteAnnotation={ handleDeleteAnnotation }
-              // handleEditAnnotation={ handleEditAnnotation }
+              selectedOptionLabelSearch={
+                selectedOptionLabelSearch
+              }
+              selectedOptionSpeakerSearch={
+                selectedOptionSpeakerSearch
+              }
+              transcriptId={ transcriptId }
+              handleTimecodeClick={ handleTimecodeClick }
+              handleWordClick={ handleWordClick }
+              handleDeleteAnnotation={ handleDeleteAnnotation }
+              handleEditAnnotation={ handleEditAnnotation }
             />
           ) : null}
         </Card.Body>

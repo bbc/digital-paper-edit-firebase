@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
 
 const TranscriptMenu = (props) => {
+  const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
   const labels = props.labels; // rename from labelsOptiosn
   // const labels = props.labels;
   const handleClick = (annotations) => {
@@ -37,39 +38,34 @@ const TranscriptMenu = (props) => {
       variant="outline-secondary"
     >
       <LabelsList
-      // isLabelsListOpen={ isLabelsListOpen }
-      // labels={
-      //   labels && labels
-      // }
-      // onLabelUpdate={ onLabelUpdate }
-      // onLabelCreate={ onLabelCreate }
-      // onLabelDelete={ onLabelDelete }
+        isLabelsListOpen={ isLabelsListOpen }
+        labels={
+          labels && labels
+        }
+        onLabelUpdate={ props.onLabelUpdate }
+        onLabelCreate={ props.onLabelCreate }
+        onLabelDelete={ props.onLabelDelete }
       />
     </DropdownButton>
   );
 
-  const Labels = () =>
-    labels.map((labelItem) => {
-      const { id, color, label } = labelItem;
-
-      return (
-        <Dropdown.Item
-          key={ `label_id_${ id }` }
-          data-label-id={ id }
-        >
-          <Row data-label-id={ id }>
-            <Col
-              xs={ 1 }
-              style={ { backgroundColor: color } }
-              data-label-id={ id }
-            />
-            <Col xs={ 1 } data-label-id={ id }>
-              {label}
-            </Col>
-          </Row>
-        </Dropdown.Item>
-      );
-    });
+  const Labels = () => labels.map((label) =>
+    <Dropdown.Item
+      key={ `label_id_${ label.id }` }
+      data-label-id={ label.id }
+    >
+      <Row data-label-id={ label.id }>
+        <Col
+          xs={ 1 }
+          style={ { backgroundColor: label.color } }
+          data-label-id={ label.id }
+        ></Col>
+        <Col xs={ 1 } data-label-id={ label.id }>
+          {label.label}
+        </Col>
+      </Row>
+    </Dropdown.Item>
+  );
 
   return (
     <Row>
@@ -94,8 +90,11 @@ const TranscriptMenu = (props) => {
 };
 
 TranscriptMenu.propTypes = {
+  labels: PropTypes.array,
   handleClick: PropTypes.func,
-  labels: PropTypes.array
+  onLabelCreate: PropTypes.any,
+  onLabelDelete: PropTypes.any,
+  onLabelUpdate: PropTypes.any
 };
 
 export default TranscriptMenu;

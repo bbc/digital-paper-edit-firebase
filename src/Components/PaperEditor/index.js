@@ -17,12 +17,12 @@ const PaperEditor = (props) => {
   const projectId = props.match.params.projectId;
   const papereditId = props.match.params.papereditId;
   const videoHeight = props.videoHeight; //('10em');
-  const labels = props.labels; //[]
 
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
   const [ transcripts, setTranscripts ] = useState(null);
   const [ annotations, setAnnotations ] = useState([]);
+  const [ labels, setLabels ] = useState([]);
 
   const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
   const [ isProgramScriptShown, setIsProgramScriptShown ] = useState(true);
@@ -35,6 +35,10 @@ const PaperEditor = (props) => {
   const Transcriptions = new Collection(
     props.firebase,
     `/projects/${ projectId }/transcripts`
+  );
+  const Labels = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/labels`
   );
 
   useEffect(() => {
@@ -55,6 +59,21 @@ const PaperEditor = (props) => {
         console.error('Could not get PaperEdit Id: ', papereditId, e);
       }
     };
+
+    const getLabels = async () => {
+      try {
+        Labels.collectionRef.onSnapshot((snapshot) => {
+          setLabels(
+            snapshot.docs.map((doc) => {
+              return { ...doc.data(), id: doc.id, display: true };
+            })
+          );
+        });
+      } catch (error) {
+        console.error('Error getting labels: ', error);
+      }
+    };
+
     const getTranscripts = async () => {
       try {
         Transcriptions.collectionRef.onSnapshot((snapshot) => {
@@ -81,6 +100,7 @@ const PaperEditor = (props) => {
       getPaperEdit();
       getTranscripts();
       getAnnotations();
+      getLabels();
     }
 
     return () => {};
@@ -92,6 +112,8 @@ const PaperEditor = (props) => {
     papereditId,
     projectId,
     annotations,
+    Labels.collectionRef,
+    labels,
   ]);
 
   const toggleTranscripts = () => {
