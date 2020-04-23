@@ -17,7 +17,7 @@ const PaperEditor = (props) => {
   const projectId = props.match.params.projectId;
   const papereditId = props.match.params.papereditId;
   const videoHeight = props.videoHeight; //('10em');
-  const labelsOptions = props.labelsOptions; //[]
+  const labels = props.labels; //[]
 
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
@@ -162,7 +162,7 @@ const PaperEditor = (props) => {
       <TranscriptsContainer
         projectId={ projectId }
         transcripts={ transcripts }
-        labelsOptions={ labelsOptions }
+        labels={ labels }
         firebase={ props.firebase }
       />
     );
@@ -274,7 +274,7 @@ PaperEditor.propTypes = {
   match: PropTypes.any,
   videoHeight: PropTypes.any,
   firebase: PropTypes.any,
-  labelsOptions: PropTypes.any,
+  labels: PropTypes.any,
 };
 
 const condition = (authUser) => !!authUser;
