@@ -48,6 +48,7 @@ const TranscriptTabContent = (props) => {
   ] = useState('');
   const [ annotations, setAnnotations ] = useState(props.annotations);
   const [ currentTime, setCurrentTime ] = useState();
+  const [ selectedLabel, setSelectedLabel ] = useState();
 
   const LabelsCollection = new Collection(
     firebase,
@@ -132,13 +133,15 @@ const TranscriptTabContent = (props) => {
     }
   };
 
-  const handleCreateAnnotation = async (e) => {
-    const element = e.target;
+  const handleCreateAnnotation = async (e, selectedLabel) => {
+    // const element = e.target;
     const selection = getTimeFromUserWordsSelection();
     if (selection) {
-      selection.labelId = element.dataset.labelId;
+      selection.labelId = selectedLabel.id;
       selection.note = '';
       const newAnnotation = selection;
+
+      console.log('new annotation', newAnnotation);
 
       const docRef = await AnnotationsCollection.postItem(newAnnotation);
       newAnnotation.id = docRef.id;

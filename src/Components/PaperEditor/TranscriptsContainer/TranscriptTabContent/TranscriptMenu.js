@@ -13,12 +13,17 @@ import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
 const TranscriptMenu = (props) => {
   const labels = props.labels;
   const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
+  const [ selectedLabel, setSelectedLabel ] = useState();
+
+  const updateSelectedLabel = (e, label) => {
+    setSelectedLabel(label);
+  };
 
   const HighlightButton = (
     <Button
       variant="outline-secondary"
       data-label-id={ 'default' }
-      onClick={ e => props.handleCreateAnnotation(e) }
+      onClick={ e => props.handleCreateAnnotation(e, selectedLabel) }
     >
       <FontAwesomeIcon icon={ faHighlighter } flip="horizontal" /> Highlight
     </Button>
@@ -49,7 +54,9 @@ const TranscriptMenu = (props) => {
       key={ `label_id_${ label.id }` }
       data-label-id={ label.id }
     >
-      <Row data-label-id={ label.id }>
+      <Row
+        // data-label-id={ label.id }
+        onClick={ (e) => updateSelectedLabel(e, label) }>
         <Col
           xs={ 1 }
           style={ { backgroundColor: label.color } }
