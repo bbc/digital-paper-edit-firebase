@@ -184,7 +184,7 @@ const PaperEditor = (props) => {
       <TranscriptsContainer
         projectId={ projectId }
         transcripts={ transcripts }
-        labelsOptions={ labels }
+        labels={ labels }
         firebase={ props.firebase }
       />
     );
@@ -296,7 +296,7 @@ PaperEditor.propTypes = {
   match: PropTypes.any,
   videoHeight: PropTypes.any,
   firebase: PropTypes.any,
-  labelsOptions: PropTypes.any,
+  labels: PropTypes.any,
 };
 
 const condition = (authUser) => !!authUser;

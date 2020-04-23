@@ -11,12 +11,12 @@ import {
 import PropTypes from 'prop-types';
 import cuid from 'cuid';
 
-import Transcript from './Transcript.js';
+import TranscriptTabContent from './TranscriptTabContent';
 
 const TranscriptsContainer = ({
   transcripts,
   projectId,
-  labelsOptions,
+  labels,
   annotations,
   firebase,
 }) => {
@@ -44,15 +44,15 @@ const TranscriptsContainer = ({
     );
   };
 
-  const getTranscriptTab = (transcript) => {
+  const getTranscriptTabContents = (transcript) => {
     const { id, paragraphs, words, media, title } = transcript;
 
     return (
       <Tab.Pane key={ cuid() } eventKey={ id }>
-        <Transcript
+        <TranscriptTabContent
           projectId={ projectId }
           transcriptId={ id }
-          labelsOptions={ labelsOptions }
+          labels={ labels }
           annotations={ annotations }
           title={ title }
           transcript={ { words: words, paragraphs: paragraphs } } // Words and Paragraphs are the fields we want to get from Firestore
@@ -67,7 +67,7 @@ const TranscriptsContainer = ({
     getTranscriptNav(transcript)
   );
   const transcriptsElTab = transcripts.map((transcript) =>
-    getTranscriptTab(transcript)
+    getTranscriptTabContents(transcript)
   );
 
   return (
@@ -98,7 +98,7 @@ const TranscriptsContainer = ({
 };
 
 TranscriptsContainer.propTypes = {
-  labelsOptions: PropTypes.any,
+  labels: PropTypes.any,
   projectId: PropTypes.any,
   transcripts: PropTypes.any,
   annotations: PropTypes.any,

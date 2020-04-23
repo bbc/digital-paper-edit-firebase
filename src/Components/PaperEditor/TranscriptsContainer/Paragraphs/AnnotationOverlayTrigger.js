@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -23,15 +24,15 @@ class AnnotationOverlayTrigger extends Component {
     // const { annotationLabelId } = this.props;
     let overlayContent;
     // handling edge case when labels are not available
-    if (this.props.labelsOptions) {
-      let label = this.props.labelsOptions.find((label) => {
+    if (this.props.labels) {
+      let label = this.props.labels.find((label) => {
 
         return label.id === this.props.annotationLabelId;
       });
-      // console.log('label:: ', label, annotationLabelId, this.props.labelsOptions, 'this.props.words', this.props.words, this.props.annotationNote);
+      // console.log('label:: ', label, annotationLabelId, this.props.labels, 'this.props.words', this.props.words, this.props.annotationNote);
       // TODO: Quick fix - needs digging into why sometimes adding a new label crashes, and the `find` function above returns undefined
       if (!label) {
-        label = this.props.labelsOptions[0];
+        label = this.props.labels[0];
       }
 
       overlayContent = <OverlayTrigger rootClose={ true } trigger="click" placement="bottom"
@@ -69,5 +70,15 @@ class AnnotationOverlayTrigger extends Component {
     );
   }
 }
+
+AnnotationOverlayTrigger.propTypes = {
+  annotationId: PropTypes.any,
+  annotationLabelId: PropTypes.any,
+  annotationNote: PropTypes.any,
+  handleDeleteAnnotation: PropTypes.func,
+  handleEditAnnotation: PropTypes.func,
+  labels: PropTypes.array,
+  words: PropTypes.any
+};
 
 export default AnnotationOverlayTrigger;

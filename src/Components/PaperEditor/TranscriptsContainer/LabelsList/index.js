@@ -19,7 +19,7 @@ import { randomColor } from './css-color-names.js';
 import PropTypes from 'prop-types';
 
 const LabelsList = (props) => {
-  const labelsOptions = props.labelsOptions;
+  const labels = props.labels;
   const isLabelsListOpen = props.isLabelsListOpen;
   const onLabelDelete = props.onLabelDelete;
   const onLabelCreate = props.onLabelCreate;
@@ -46,7 +46,7 @@ const LabelsList = (props) => {
   // if not then separate model to achieve same
   // https://stackoverflow.com/questions/43335452/pass-item-data-to-a-react-modal
   const editLabel = (id, e) => {
-    const labelToEdit = labelsOptions.filter(label => {
+    const labelToEdit = labels.filter(label => {
       return label.id === id;
     });
     onLabelUpdate(labelToEdit.id, labelToEdit);
@@ -65,8 +65,8 @@ const LabelsList = (props) => {
   // move edit and X to the rigth
   let labelsListOptions;
   // Handle edge case if there's no labels
-  if (labelsOptions) {
-    labelsListOptions = labelsOptions.map((label, index) => {
+  if (labels) {
+    labelsListOptions = labels.map((label, index) => {
       return (
         <ListGroup.Item style={ { width: '100%' } } key={ 'label_' + index }>
           <Row>
@@ -217,7 +217,7 @@ const LabelsList = (props) => {
 };
 
 LabelsList.propTypes = {
-  labelsOptions: PropTypes.any,
+  labels: PropTypes.any,
   isLabelsListOpen: PropTypes.any,
   onLabelDelete: PropTypes.any,
   onLabelCreate: PropTypes.any,
