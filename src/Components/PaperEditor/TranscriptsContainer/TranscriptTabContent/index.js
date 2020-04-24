@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
-import Paragraphs from '../Paragraphs';
+import Transcript from '../Transcript';
 import onlyCallOnce from '../../../../Util/only-call-once/index.js';
 import SearchBar from '../SearchBar';
 import Collection from '../../../Firebase/Collection';
@@ -36,20 +36,20 @@ const TranscriptTabContent = (props) => {
   // isVideoTranscriptPreviewShow: false,
 
   const { transcriptId, projectId, title, firebase, media, transcript } = props;
-  const mediaType = media ? media.type : '';
   const [ url, setUrl ] = useState();
   const [ labels, setLabels ] = useState(props.labels);
   const [ searchString, setSearchString ] = useState('');
+
   const [
-    showParagraphsMatchingSearch,
-    setShowParagraphsMatchingSearch,
+    showMatch,
+    setShowMatch,
   ] = useState(false);
-  const [ selectedOptionLabelSearch, setSelectedOptionLabelSearch ] = useState(
+  const [ searchLabels, setLabelSearch ] = useState(
     []
   );
   const [
-    selectedOptionSpeakerSearch,
-    setSelectedOptionSpeakerSearch,
+    searchSpeakers,
+    setSpeakerSearch,
   ] = useState([]);
   const [ sentenceToSearchCSS, setSentenceToSearchCSS ] = useState('');
   const [
@@ -58,6 +58,8 @@ const TranscriptTabContent = (props) => {
   ] = useState('');
   const [ annotations, setAnnotations ] = useState([]);
   const [ currentTime, setCurrentTime ] = useState();
+
+  const mediaType = media ? media.type : '';
 
   const LabelsCollection = new Collection(
     firebase,
@@ -80,21 +82,6 @@ const TranscriptTabContent = (props) => {
   const showLabelsReference = () => {};
 
   const handleLabelsSearchChange = (selectedOptionLabelSearch) => {};
-
-  const handleSearch = (e) => {
-    // TODO: debounce to optimise
-    if (e.target.value !== '') {
-      const text = e.target.value;
-      setSearchString(text.toLowerCase());
-      //  "debounce" to optimise
-      onlyCallOnce(highlightWords(searchString), 500);
-    }
-    // if empty string reset
-    else if (e.target.value === '') {
-      setSentenceToSearchCSS('');
-      setSearchString('');
-    }
-  };
 
   const highlightWords = (text) => {
     const words = text.toLowerCase().trim().split(' ');
@@ -120,6 +107,18 @@ const TranscriptTabContent = (props) => {
     const wordsToSearchCSSInHighlights = css.search.join(', ');
     setSentenceToSearchCSS(wordsToSearchCSS);
     setSentenceToSearchCSSInHighlights(wordsToSearchCSSInHighlights);
+  };
+
+  const handleSearch = (e) => {
+    // TODO: debounce to optimise
+    const text = e.target.value;
+    if (text) {
+      setSearchString(text.toLowerCase());
+      onlyCallOnce(highlightWords(searchString), 500);
+    } else if (text === '') {
+      setSentenceToSearchCSS('');
+      setSearchString('');
+    }
   };
 
   const handleTimecodeClick = (e) => {
@@ -211,46 +210,44 @@ const TranscriptTabContent = (props) => {
 
   const cardBodyHeight = mediaType.startsWith('audio') ? '100vh' : '60vh';
 
-  let transcriptMediaCard;
+  let mediaElement;
 
   if (mediaType.startsWith('audio')) {
-    transcriptMediaCard = (
-      <Card.Header>
-        <audio
-          src={ url }
-          type={ mediaType }
-          ref={ videoRef }
-          onTimeUpdate={ (e) => setCurrentTime(e.target.currentTime) }
-          style={ {
-            width: '100%',
-            backgroundColor: 'black',
-          } }
-          controls
-        />
-      </Card.Header>
+    mediaElement = (
+      <audio
+        src={ url }
+        type={ mediaType }
+        ref={ videoRef }
+        onTimeUpdate={ (e) => setCurrentTime(e.target.currentTime) }
+        style={ {
+          width: '100%',
+          backgroundColor: 'black',
+        } }
+        controls
+      />
     );
   } else {
-    transcriptMediaCard = (
-      <Card.Header>
-        <video
-          src={ url }
-          type={ mediaType }
-          ref={ videoRef }
-          onTimeUpdate={ (e) => setCurrentTime(e.target.currentTime) }
-          style={ {
-            width: '100%',
-            backgroundColor: 'black',
-          } }
-          controls
-        />
-      </Card.Header>
+    mediaElement = (
+      <video
+        src={ url }
+        type={ mediaType }
+        ref={ videoRef }
+        onTimeUpdate={ (e) => setCurrentTime(e.target.currentTime) }
+        style={ {
+          width: '100%',
+          backgroundColor: 'black',
+        } }
+        controls
+      />
     );
   }
 
-  let speakersOptions = null;
+  let speakers = null;
   if (transcript && transcript.paragraphs) {
-    speakersOptions = getSpeakerLabels(transcript.paragraphs);
+    speakers = getSpeakerLabels(transcript.paragraphs);
   }
+
+  console.log('tr', transcript);
 
   return (
     <>
@@ -269,7 +266,9 @@ const TranscriptTabContent = (props) => {
       </h2>
 
       <Card>
-        {transcriptMediaCard}
+        <Card.Header>
+          {mediaElement}
+        </Card.Header>
         <Card.Header>
           <TranscriptMenu
             labels={ labels }
@@ -281,11 +280,11 @@ const TranscriptTabContent = (props) => {
         </Card.Header>
         <SearchBar
           labels={ labels }
-          speakersOptions={ speakersOptions }
-          // handleSearch={ handleSearch }
-          // handleLabelsSearchChange={ handleLabelsSearchChange }
-          // handleSpeakersSearchChange={ handleSpeakersSearchChange }
-          // handleShowParagraphsMatchingSearch={ handleShowParagraphsMatchingSearch }
+          speakers={ speakers }
+          handleSearch={ handleSearch }
+          selectLabel={ () => setLabelSearch }
+          selectSpeaker={ () => setSpeakerSearch }
+          toggleShowMatch={ () => setShowMatch(!showMatch) }
         />
 
         <Card.Body
@@ -295,21 +294,20 @@ const TranscriptTabContent = (props) => {
         >
           {highlights}
 
-          {transcript && transcript.paragraphs ? (
-            <Paragraphs
+          {transcript && transcript.paragraphs && transcript.words ? (
+            <Transcript
               transcriptId={ transcriptId }
               labels={ labels }
               annotations={ annotations }
               transcript={ transcript }
               searchString={ searchString }
-              showParagraphsMatchingSearch={ showParagraphsMatchingSearch }
-              selectedOptionLabelSearch={
-                selectedOptionLabelSearch
+              showMatch={ showMatch }
+              searchLabels={
+                searchLabels
               }
-              selectedOptionSpeakerSearch={
-                selectedOptionSpeakerSearch
+              searchSpeakers={
+                searchSpeakers
               }
-              transcriptId={ transcriptId }
               handleTimecodeClick={ handleTimecodeClick }
               handleWordClick={ handleWordClick }
               handleDeleteAnnotation={ handleDeleteAnnotation }
