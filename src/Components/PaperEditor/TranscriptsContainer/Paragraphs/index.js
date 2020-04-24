@@ -9,7 +9,7 @@ import paragraphWithAnnotations from './add-annotations-to-words-in-paragraphs.j
 import cuid from 'cuid';
 import removePunctuation from '../../../../Util/remove-punctuation';
 
-const Transcript = (props) => {
+const Paragraphs = (props) => {
   const {
     searchSpeakers,
     labels,
@@ -131,7 +131,7 @@ const Transcript = (props) => {
   return <>{paragraphEls}</>;
 };
 
-Transcript.propTypes = {
+Paragraphs.propTypes = {
   annotations: PropTypes.any,
   handleDeleteAnnotation: PropTypes.any,
   handleEditAnnotation: PropTypes.any,
@@ -149,4 +149,4 @@ Transcript.propTypes = {
   transcriptId: PropTypes.any,
 };
 
-export default Transcript;
+export default Paragraphs;

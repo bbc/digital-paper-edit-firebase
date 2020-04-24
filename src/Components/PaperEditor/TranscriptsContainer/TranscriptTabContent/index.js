@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
-import Transcript from '../Transcript';
+import Paragraphs from '../Paragraphs';
 import onlyCallOnce from '../../../../Util/only-call-once/index.js';
 import SearchBar from '../SearchBar';
 import Collection from '../../../Firebase/Collection';
@@ -387,7 +387,7 @@ const TranscriptTabContent = (props) => {
           {highlights}
 
           {transcript && transcript.paragraphs && labels && annotations ? (
-            <Transcript
+            <Paragraphs
               transcriptId={ transcriptId }
               labels={ labels }
               annotations={ annotations }
