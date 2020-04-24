@@ -48,7 +48,6 @@ const TranscriptTabContent = (props) => {
   ] = useState('');
   const [ annotations, setAnnotations ] = useState(props.annotations);
   const [ currentTime, setCurrentTime ] = useState();
-  const [ selectedLabel, setSelectedLabel ] = useState();
 
   const LabelsCollection = new Collection(
     firebase,
@@ -372,6 +371,7 @@ TranscriptTabContent.propTypes = {
       }),
     }),
   }),
+  annotations: PropTypes.any,
   labels: PropTypes.any,
   media: PropTypes.shape({
     ref: PropTypes.string,

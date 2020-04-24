@@ -21,8 +21,8 @@ const PaperEditor = (props) => {
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
   const [ transcripts, setTranscripts ] = useState(null);
-  const [ annotations, setAnnotations ] = useState([]);
-  const [ labels, setLabels ] = useState([]);
+  const [ annotations, setAnnotations ] = useState(null);
+  const [ labels, setLabels ] = useState(null);
 
   const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
   const [ isProgramScriptShown, setIsProgramScriptShown ] = useState(true);
@@ -60,7 +60,7 @@ const PaperEditor = (props) => {
     }
 
     return () => { };
-  }, [ Projects, papereditId, projectId, transcripts ]);
+  }, [ transcripts ]);
 
   useEffect(() => {
     const getPaperEdit = async () => {
@@ -135,12 +135,14 @@ const PaperEditor = (props) => {
         console.error('Error getting documents: ', error);
       }
     };
-    if (!transcripts) {
-      getTranscripts();
+    if (labels && annotations) {
+      if (!transcripts) {
+        getTranscripts();
+      }
     }
 
     return () => { };
-  }, [ Transcriptions.collectionRef, transcripts ]);
+  }, [ Transcriptions.collectionRef, annotations, labels, transcripts ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
@@ -210,7 +212,7 @@ const PaperEditor = (props) => {
       <TranscriptsContainer
         projectId={ projectId }
         transcripts={ transcripts }
-        labelsOptions={ labels }
+        labels={ labels }
         annotations={ annotations }
         firebase={ props.firebase }
       />

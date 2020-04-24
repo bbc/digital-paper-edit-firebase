@@ -38,10 +38,13 @@ const Paragraphs = (props) => {
    */
   const textResult = paragraphsWithWordsSpeakersAnnotations.map(
     (paragraph, index) => {
-      const annotationInCurrentParagraph = findAnnotationsInWords(
-        props.annotations,
-        paragraph.words
-      );
+      let annotationInCurrentParagraph;
+      if (props.annotations && paragraph.words) {
+        annotationInCurrentParagraph = findAnnotationsInWords(
+          props.annotations,
+          paragraph.words
+        );
+      }
       /* Paragraph text for data attribute for searches, without punctuation */
       const paragraphTextWithoutPunctuation = removePunctuation(paragraph.text);
       const isTextSearch = paragraphTextWithoutPunctuation.includes(
@@ -84,40 +87,43 @@ const Paragraphs = (props) => {
       /**
        * find Annotation In Paragraph/words
        */
-      const wordsElements = paragraph.words.map((word, index) => {
-        let result;
-        const wordEl = (
-          <Word
-            transcriptId={ props.transcriptId }
-            speaker={ paragraph.speaker }
-            key={ 'key--' + index }
-            word={ word }
-            handleKeyDownWords={ (e) => {
-              return e.key === 'Enter' ? props.handleWordClick(e) : null;
-            } }
-          />
-        );
-
-        if (word.annotation) {
-          // const { annotation } = word;
-          result = (
-            <AnnotationOverlayTrigger
-              key={ 'key----' + index }
-              words={ wordEl }
-              labels={ props.labels }
-              annotationLabelId={ word.annotation.labelId }
-              annotationId={ word.annotation.id }
-              annotationNote={ word.annotation.note }
-              handleDeleteAnnotation={ props.handleDeleteAnnotation }
-              handleEditAnnotation={ props.handleEditAnnotation }
+      let wordsElements;
+      if (paragraph && paragraph.words) {
+        wordsElements = paragraph.words.map((word, index) => {
+          let result;
+          const wordEl = (
+            <Word
+              transcriptId={ props.transcriptId }
+              speaker={ paragraph.speaker }
+              key={ 'key--' + index }
+              word={ word }
+              handleKeyDownWords={ (e) => {
+                return e.key === 'Enter' ? props.handleWordClick(e) : null;
+              } }
             />
           );
-        } else {
-          result = wordEl;
-        }
 
-        return result;
-      });
+          if (word.annotation) {
+            // const { annotation } = word;
+            result = (
+              <AnnotationOverlayTrigger
+                key={ 'key----' + index }
+                words={ wordEl }
+                labels={ props.labels }
+                annotationLabelId={ word.annotation.labelId }
+                annotationId={ word.annotation.id }
+                annotationNote={ word.annotation.note }
+                handleDeleteAnnotation={ props.handleDeleteAnnotation }
+                handleEditAnnotation={ props.handleEditAnnotation }
+              />
+            );
+          } else {
+            result = wordEl;
+          }
+
+          return result;
+        });
+      };
 
       /**
        * Create a Paragraph containing words, with or without annotation (overlay)
