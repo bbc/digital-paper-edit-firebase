@@ -21,8 +21,8 @@ const PaperEditor = (props) => {
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
   const [ transcripts, setTranscripts ] = useState(null);
-  const [ annotations, setAnnotations ] = useState([]);
-  const [ labels, setLabels ] = useState([]);
+  const [ annotations, setAnnotations ] = useState(null);
+  const [ labels, setLabels ] = useState(null);
 
   const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
   const [ isProgramScriptShown, setIsProgramScriptShown ] = useState(true);
@@ -40,6 +40,10 @@ const PaperEditor = (props) => {
     props.firebase,
     `/projects/${ projectId }/labels`
   );
+  const Annotations = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/annotations`
+  );
 
   useEffect(() => {
     const getProject = async () => {
@@ -51,6 +55,14 @@ const PaperEditor = (props) => {
       }
     };
 
+    if (!transcripts) {
+      getProject();
+    }
+
+    return () => { };
+  }, [ transcripts ]);
+
+  useEffect(() => {
     const getPaperEdit = async () => {
       try {
         const paperEdit = await PaperEdits.getItem(papereditId);
@@ -60,20 +72,56 @@ const PaperEditor = (props) => {
       }
     };
 
+    if (!transcripts) {
+      getPaperEdit();
+    }
+
+    return () => { };
+  }, [ PaperEdits, papereditId, transcripts ]);
+
+  useEffect(() => {
     const getLabels = async () => {
       try {
-        Labels.collectionRef.onSnapshot((snapshot) => {
-          setLabels(
-            snapshot.docs.map((doc) => {
-              return { ...doc.data(), id: doc.id, display: true };
-            })
-          );
+        await Labels.collectionRef.onSnapshot((snapshot) => {
+          const tempLabels = snapshot.docs.map((doc) => {
+            return { ...doc.data(), id: doc.id, display: true };
+          });
+          setLabels(tempLabels);
         });
       } catch (error) {
         console.error('Error getting labels: ', error);
       }
     };
 
+    if (!transcripts) {
+      getLabels();
+    }
+
+    return () => {};
+  }, [ Labels.collectionRef, transcripts ]);
+
+  useEffect(() => {
+    const getAnnotations = async () => {
+      try {
+        Annotations.collectionRef.onSnapshot((snapshot) => {
+          setAnnotations(
+            snapshot.docs.map((doc) => {
+              return { ...doc.data(), id: doc.id, display: true };
+            })
+          );
+        });
+      } catch (error) {
+        console.error('Error getting annotations: ', error);
+      }
+    };
+    if (!transcripts) {
+      getAnnotations();
+    }
+
+    return () => { };
+  }, [ Annotations.collectionRef, transcripts ]);
+
+  useEffect(() => {
     const getTranscripts = async () => {
       try {
         Transcriptions.collectionRef.onSnapshot((snapshot) => {
@@ -87,34 +135,14 @@ const PaperEditor = (props) => {
         console.error('Error getting documents: ', error);
       }
     };
-
-    const getAnnotations = async () => {
-      try {
-      } catch (error) {
-        console.error('Error getting annotations: ', error);
+    if (labels && annotations) {
+      if (!transcripts) {
+        getTranscripts();
       }
-    };
-
-    if (!transcripts) {
-      getProject();
-      getPaperEdit();
-      getTranscripts();
-      getAnnotations();
-      getLabels();
     }
 
-    return () => {};
-  }, [
-    transcripts,
-    PaperEdits,
-    Projects,
-    Transcriptions.collectionRef,
-    papereditId,
-    projectId,
-    annotations,
-    Labels.collectionRef,
-    labels,
-  ]);
+    return () => { };
+  }, [ Transcriptions.collectionRef, annotations, labels, transcripts ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
@@ -185,6 +213,7 @@ const PaperEditor = (props) => {
         projectId={ projectId }
         transcripts={ transcripts }
         labels={ labels }
+        annotations={ annotations }
         firebase={ props.firebase }
       />
     );

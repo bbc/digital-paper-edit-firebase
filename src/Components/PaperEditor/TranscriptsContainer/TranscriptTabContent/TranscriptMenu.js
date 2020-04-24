@@ -13,16 +13,27 @@ import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
 const TranscriptMenu = (props) => {
   const labels = props.labels;
   const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
-  const handleClick = (annotations) => {
-    //setAnnotations
-    props.handleClick(annotations);
+
+  const updateSelectedLabel = (e, labelId) => {
+    const tempLabels = labels;
+    const previousActiveLabel = tempLabels.find((label) => {
+      return label.active;
+    });
+    if (previousActiveLabel) {
+      previousActiveLabel.active = false;
+    }
+    const activeLabel = tempLabels.find((label) => {
+      return label.id === labelId;
+    });
+    activeLabel.active = true;
+    props.setLabels(tempLabels);
   };
 
   const HighlightButton = (
     <Button
       variant="outline-secondary"
       data-label-id={ 'default' }
-      onClick={ handleClick }
+      onClick={ e => props.handleCreateAnnotation(e) }
     >
       <FontAwesomeIcon icon={ faHighlighter } flip="horizontal" /> Highlight
     </Button>
@@ -53,7 +64,11 @@ const TranscriptMenu = (props) => {
       key={ `label_id_${ label.id }` }
       data-label-id={ label.id }
     >
-      <Row data-label-id={ label.id }>
+      <Row
+        value={ label.id }
+        onClick={ (e) => props.updateSelectedLabel(e, label.id) }
+        data-label-id={ label.id }
+      >
         <Col
           xs={ 1 }
           style={ { backgroundColor: label.color } }
@@ -77,7 +92,7 @@ const TranscriptMenu = (props) => {
               variant="outline-secondary"
               data-lable-id={ 0 }
             />
-            <Dropdown.Menu onClick={ handleClick }>
+            <Dropdown.Menu>
               {labels ? Labels() : null}
             </Dropdown.Menu>
           </Dropdown>
@@ -91,9 +106,11 @@ const TranscriptMenu = (props) => {
 TranscriptMenu.propTypes = {
   labels: PropTypes.array,
   handleClick: PropTypes.func,
+  handleCreateAnnotation: PropTypes.func,
   onLabelCreate: PropTypes.any,
   onLabelDelete: PropTypes.any,
-  onLabelUpdate: PropTypes.any
+  onLabelUpdate: PropTypes.any,
+  setLabels: PropTypes.func
 };
 
 export default TranscriptMenu;
