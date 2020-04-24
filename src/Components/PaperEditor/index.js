@@ -20,7 +20,7 @@ const PaperEditor = (props) => {
 
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
-  const [ transcripts, setTranscripts ] = useState(null);
+  const [ transcripts, setTranscripts ] = useState();
   const [ annotations, setAnnotations ] = useState([]);
   const [ labels, setLabels ] = useState([]);
 

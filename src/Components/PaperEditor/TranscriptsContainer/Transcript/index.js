@@ -99,11 +99,11 @@ const Transcript = (props) => {
         paragraph={ paragraph }
         handleWordClick={ (e) =>
           e.key === 'Enter' ? props.handleWordClick(e) : null }
-        handleKeyDownTimecodes={ (e) => {
-          return e.key === 'Enter' ? props.handleTimecodeClick(e) : null;
-        } }
+        handleKeyDownTimecodes={ (e) =>
+          e.key === 'Enter' ? props.handleTimecodeClick(e) : null }
         annotations={ props.annotations }
         labels={ props.labels }
+        transcriptId={ props.transcriptId }
       />
     );
   };

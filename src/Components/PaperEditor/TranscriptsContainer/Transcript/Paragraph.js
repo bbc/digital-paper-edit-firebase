@@ -19,6 +19,7 @@ const Paragraph = (props) => {
     paragraph,
     displayPrefs,
     showParagraphsMatchingSearch,
+    handleWordClick
   } = props;
 
   const { speaker, words, text } = paragraph;
@@ -38,7 +39,7 @@ const Paragraph = (props) => {
     paragraphStyle.borderLeft = '0.1em dashed lightgrey';
   }
 
-  const getWordsWithAnnotations = (word) => {
+  const getWordWithAnnotations = (word) => {
     console.log('word', word);
     const wordEl = (
       <Word
@@ -46,7 +47,7 @@ const Paragraph = (props) => {
         speaker={ speaker }
         key={ cuid() }
         word={ word }
-        handleKeyPress={ props.handleWordClick }
+        handleKeyPress={ handleWordClick }
       />
     );
 
@@ -73,7 +74,7 @@ const Paragraph = (props) => {
      */
 
   const wordsElements = words.map((word) =>
-    getWordsWithAnnotations(speaker, word)
+    getWordWithAnnotations(word)
   );
 
   return (
