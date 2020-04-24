@@ -7,7 +7,6 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faTag,
   faTags,
   faTimes,
   faPen,
@@ -17,6 +16,7 @@ import {
 import LabelModal from './LabelModal.js';
 import { randomColor } from './css-color-names.js';
 import PropTypes from 'prop-types';
+import cuid from 'cuid';
 
 const LabelsList = (props) => {
   const labels = props.labels;
@@ -26,10 +26,6 @@ const LabelsList = (props) => {
   const onLabelUpdate = props.onLabelUpdate;
 
   const [ isLabelmodalShown, setIsLabelmodalShown ] = useState(false);
-
-  const showLabelModal = () => {
-    setIsLabelmodalShown(true);
-  };
 
   const removeLabel = (id) => {
     const response = window.confirm(
@@ -51,7 +47,8 @@ const LabelsList = (props) => {
     });
     onLabelUpdate(labelToEdit.id, labelToEdit);
   };
-  const onLabelSaved = newLabel => {
+
+  const handleSave = newLabel => {
     if (newLabel.id) {
       onLabelUpdate(newLabel.id, newLabel);
     }
@@ -63,12 +60,12 @@ const LabelsList = (props) => {
 
   // TODO: add CSS to label and description to constrain width?
   // move edit and X to the rigth
-  let labelsListOptions;
+  let labelEls;
   // Handle edge case if there's no labels
   if (labels) {
-    labelsListOptions = labels.map((label, index) => {
+    labelEls = labels.map((label) => {
       return (
-        <ListGroup.Item style={ { width: '100%' } } key={ 'label_' + index }>
+        <ListGroup.Item style={ { width: '100%' } } key={ cuid() }>
           <Row>
             {/* Col space for the label color */}
             <Col
@@ -102,13 +99,7 @@ const LabelsList = (props) => {
                   description={ label.description }
                   labelId={ label.id }
                   show={ isLabelmodalShown }
-                  onLabelSaved={ onLabelSaved }
-                  openBtn={
-                    <span>
-                      {' '}
-                      <FontAwesomeIcon icon={ faPen } />
-                    </span>
-                  }
+                  handleSave={ handleSave }
                 />
               ) : (
                 <Button
@@ -176,7 +167,7 @@ const LabelsList = (props) => {
         overflowX: 'hidden'
       } }
     >
-      {labelsListOptions}
+      {labelEls}
     </ListGroup>
   );
 
@@ -184,7 +175,6 @@ const LabelsList = (props) => {
     <>
       {isLabelsListOpen ? (
         <>
-          {/* <br/> */}
           <Card>
             <Card.Header>
               <FontAwesomeIcon icon={ faTags } />{' '}
@@ -198,12 +188,7 @@ const LabelsList = (props) => {
                 description={ '' }
                 labelId={ null }
                 show={ isLabelmodalShown }
-                onLabelSaved={ onLabelSaved }
-                openBtn={
-                  <Button variant="outline-secondary" block>
-                    <FontAwesomeIcon icon={ faTag } /> Create New Label
-                  </Button>
-                }
+                handleSave={ handleSave }
               />
             </Card.Footer>
           </Card>
