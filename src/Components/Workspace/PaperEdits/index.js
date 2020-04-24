@@ -11,6 +11,12 @@ const PaperEdits = props => {
     props.firebase,
     `/projects/${ props.projectId }/paperedits`
   );
+
+  const LabelsCollection = new Collection(
+    props.firebase,
+    `/projects/${ props.projectId }/labels`
+  );
+
   const [ items, setItems ] = useState([]);
   const [ loading, setIsLoading ] = useState(false);
 
@@ -50,6 +56,19 @@ const PaperEdits = props => {
     });
 
     item.display = true;
+
+    const defaultLabel = {
+      label: 'Default',
+      color: 'yellow',
+      value: 'yellow',
+      description: ''
+    };
+
+    const labelDocRef = await LabelsCollection.postItem(defaultLabel);
+
+    labelDocRef.update({
+      id: labelDocRef.id
+    });
 
     return item;
   };
