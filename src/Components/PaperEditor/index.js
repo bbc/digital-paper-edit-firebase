@@ -21,8 +21,6 @@ const PaperEditor = (props) => {
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
   const [ transcripts, setTranscripts ] = useState();
-  const [ annotations, setAnnotations ] = useState([]);
-  const [ labels, setLabels ] = useState([]);
 
   const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
   const [ isProgramScriptShown, setIsProgramScriptShown ] = useState(true);
@@ -36,10 +34,6 @@ const PaperEditor = (props) => {
     props.firebase,
     `/projects/${ projectId }/transcripts`
   );
-  const Labels = new Collection(
-    props.firebase,
-    `/projects/${ projectId }/labels`
-  );
 
   useEffect(() => {
     const getProject = async () => {
@@ -51,6 +45,14 @@ const PaperEditor = (props) => {
       }
     };
 
+    if (!transcripts) {
+      getProject();
+    }
+
+    return () => { };
+  }, [ Projects, papereditId, projectId, transcripts ]);
+
+  useEffect(() => {
     const getPaperEdit = async () => {
       try {
         const paperEdit = await PaperEdits.getItem(papereditId);
@@ -60,20 +62,14 @@ const PaperEditor = (props) => {
       }
     };
 
-    const getLabels = async () => {
-      try {
-        Labels.collectionRef.onSnapshot((snapshot) => {
-          setLabels(
-            snapshot.docs.map((doc) => {
-              return { ...doc.data(), id: doc.id, display: true };
-            })
-          );
-        });
-      } catch (error) {
-        console.error('Error getting labels: ', error);
-      }
-    };
+    if (!transcripts) {
+      getPaperEdit();
+    }
 
+    return () => { };
+  }, [ PaperEdits, papereditId, transcripts ]);
+
+  useEffect(() => {
     const getTranscripts = async () => {
       try {
         Transcriptions.collectionRef.onSnapshot((snapshot) => {
@@ -87,34 +83,12 @@ const PaperEditor = (props) => {
         console.error('Error getting documents: ', error);
       }
     };
-
-    const getAnnotations = async () => {
-      try {
-      } catch (error) {
-        console.error('Error getting annotations: ', error);
-      }
-    };
-
     if (!transcripts) {
-      getProject();
-      getPaperEdit();
       getTranscripts();
-      getAnnotations();
-      getLabels();
     }
 
-    return () => {};
-  }, [
-    transcripts,
-    PaperEdits,
-    Projects,
-    Transcriptions.collectionRef,
-    papereditId,
-    projectId,
-    annotations,
-    Labels.collectionRef,
-    labels,
-  ]);
+    return () => { };
+  }, [ Transcriptions.collectionRef, transcripts ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
@@ -184,7 +158,6 @@ const PaperEditor = (props) => {
       <TranscriptsContainer
         projectId={ projectId }
         transcripts={ transcripts }
-        labels={ labels }
         firebase={ props.firebase }
       />
     );
@@ -296,7 +269,6 @@ PaperEditor.propTypes = {
   match: PropTypes.any,
   videoHeight: PropTypes.any,
   firebase: PropTypes.any,
-  labels: PropTypes.any,
 };
 
 const condition = (authUser) => !!authUser;

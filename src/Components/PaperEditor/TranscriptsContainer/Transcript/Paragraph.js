@@ -19,7 +19,10 @@ const Paragraph = (props) => {
     paragraph,
     displayPrefs,
     showParagraphsMatchingSearch,
-    handleWordClick
+    handleWordClick,
+    labels,
+    handleDeleteAnnotation,
+    handleEditAnnotation,
   } = props;
 
   const { speaker, words, text } = paragraph;
@@ -27,10 +30,10 @@ const Paragraph = (props) => {
 
   const paragraphStyle = {
     ...displayPrefs,
-    borderStyle : 'dashed',
-    borderWidth : '0.01em',
-    borderColor : 'lightgray',
-    padding : '0.5em'
+    borderStyle: 'dashed',
+    borderWidth: '0.01em',
+    borderColor: 'lightgray',
+    padding: '0.5em',
   };
 
   if (!showParagraphsMatchingSearch && !paragraphStyle.display) {
@@ -51,30 +54,26 @@ const Paragraph = (props) => {
     );
 
     if (word.annotation) {
-
       return (
         <AnnotationOverlayTrigger
           key={ cuid() }
           words={ wordEl }
-          labels={ props.labels }
+          labels={ labels }
           annotation={ word.annotation }
-          handleDeleteAnnotation={ props.handleDeleteAnnotation }
-          handleEditAnnotation={ props.handleEditAnnotation }
+          handleDeleteAnnotation={ handleDeleteAnnotation }
+          handleEditAnnotation={ handleEditAnnotation }
         />
       );
     }
 
     return wordEl;
-
   };
 
   /**
-     * find Annotation In Paragraph/words
-     */
+   * find Annotation In Paragraph/words
+   */
 
-  const wordsElements = words.map((word) =>
-    getWordWithAnnotations(word)
-  );
+  const wordsElements = words.map((word) => getWordWithAnnotations(word));
 
   return (
     <Row
@@ -90,9 +89,7 @@ const Paragraph = (props) => {
         xl={ 2 }
         style={ { cursor: 'pointer', width: '100%' } }
         className={ 'text-truncate' }
-        title={ `${ speaker.toUpperCase() } -  ${ shortTimecode(
-          words[0].start
-        ) }` }
+        title={ `${ speaker.toUpperCase() } -  ${ shortTimecode(words[0].start) }` }
       >
         <span
           className={ [ styles.speaker, styles.unselectable, 'timecode' ].join(
@@ -118,7 +115,7 @@ Paragraph.propTypes = {
     borderStyle: PropTypes.any,
     borderWidth: PropTypes.any,
     display: PropTypes.any,
-    padding: PropTypes.any
+    padding: PropTypes.any,
   }),
   handleDeleteAnnotation: PropTypes.any,
   handleEditAnnotation: PropTypes.any,
@@ -126,7 +123,7 @@ Paragraph.propTypes = {
   labels: PropTypes.any,
   paragraph: PropTypes.any,
   showParagraphsMatchingSearch: PropTypes.any,
-  transcriptId: PropTypes.any
+  transcriptId: PropTypes.any,
 };
 
 export default Paragraph;

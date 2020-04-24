@@ -7,17 +7,8 @@ import onlyCallOnce from '../../../../Util/only-call-once/index.js';
 import SearchBar from '../SearchBar';
 import Collection from '../../../Firebase/Collection';
 import TranscriptMenu from './TranscriptMenu';
+import getTimeFromUserWordsSelection from '../get-user-selection.js';
 
-/**
- * Makes list of unique speakers
- * from transcript.paragraphs list
- * to be used in react-select component
- *
- * TODO: decide if to move server side, and return unique list of speaker to client
- * Or if to move to separate file as util, perhaps generalise as reusable funciton?
- *
- * https://codeburst.io/javascript-array-distinct-5edc93501dc4
- */
 const getSpeakerLabels = (paragraphs) => {
   const speakerSet = paragraphs.reduce((uniqueSpeakers, p) => {
     uniqueSpeakers.add(p.speaker);
@@ -33,11 +24,12 @@ const getSpeakerLabels = (paragraphs) => {
 
 const TranscriptTabContent = (props) => {
   const videoRef = useRef();
-  // isVideoTranscriptPreviewShow: false,
 
   const { transcriptId, projectId, title, firebase, media, transcript } = props;
   const [ url, setUrl ] = useState();
-  const [ labels, setLabels ] = useState(props.labels);
+
+  const [ labels, setLabels ] = useState();
+  const [ annotations, setAnnotations ] = useState();
 
   const [ searchString, setSearchString ] = useState('');
   const [ showMatch, setShowMatch ] = useState(false);
@@ -45,7 +37,6 @@ const TranscriptTabContent = (props) => {
   const [ searchSpeakers, setSpeakerSearch ] = useState([]);
   const [ paragraphCSS, setParagraphsCSS ] = useState('');
   const [ searchHighlightCSS, setSearchHighlightCSS ] = useState('');
-  const [ annotations, setAnnotations ] = useState([]);
   const [ currentTime, setCurrentTime ] = useState();
   const [ isHighlighting, setIsHighlighting ] = useState(false);
 
@@ -55,6 +46,54 @@ const TranscriptTabContent = (props) => {
     firebase,
     `/projects/${ projectId }/labels`
   );
+  const AnnotationsCollection = new Collection(
+    firebase,
+    `projects/${ projectId }/annotations`
+  );
+
+  useEffect(() => {
+    const getLabels = async () => {
+      try {
+        await LabelsCollection.collectionRef.onSnapshot((snapshot) => {
+          const tempLabels = snapshot.docs.map((doc) => {
+            return { ...doc.data(), id: doc.id, display: true };
+          });
+          const lbls = tempLabels ? tempLabels : []; // to remove once a bug is fixed
+          setLabels(lbls);
+        });
+      } catch (error) {
+        console.error('Error getting labels: ', error);
+      }
+    };
+
+    if (!labels) {
+      getLabels();
+    }
+
+    return () => {};
+  }, [ LabelsCollection.collectionRef, labels ]);
+
+  useEffect(() => {
+    const getAnnotations = async () => {
+      try {
+        AnnotationsCollection.collectionRef.onSnapshot((snapshot) => {
+          const tempAnnotations = snapshot.docs.map((doc) => {
+            return { ...doc.data(), id: doc.id, display: true };
+          });
+
+          const anns = tempAnnotations ? tempAnnotations : []; // to remove once a bug is fixed
+          setAnnotations(anns);
+        });
+      } catch (error) {
+        console.error('Error getting annotations: ', error);
+      }
+    };
+    if (!annotations) {
+      getAnnotations();
+    }
+
+    return () => { };
+  }, [ AnnotationsCollection.collectionRef, annotations ]);
 
   useEffect(() => {
     const getUrl = async () => {
@@ -144,15 +183,40 @@ const TranscriptTabContent = (props) => {
     }
   };
 
-  const handleDeleteAnnotation = (annotationId) => {
-    const newAnnotationsSet = annotations.filter((annotation) => {
-      return annotation.id !== annotationId;
-    });
+  const handleCreateAnnotation = async (e) => {
+    const selection = getTimeFromUserWordsSelection();
+    if (selection) {
+      const activeLabel = labels.find((label) => {
+        return label.active;
+      });
+      if (activeLabel) {
+        selection.labelId = activeLabel.id;
+      } else {
+        selection.labelId = labels[0].id;
+      }
+      selection.note = '';
+      const newAnnotation = selection;
 
-    // const deepCloneOfNestedObjectNewAnnotationsSet = JSON.parse(
-    //   JSON.stringify(newAnnotationsSet)
-    // );
-    // delete using Firebase
+      const docRef = await AnnotationsCollection.postItem(newAnnotation);
+      newAnnotation.id = docRef.id;
+
+      docRef.update({
+        id: docRef.id
+      });
+
+      const tempAnnotations = annotations;
+      tempAnnotations.push(newAnnotation);
+      setAnnotations(tempAnnotations);
+    } else {
+      alert('Select some text in the transcript to highlight ');
+    }
+  };
+
+  const handleDeleteAnnotation = async (annotationId) => {
+    const tempAnnotations = annotations;
+    tempAnnotations.splice(annotationId, 1);
+    setAnnotations(tempAnnotations);
+    await AnnotationsCollection.deleteItem(annotationId);
   };
 
   const handleEditAnnotation = (annotationId) => {
@@ -166,7 +230,10 @@ const TranscriptTabContent = (props) => {
     );
     if (newNote) {
       newAnnotationToEdit.note = newNote;
-      // crud annotation
+      AnnotationsCollection.putItem(annotationId, newAnnotationToEdit);
+      const tempAnnotations = annotations;
+      tempAnnotations.push(newAnnotationToEdit);
+      setAnnotations(tempAnnotations);
     } else {
       alert('all good nothing changed');
     }
@@ -197,6 +264,17 @@ const TranscriptTabContent = (props) => {
     tempLabels.splice(labelId, 1);
     setLabels(tempLabels);
     await LabelsCollection.deleteItem(labelId);
+  };
+
+  const updateLabelSelection = (e, labelId) => {
+    const tempLabels = JSON.parse(JSON.stringify(labels));
+    const previousActiveLabel = tempLabels.find((label) => label.active);
+    if (previousActiveLabel) {
+      previousActiveLabel.active = false;
+    }
+    const activeLabel = tempLabels.find((label) => label.id === labelId);
+    activeLabel.active = true;
+    setLabels(tempLabels);
   };
 
   const currentWordTime = currentTime;
@@ -283,7 +361,10 @@ const TranscriptTabContent = (props) => {
         <Card.Header>
           <TranscriptMenu
             labels={ labels }
-            handleClick={ () => setAnnotations() }
+            updateLabelSelection={ updateLabelSelection }
+            handleCreateAnnotation={ handleCreateAnnotation }
+            handleEditAnnotation={ handleEditAnnotation }
+            handleDeleteAnnotation={ handleDeleteAnnotation }
             onLabelCreate={ onLabelCreate }
             onLabelUpdate={ onLabelUpdate }
             onLabelDelete={ onLabelDelete }
@@ -305,7 +386,7 @@ const TranscriptTabContent = (props) => {
         >
           {highlights}
 
-          {transcript && transcript.paragraphs && transcript.words ? (
+          {transcript && transcript.paragraphs && labels && annotations ? (
             <Transcript
               transcriptId={ transcriptId }
               labels={ labels }
@@ -317,6 +398,7 @@ const TranscriptTabContent = (props) => {
               searchSpeakers={ searchSpeakers }
               handleTimecodeClick={ handleTimecodeClick }
               handleWordClick={ handleWordClick }
+              handleCreateAnnotation={ handleCreateAnnotation }
               handleDeleteAnnotation={ handleDeleteAnnotation }
               handleEditAnnotation={ handleEditAnnotation }
             />
@@ -335,7 +417,6 @@ TranscriptTabContent.propTypes = {
       }),
     }),
   }),
-  labels: PropTypes.any,
   media: PropTypes.shape({
     ref: PropTypes.string,
     type: PropTypes.string,
