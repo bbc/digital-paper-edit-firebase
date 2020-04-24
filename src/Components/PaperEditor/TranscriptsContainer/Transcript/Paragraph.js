@@ -40,7 +40,6 @@ const Paragraph = (props) => {
   }
 
   const getWordWithAnnotations = (word) => {
-    console.log('word', word);
     const wordEl = (
       <Word
         transcriptId={ transcriptId }

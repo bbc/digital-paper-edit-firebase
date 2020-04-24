@@ -3,7 +3,6 @@ import React from 'react';
 import removePunctuation from '../../../../Util/remove-punctuation';
 
 const Word = (props) => {
-  console.log('props word', props);
   const generatePreviousTimes = (start) => {
     let prevTimes = '';
 

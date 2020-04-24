@@ -13,7 +13,7 @@ const Transcript = (props) => {
 
   /* Paragraph text for data attribute for searches, without punctuation */
   const findString = (text) => {
-    return text.includes(props.searchString.toLowerCase());
+    return text.includes(props.searchString);
   };
 
   const findSpeaker = (speaker) => {
@@ -55,9 +55,10 @@ const Transcript = (props) => {
 
   const getDisplayPreference = (text, speaker, label) => {
     const textWithoutPunctuation = removePunctuation(text);
+    const lcSearchString = props.searchString.toLowerCase();
 
     const foundSearchString = findString(
-      props.searchString,
+      lcSearchString,
       textWithoutPunctuation
     );
     const foundSpeaker = findSpeaker(speaker, props.searchSpeakers);
@@ -95,7 +96,7 @@ const Transcript = (props) => {
       <Paragraph
         showParagraphsMatchingSearch={ props.showMatch }
         display={ displayPrefs }
-        key={ cuid }
+        key={ cuid() }
         paragraph={ paragraph }
         handleWordClick={ (e) =>
           e.key === 'Enter' ? props.handleWordClick(e) : null }

@@ -38,26 +38,16 @@ const TranscriptTabContent = (props) => {
   const { transcriptId, projectId, title, firebase, media, transcript } = props;
   const [ url, setUrl ] = useState();
   const [ labels, setLabels ] = useState(props.labels);
-  const [ searchString, setSearchString ] = useState('');
 
-  const [
-    showMatch,
-    setShowMatch,
-  ] = useState(false);
-  const [ searchLabels, setLabelSearch ] = useState(
-    []
-  );
-  const [
-    searchSpeakers,
-    setSpeakerSearch,
-  ] = useState([]);
-  const [ sentenceToSearchCSS, setSentenceToSearchCSS ] = useState('');
-  const [
-    sentenceToSearchCSSInHighlights,
-    setSentenceToSearchCSSInHighlights,
-  ] = useState('');
+  const [ searchString, setSearchString ] = useState('');
+  const [ showMatch, setShowMatch ] = useState(false);
+  const [ searchLabels, setLabelSearch ] = useState([]);
+  const [ searchSpeakers, setSpeakerSearch ] = useState([]);
+  const [ paragraphCSS, setParagraphsCSS ] = useState('');
+  const [ searchHighlightCSS, setSearchHighlightCSS ] = useState('');
   const [ annotations, setAnnotations ] = useState([]);
   const [ currentTime, setCurrentTime ] = useState();
+  const [ isHighlighting, setIsHighlighting ] = useState(false);
 
   const mediaType = media ? media.type : '';
 
@@ -79,45 +69,62 @@ const TranscriptTabContent = (props) => {
     }
   }, [ projectId, transcriptId, firebase.storage, media.ref, url ]);
 
+  useEffect(() => {
+    const highlightWords = (words) => {
+      const dataParagraphText = words.join(' ');
+
+      const css = words.reduce(
+        (res, word) => {
+          res.paragraphs.push(
+            `.paragraph[data-paragraph-text*="${ dataParagraphText }"] > div > span.words[data-text="${ word }"]`
+          );
+          // Need to add an extra span to search annotation highlights
+          res.search.push(
+            `.paragraph[data-paragraph-text*="${ dataParagraphText }"] > div > span > span.words[data-text="${ word }"]`
+          );
+
+          return res;
+        },
+        { paragraphs: [], search: [] }
+      );
+
+      css.paragraphs = css.paragraphs.join(', ');
+      css.search.join(', ');
+
+      return css;
+    };
+
+    if (searchString) {
+      if (!isHighlighting) {
+        setIsHighlighting(true);
+        const words = searchString
+          .toLowerCase()
+          .trim()
+          .split(' ')
+          .map((w) => w.trim());
+        const css = highlightWords(words);
+        setParagraphsCSS(css.paragraphs);
+        setSearchHighlightCSS(css.search);
+        // onlyCallOnce(highlightWords(words), 500);
+        setIsHighlighting(false);
+      } else {
+        setParagraphsCSS('');
+        setSearchString('');
+      }
+    }
+
+    return () => {};
+  }, [ isHighlighting, searchString ]);
+
   const showLabelsReference = () => {};
 
   const handleLabelsSearchChange = (selectedOptionLabelSearch) => {};
-
-  const highlightWords = (text) => {
-    const words = text.toLowerCase().trim().split(' ');
-    const cssName = words.join(' ');
-    const paragraphCSS = `.paragraph[data-paragraph-text*="${ cssName }"]`;
-
-    const css = words.reduce(
-      (res, word) => {
-        res.paragraphs.push(
-          `${ paragraphCSS } > div > span.words[data-text="${ word }"]`
-        );
-        res.search.push(
-          `${ paragraphCSS } > div > span >span.words[data-text="${ word }"]`
-        );
-
-        return res;
-      },
-      { paragraphs: [], search: [] }
-    );
-    const wordsToSearchCSS = css.paragraphs.join(', ');
-    // Need to add an extra span to search annotation hilights
-    // TODO: refactor to make more DRY
-    const wordsToSearchCSSInHighlights = css.search.join(', ');
-    setSentenceToSearchCSS(wordsToSearchCSS);
-    setSentenceToSearchCSSInHighlights(wordsToSearchCSSInHighlights);
-  };
 
   const handleSearch = (e) => {
     // TODO: debounce to optimise
     const text = e.target.value;
     if (text) {
-      setSearchString(text.toLowerCase());
-      onlyCallOnce(highlightWords(searchString), 500);
-    } else if (text === '') {
-      setSentenceToSearchCSS('');
-      setSearchString('');
+      setSearchString(text);
     }
   };
 
@@ -170,13 +177,12 @@ const TranscriptTabContent = (props) => {
     newLabel.id = docRef.id;
 
     docRef.update({
-      id: docRef.id
+      id: docRef.id,
     });
 
     const tempLabels = labels;
     tempLabels.push(newLabel);
     setLabels(tempLabels);
-
   };
 
   const onLabelUpdate = async (labelId, updatedLabel) => {
@@ -247,15 +253,22 @@ const TranscriptTabContent = (props) => {
     speakers = getSpeakerLabels(transcript.paragraphs);
   }
 
-  console.log('tr', transcript);
-
   return (
     <>
-      <style scoped>
-        {/* This is to style of the Paragraph component programmatically */}
-        {`${ sentenceToSearchCSS } { background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
-        {`${ sentenceToSearchCSSInHighlights } { background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
-      </style>
+      {paragraphCSS && searchHighlightCSS ? (
+        <style scoped>
+          {/* This is to style of the Paragraph component programmatically */}
+          {`${ paragraphCSS } { background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
+          {`${ searchHighlightCSS } { background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
+        </style>
+      ) : (
+        <style scoped>
+          {/* This is to style of the Paragraph component programmatically */}
+          {"{ background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }"}
+          {"{ background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }"}
+        </style>
+      )
+      }
 
       <h2
         className={ [ 'text-truncate', 'text-muted' ].join(' ') }
@@ -266,9 +279,7 @@ const TranscriptTabContent = (props) => {
       </h2>
 
       <Card>
-        <Card.Header>
-          {mediaElement}
-        </Card.Header>
+        <Card.Header>{mediaElement}</Card.Header>
         <Card.Header>
           <TranscriptMenu
             labels={ labels }
@@ -302,12 +313,8 @@ const TranscriptTabContent = (props) => {
               transcript={ transcript }
               searchString={ searchString }
               showMatch={ showMatch }
-              searchLabels={
-                searchLabels
-              }
-              searchSpeakers={
-                searchSpeakers
-              }
+              searchLabels={ searchLabels }
+              searchSpeakers={ searchSpeakers }
               handleTimecodeClick={ handleTimecodeClick }
               handleWordClick={ handleWordClick }
               handleDeleteAnnotation={ handleDeleteAnnotation }
