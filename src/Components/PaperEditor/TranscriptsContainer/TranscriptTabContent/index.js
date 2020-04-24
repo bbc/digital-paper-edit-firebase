@@ -218,6 +218,21 @@ const TranscriptTabContent = (props) => {
     await LabelsCollection.deleteItem(labelId);
   };
 
+  const updateSelectedLabel = (e, labelId) => {
+    const tempLabels = labels;
+    const previousActiveLabel = tempLabels.find((label) => {
+      return label.active;
+    });
+    if (previousActiveLabel) {
+      previousActiveLabel.active = false;
+    }
+    const activeLabel = tempLabels.find((label) => {
+      return label.id === labelId;
+    });
+    activeLabel.active = true;
+    setLabels(tempLabels);
+  };
+
   const currentWordTime = currentTime;
   const unplayedColor = 'grey';
 
@@ -297,7 +312,7 @@ const TranscriptTabContent = (props) => {
         <Card.Header>
           <TranscriptMenu
             labels={ labels }
-            setLabels={ setLabels }
+            updateSelectedLabel={ updateSelectedLabel }
             handleCreateAnnotation={ handleCreateAnnotation }
             handleEditAnnotation={ handleEditAnnotation }
             handleDeleteAnnotation={ handleDeleteAnnotation }

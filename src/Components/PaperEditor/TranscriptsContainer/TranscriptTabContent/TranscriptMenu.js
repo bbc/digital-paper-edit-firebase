@@ -66,7 +66,7 @@ const TranscriptMenu = (props) => {
     >
       <Row
         value={ label.id }
-        onClick={ (e) => updateSelectedLabel(e, label.id) }
+        onClick={ (e) => props.updateSelectedLabel(e, label.id) }
         data-label-id={ label.id }
       >
         <Col
