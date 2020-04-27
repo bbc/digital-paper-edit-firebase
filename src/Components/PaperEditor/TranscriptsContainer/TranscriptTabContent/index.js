@@ -28,7 +28,8 @@ const TranscriptTabContent = (props) => {
   const { transcriptId, projectId, title, firebase, media, transcript } = props;
   const mediaType = media ? media.type : '';
   const [ url, setUrl ] = useState();
-  const [ labels, setLabels ] = useState(props.labels);
+  const [ labels, setLabels ] = useState();
+  const [ annotations, setAnnotations ] = useState();
   const [ searchString, setSearchString ] = useState('');
   const [
     showParagraphsMatchingSearch,
@@ -46,17 +47,61 @@ const TranscriptTabContent = (props) => {
     sentenceToSearchCSSInHighlights,
     setSentenceToSearchCSSInHighlights,
   ] = useState('');
-  const [ annotations, setAnnotations ] = useState(props.annotations);
   const [ currentTime, setCurrentTime ] = useState();
 
   const LabelsCollection = new Collection(
     firebase,
     `/projects/${ projectId }/labels`
   );
+
   const AnnotationsCollection = new Collection(
     firebase,
     `projects/${ projectId }/annotations`
   );
+
+  useEffect(() => {
+    const getLabels = async () => {
+      try {
+        await LabelsCollection.collectionRef.onSnapshot((snapshot) => {
+          const tempLabels = snapshot.docs.map((doc) => {
+            return { ...doc.data(), id: doc.id, display: true };
+          });
+          const lbls = tempLabels ? tempLabels : []; // to remove once a bug is fixed
+          setLabels(lbls);
+        });
+      } catch (error) {
+        console.error('Error getting labels: ', error);
+      }
+    };
+
+    if (!labels) {
+      getLabels();
+    }
+
+    return () => {};
+  }, [ LabelsCollection.collectionRef, labels ]);
+
+  useEffect(() => {
+    const getAnnotations = async () => {
+      try {
+        AnnotationsCollection.collectionRef.onSnapshot((snapshot) => {
+          const tempAnnotations = snapshot.docs.map((doc) => {
+            return { ...doc.data(), id: doc.id, display: true };
+          });
+
+          const anns = tempAnnotations ? tempAnnotations : []; // to remove once a bug is fixed
+          setAnnotations(anns);
+        });
+      } catch (error) {
+        console.error('Error getting annotations: ', error);
+      }
+    };
+    if (!annotations) {
+      getAnnotations();
+    }
+
+    return () => {};
+  }, [ AnnotationsCollection.collectionRef, annotations ]);
 
   useEffect(() => {
     const getUrl = async () => {
@@ -150,7 +195,7 @@ const TranscriptTabContent = (props) => {
       newAnnotation.id = docRef.id;
 
       docRef.update({
-        id: docRef.id
+        id: docRef.id,
       });
 
       const tempAnnotations = annotations;
@@ -169,7 +214,6 @@ const TranscriptTabContent = (props) => {
   };
 
   const handleEditAnnotation = (annotationId) => {
-
     const newAnnotationToEdit = annotations.find((annotation) => {
       return annotation.id === annotationId;
     });
@@ -194,13 +238,12 @@ const TranscriptTabContent = (props) => {
     newLabel.id = docRef.id;
 
     docRef.update({
-      id: docRef.id
+      id: docRef.id,
     });
 
     const tempLabels = labels;
     tempLabels.push(newLabel);
     setLabels(tempLabels);
-
   };
 
   const onLabelUpdate = async (labelId, updatedLabel) => {
@@ -218,16 +261,12 @@ const TranscriptTabContent = (props) => {
   };
 
   const updateSelectedLabel = (e, labelId) => {
-    const tempLabels = labels;
-    const previousActiveLabel = tempLabels.find((label) => {
-      return label.active;
-    });
+    const tempLabels = JSON.parse(JSON.stringify(labels));
+    const previousActiveLabel = tempLabels.find((label) => label.active);
     if (previousActiveLabel) {
       previousActiveLabel.active = false;
     }
-    const activeLabel = tempLabels.find((label) => {
-      return label.id === labelId;
-    });
+    const activeLabel = tempLabels.find((label) => label.id === labelId);
     activeLabel.active = true;
     setLabels(tempLabels);
   };
@@ -336,7 +375,7 @@ const TranscriptTabContent = (props) => {
         >
           {highlights}
 
-          {transcript && transcript.paragraphs ? (
+          {transcript && transcript.paragraphs && labels && annotations ? (
             <Paragraphs
               transcriptId={ transcriptId }
               labels={ labels }
@@ -344,12 +383,8 @@ const TranscriptTabContent = (props) => {
               transcript={ transcript }
               searchString={ searchString }
               showParagraphsMatchingSearch={ showParagraphsMatchingSearch }
-              selectedOptionLabelSearch={
-                selectedOptionLabelSearch
-              }
-              selectedOptionSpeakerSearch={
-                selectedOptionSpeakerSearch
-              }
+              selectedOptionLabelSearch={ selectedOptionLabelSearch }
+              selectedOptionSpeakerSearch={ selectedOptionSpeakerSearch }
               handleTimecodeClick={ handleTimecodeClick }
               handleWordClick={ handleWordClick }
               handleCreateAnnotation={ handleCreateAnnotation }
@@ -371,8 +406,6 @@ TranscriptTabContent.propTypes = {
       }),
     }),
   }),
-  annotations: PropTypes.any,
-  labels: PropTypes.any,
   media: PropTypes.shape({
     ref: PropTypes.string,
     type: PropTypes.string,

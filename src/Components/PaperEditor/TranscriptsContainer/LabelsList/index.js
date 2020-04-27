@@ -184,7 +184,6 @@ const LabelsList = (props) => {
     <>
       {isLabelsListOpen ? (
         <>
-          {/* <br/> */}
           <Card>
             <Card.Header>
               <FontAwesomeIcon icon={ faTags } />{' '}
