@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
@@ -169,7 +170,7 @@ class SearchBar extends Component {
                  onClick={ this.handleHideAll }
                  title="Deselect all the options"
                >
-                Deselect all
+                 Deselect all
                </Dropdown.Item>
              </DropdownButton>
            </InputGroup>
@@ -190,7 +191,7 @@ class SearchBar extends Component {
                      onChange={ this.handleLabelsSearchChange }
                      isMulti
                      isSearchable
-                     options={ this.props.labelsOptions }
+                     options={ this.props.labels }
                      styles={ colourStyles }
                      placeholder={ 'Filter by label...' }
                    />
@@ -236,7 +237,7 @@ class SearchBar extends Component {
                      title="Show only matching paragraphs"
                      onClick={ this.handleShowParagraphsMatchingSearch }
                    >
-                       Show only matching paragraphs
+                     Show only matching paragraphs
                    </Form.Text>
                  </> }
                />
@@ -248,5 +249,14 @@ class SearchBar extends Component {
      );
    }
 }
+
+SearchBar.propTypes = {
+  handleLabelsSearchChange: PropTypes.func,
+  handleSearch: PropTypes.func,
+  handleShowParagraphsMatchingSearch: PropTypes.func,
+  handleSpeakersSearchChange: PropTypes.func,
+  labels: PropTypes.any,
+  speakersOptions: PropTypes.any
+};
 
 export default SearchBar;

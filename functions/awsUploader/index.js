@@ -1,45 +1,38 @@
-const AWS = require("aws-sdk");
-const stream = require("stream");
+const { getSignedUrl, uploadS3Stream } = require("../utils/aws");
 
-const uploadS3Stream = ({ AWSConfig, Key, Metadata }) => {
-  const Bucket = AWSConfig.name;
-  const s3 = new AWS.S3({
-    region: AWSConfig.region,
-    accessKeyId: AWSConfig.key,
-    secretAccessKey: AWSConfig.secret,
-  });
-  const pass = new stream.PassThrough();
-
-  return {
-    writeStream: pass,
-    promise: s3.upload({ Bucket, Key, Body: pass, Metadata }).promise(),
-  };
-};
-
-const getMetadata = (snap) => {
-  const durationSeconds = Math.ceil(snap.data().duration);
-  return {
-    duration: `${durationSeconds}`,
-  };
-};
-
-exports.createHandler = async (admin, snap, bucket, aws, context) => {
+exports.createHandler = async (snap, bucket, aws, context) => {
   const { userId, itemId } = context.params;
   const srcPath = `users/${userId}/audio/${itemId}`;
-  const destPath = `dpe/${srcPath}.wav`;
+  const fileName = `${srcPath}.wav`;
   const readStream = bucket.file(srcPath).createReadStream();
+  const serviceName = "dpe";
+  const destPath = `${serviceName}/${fileName}`;
+  const metadata = snap.data();
+  const durationSeconds = Math.ceil(metadata.duration);
+  const fileSize = metadata.size;
+  const params = {
+    Bucket: aws.name,
+    Key: destPath,
+    Expires: 60 * 5,
+    Metadata: {
+      "duration": `${durationSeconds}`,
+    }
+  }
+  const signedUrl = await getSignedUrl(aws, params);
 
   console.log("[START] Upload to S3");
-  const metadata = getMetadata(snap);
   try {
-    const { writeStream, promise } = uploadS3Stream({
-      AWSConfig: aws,
-      Key: destPath,
-      Metadata: metadata,
-    });
-
-    readStream.pipe(writeStream);
-    await promise;
+    const promise = uploadS3Stream(signedUrl, readStream, fileSize);
+    const res = await promise;
+    if (res.ok) {
+      console.log(
+        `[SUCCESS] File upload PUT request sent with status ${res.status}`
+      );
+    } else {
+      throw new Error(
+        `status ${res.status} - ${res.statusText}`
+      );
+    }
   } catch (err) {
     return console.error("[ERROR] Failed to upload to S3:", err);
   }

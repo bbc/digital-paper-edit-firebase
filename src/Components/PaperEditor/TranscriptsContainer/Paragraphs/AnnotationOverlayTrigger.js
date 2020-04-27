@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Popover from 'react-bootstrap/Popover';
@@ -11,63 +12,67 @@ import {
   faTag
 } from '@fortawesome/free-solid-svg-icons';
 
-class AnnotationOverlayTrigger extends Component {
+const AnnotationOverlayTrigger = (props) => {
 
-  handleEditAnnotation = () => {
+  const handleEdit = () => {
     let text;
-    this.props.handleEditAnnotation(this.props.annotationId, text );
-  }
+    props.handleEditAnnotation(props.annotationId, text);
+  };
 
-  render() {
-    // console.log('render - AnnotationOverlayTrigger - props', this.props);
-    // const { annotationLabelId } = this.props;
-    let overlayContent;
-    // handling edge case when labels are not available
-    if (this.props.labelsOptions) {
-      let label = this.props.labelsOptions.find((label) => {
+  let overlayContent;
 
-        return label.id === this.props.annotationLabelId;
-      });
-      // console.log('label:: ', label, annotationLabelId, this.props.labelsOptions, 'this.props.words', this.props.words, this.props.annotationNote);
-      // TODO: Quick fix - needs digging into why sometimes adding a new label crashes, and the `find` function above returns undefined
-      if (!label) {
-        label = this.props.labelsOptions[0];
-      }
+  if (props.labels) {
+    let label = props.labels.find((l) => {
 
-      overlayContent = <OverlayTrigger rootClose={ true } trigger="click" placement="bottom"
-        overlay={
-          <Popover id="popover-basic">
-            <Row>
-              <Col md={ 1 } style={ { backgroundColor: label.color, marginLeft:'1em' } }></Col>
-              <Col >
-                <FontAwesomeIcon icon={ faTag } />  {label.label}
-              </Col>
-              <Col md={ 1 } style={ { marginRight:'1em' } }
-                onClick={ () => {this.props.handleDeleteAnnotation(this.props.annotationId);} }>
-                <FontAwesomeIcon icon={ faTrashAlt } />
-              </Col>
-            </Row>
-            <hr/>
-            <FontAwesomeIcon icon={ faStickyNote }
-              onClick={ this.handleEditAnnotation }
-            />   { this.props.annotationNote }
-            <br/>
-            <FontAwesomeIcon icon={ faPen }
-              onClick={ this.handleEditAnnotation }
-            />
-          </Popover>
-        }
-      >
-        <span style={ { borderBottom: `0.1em ${ label.color } solid` } } className={ 'highlight' }>{this.props.words}</span>
-      </OverlayTrigger>;
+      return l.id === props.annotationLabelId;
+    });
 
+    if (!label) {
+      label = props.labels[0];
     }
 
-    return (<>
-      {overlayContent}
-    </>
-    );
-  }
-}
+    overlayContent = <OverlayTrigger rootClose={ true } trigger="click" placement="bottom"
+      overlay={
+        <Popover id="popover-basic">
+          <Row>
+            <Col md={ 1 } style={ { backgroundColor: label.color, marginLeft: '1em' } }></Col>
+            <Col >
+              <FontAwesomeIcon icon={ faTag } />  {label.label}
+            </Col>
+            <Col md={ 1 } style={ { marginRight: '1em' } }
+              onClick={ () => { props.handleDeleteAnnotation(props.annotationId); } }>
+              <FontAwesomeIcon icon={ faTrashAlt } />
+            </Col>
+          </Row>
+          <hr />
+          <FontAwesomeIcon icon={ faStickyNote }
+            onClick={ handleEdit }
+          />   {props.annotationNote}
+          <br />
+          <FontAwesomeIcon icon={ faPen }
+            onClick={ handleEdit }
+          />
+        </Popover>
+      }
+    >
+      <span style={ { borderBottom: `0.1em ${ label.color } solid` } } className={ 'highlight' }>{props.words}</span>
+    </OverlayTrigger>;
+  };
+
+  return (<>
+    {overlayContent}
+  </>
+  );
+};
+
+AnnotationOverlayTrigger.propTypes = {
+  annotationId: PropTypes.any,
+  annotationLabelId: PropTypes.any,
+  annotationNote: PropTypes.any,
+  handleDeleteAnnotation: PropTypes.func,
+  handleEditAnnotation: PropTypes.func,
+  labels: PropTypes.array,
+  words: PropTypes.any
+};
 
 export default AnnotationOverlayTrigger;

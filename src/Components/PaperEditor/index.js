@@ -17,12 +17,12 @@ const PaperEditor = (props) => {
   const projectId = props.match.params.projectId;
   const papereditId = props.match.params.papereditId;
   const videoHeight = props.videoHeight; //('10em');
-  const labelsOptions = props.labelsOptions; //[]
 
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
   const [ transcripts, setTranscripts ] = useState(null);
-  const [ annotations, setAnnotations ] = useState([]);
+  const [ annotations, setAnnotations ] = useState(null);
+  const [ labels, setLabels ] = useState(null);
 
   const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
   const [ isProgramScriptShown, setIsProgramScriptShown ] = useState(true);
@@ -36,6 +36,14 @@ const PaperEditor = (props) => {
     props.firebase,
     `/projects/${ projectId }/transcripts`
   );
+  const Labels = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/labels`
+  );
+  const Annotations = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/annotations`
+  );
 
   useEffect(() => {
     const getProject = async () => {
@@ -47,6 +55,14 @@ const PaperEditor = (props) => {
       }
     };
 
+    if (!transcripts) {
+      getProject();
+    }
+
+    return () => { };
+  }, [ transcripts ]);
+
+  useEffect(() => {
     const getPaperEdit = async () => {
       try {
         const paperEdit = await PaperEdits.getItem(papereditId);
@@ -55,6 +71,57 @@ const PaperEditor = (props) => {
         console.error('Could not get PaperEdit Id: ', papereditId, e);
       }
     };
+
+    if (!transcripts) {
+      getPaperEdit();
+    }
+
+    return () => { };
+  }, [ PaperEdits, papereditId, transcripts ]);
+
+  useEffect(() => {
+    const getLabels = async () => {
+      try {
+        await Labels.collectionRef.onSnapshot((snapshot) => {
+          const tempLabels = snapshot.docs.map((doc) => {
+            return { ...doc.data(), id: doc.id, display: true };
+          });
+          setLabels(tempLabels);
+        });
+      } catch (error) {
+        console.error('Error getting labels: ', error);
+      }
+    };
+
+    if (!transcripts) {
+      getLabels();
+    }
+
+    return () => {};
+  }, [ Labels.collectionRef, transcripts ]);
+
+  useEffect(() => {
+    const getAnnotations = async () => {
+      try {
+        Annotations.collectionRef.onSnapshot((snapshot) => {
+          setAnnotations(
+            snapshot.docs.map((doc) => {
+              return { ...doc.data(), id: doc.id, display: true };
+            })
+          );
+        });
+      } catch (error) {
+        console.error('Error getting annotations: ', error);
+      }
+    };
+    if (!transcripts) {
+      getAnnotations();
+    }
+
+    return () => { };
+  }, [ Annotations.collectionRef, transcripts ]);
+
+  useEffect(() => {
     const getTranscripts = async () => {
       try {
         Transcriptions.collectionRef.onSnapshot((snapshot) => {
@@ -68,31 +135,14 @@ const PaperEditor = (props) => {
         console.error('Error getting documents: ', error);
       }
     };
-
-    const getAnnotations = async () => {
-      try {
-      } catch (error) {
-        console.error('Error getting annotations: ', error);
+    if (labels && annotations) {
+      if (!transcripts) {
+        getTranscripts();
       }
-    };
-
-    if (!transcripts) {
-      getProject();
-      getPaperEdit();
-      getTranscripts();
-      getAnnotations();
     }
 
-    return () => {};
-  }, [
-    transcripts,
-    PaperEdits,
-    Projects,
-    Transcriptions.collectionRef,
-    papereditId,
-    projectId,
-    annotations,
-  ]);
+    return () => { };
+  }, [ Transcriptions.collectionRef, annotations, labels, transcripts ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
@@ -162,7 +212,8 @@ const PaperEditor = (props) => {
       <TranscriptsContainer
         projectId={ projectId }
         transcripts={ transcripts }
-        labelsOptions={ labelsOptions }
+        labels={ labels }
+        annotations={ annotations }
         firebase={ props.firebase }
       />
     );
@@ -274,7 +325,7 @@ PaperEditor.propTypes = {
   match: PropTypes.any,
   videoHeight: PropTypes.any,
   firebase: PropTypes.any,
-  labelsOptions: PropTypes.any,
+  labels: PropTypes.any,
 };
 
 const condition = (authUser) => !!authUser;

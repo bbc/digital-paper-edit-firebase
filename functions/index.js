@@ -24,7 +24,7 @@ exports.onDeleteBucketObjUpdateFirestore = bucketTrigger.onDelete((obj) =>
 exports.onCreateAudioFirestoreUploadToAWS = functions.firestore
   .document("apps/digital-paper-edit/users/{userId}/audio/{itemId}")
   .onCreate((snap, context) =>
-    awsUploader.createHandler(admin, snap, bucket, config.aws.bucket, context)
+    awsUploader.createHandler(snap, bucket, config.aws.bucket, context)
   );
 
 const maxRuntimeOpts = {

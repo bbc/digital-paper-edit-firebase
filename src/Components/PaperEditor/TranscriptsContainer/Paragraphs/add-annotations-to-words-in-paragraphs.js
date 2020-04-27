@@ -8,17 +8,19 @@ const isAnnotationInWord = (annotation, word) => {
 };
 
 const wordsWithAnnotations = (words, annotations) => {
-  return words.map((word) => {
-    const annotation = annotations.find(anno => isAnnotationInWord(anno, word));
-    if (annotation) {
-      word.annotation = annotation;
-    } else {
-      // this is needed, for when an annotation is being removed from a word
-      delete word.annotation;
-    }
 
-    return word;
-  });
+  if (annotations) {
+    return words.map((word) => {
+      const annotation = annotations.find(anno => isAnnotationInWord(anno, word));
+      if (annotation) {
+        word.annotation = annotation;
+      } else {
+        delete word.annotation;
+      }
+
+      return word;
+    });
+  }
 
 };
 

@@ -79,6 +79,7 @@ const findAnnotationsInWords = (annotations, words) => {
   // Case 1 - there is an annotation within the boundaries of the current paragraph
   const resultsCaseOne = isAnnotationWithinParagraph(annotations, paragraphFirstWordTime, paragraphLastWordTime);
   if (resultsCaseOne) {
+
     return resultsCaseOne;
   }
   // Case 2 - annotation start within the paragraph  but ends in subsequent one

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Form from 'react-bootstrap/Form';
@@ -16,24 +16,27 @@ import {
 
 import LabelModal from './LabelModal.js';
 import { randomColor } from './css-color-names.js';
+import PropTypes from 'prop-types';
 
-class LabelsList extends Component {
-  constructor(props) {
-    super(props);
+const LabelsList = (props) => {
+  const labels = props.labels;
+  const isLabelsListOpen = props.isLabelsListOpen;
+  const onLabelDelete = props.onLabelDelete;
+  const onLabelCreate = props.onLabelCreate;
+  const onLabelUpdate = props.onLabelUpdate;
 
-    this.state = {
-      // isLabelsListOpen: false,
-      isLabelmodalShown: false
-    };
-  }
+  const [ isLabelmodalShown, setIsLabelmodalShown ] = useState(false);
 
-  removeLabel = (id, e) => {
-    // eslint-disable-next-line no-restricted-globals
-    const response = confirm(
+  const showLabelModal = () => {
+    setIsLabelmodalShown(true);
+  };
+
+  const removeLabel = (id) => {
+    const response = window.confirm(
       'Click OK to delete the label, Cancel if you changed your mind'
     );
-    if (response === true) {
-      this.props.onLabelDelete(id);
+    if (response) {
+      onLabelDelete(id);
     } else {
       alert('Your label was not deleted');
     }
@@ -42,184 +45,183 @@ class LabelsList extends Component {
   // TODO: See if CreateNewLabelModal can be refactored to accomodate for edit label
   // if not then separate model to achieve same
   // https://stackoverflow.com/questions/43335452/pass-item-data-to-a-react-modal
-  editLabel = (id, e) => {
-    const labelToEdit = this.props.labelsOptions.filter(label => {
+  const editLabel = (id, e) => {
+    const labelToEdit = labels.filter(label => {
       return label.id === id;
     });
-    // this.props.onLabelsUpdate(newLabelsOptions);
-    console.log('labelToEdit', labelToEdit);
-    // alert('this functionality has not been implemented yet');
+    onLabelUpdate(labelToEdit.id, labelToEdit);
   };
-  onLabelSaved = newLabel => {
-    // if updated - labelId is diff from null
+  const onLabelSaved = newLabel => {
     if (newLabel.id) {
-      this.props.onLabelUpdate(newLabel);
+      onLabelUpdate(newLabel.id, newLabel);
     }
     // if created
     else {
-      this.props.onLabelCreate(newLabel);
+      onLabelCreate(newLabel);
     }
   };
 
-  showLabelModal = () => {
-    console.log(this.state.isLabelmodalShown);
-    this.setState(state => {
-      return {
-        isLabelmodalShown: !state.isLabelmodalShown
-      };
-    });
-  };
+  // TODO: add CSS to label and description to constrain width?
+  // move edit and X to the rigth
+  let labelsListOptions;
+  // Handle edge case if there's no labels
+  if (labels) {
+    labelsListOptions = labels.map((label, index) => {
+      return (
+        <ListGroup.Item style={ { width: '100%' } } key={ 'label_' + index }>
+          <Row>
+            {/* Col space for the label color */}
+            <Col
+              xs={ 1 }
+              sm={ 1 }
+              md={ 1 }
+              lg={ 1 }
+              xl={ 1 }
+              style={ { backgroundColor: label.color } }
+              title={ label.label }
+            ></Col>
+            <Col
+              xs={ 6 }
+              sm={ 6 }
+              md={ 6 }
+              lg={ 6 }
+              xl={ 6 }
+              // className="text-truncate"
+              title={ label.label }
+            >
+              {label.label}
+            </Col>
 
-  render() {
-    // TODO: add CSS to label and description to constrain width?
-    // move edit and X to the rigth
-    let labelsListOptions;
-    // Handle edge case if there's no labels
-    if (this.props.labelsOptions) {
-      labelsListOptions = this.props.labelsOptions.map((label, index) => {
-        return (
-          <ListGroup.Item style={ { width: '100%' } } key={ 'label_' + index }>
-            <Row>
-              {/* Col space for the label color */}
-              <Col
-                xs={ 1 }
-                sm={ 1 }
-                md={ 1 }
-                lg={ 1 }
-                xl={ 1 }
-                style={ { backgroundColor: label.color } }
-                title={ label.label }
-              ></Col>
-              <Col
-                xs={ 6 }
-                sm={ 6 }
-                md={ 6 }
-                lg={ 6 }
-                xl={ 6 }
-                // className="text-truncate"
-                title={ label.label }
-              >
-                {label.label}
-              </Col>
+            <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
+              {/* Edit label */}
 
-              <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
-                {/* Edit label */}
-
-                {label.label.toLowerCase() !== 'default' ? (
-                  <LabelModal
-                    color={ label.color }
-                    label={ label.label }
-                    description={ label.description }
-                    labelId={ label.id }
-                    show={ this.state.isLabelmodalShown }
-                    onLabelSaved={ this.onLabelSaved }
-                    openBtn={
-                      <span>
-                        {' '}
-                        <FontAwesomeIcon icon={ faPen } />
-                      </span>
-                    }
-                  />
-                ) : (
-                  <Button
-                    title={ 'edit label' }
-                    variant="link"
-                    size="sm"
-                    disabled
-                  >
-                    <FontAwesomeIcon icon={ faPen } />{' '}
-                  </Button>
-                )}
-              </Col>
-              <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
+              {label.label !== 'Default' ? (
+                <LabelModal
+                  color={ label.color }
+                  label={ label.label }
+                  description={ label.description }
+                  labelId={ label.id }
+                  show={ isLabelmodalShown }
+                  onLabelSaved={ onLabelSaved }
+                  openBtn={
+                    <span>
+                      {' '}
+                      <FontAwesomeIcon icon={ faPen } />
+                    </span>
+                  }
+                />
+              ) : (
                 <Button
-                  title={ 'delete label' }
+                  title={ 'edit label' }
                   variant="link"
                   size="sm"
                   onClick={ e => {
-                    this.removeLabel(label.id, e);
+                    editLabel(label.id, e);
                   } }
                   disabled={
-                    label.label.toLowerCase() === 'default' ? true : false
+                    label.label === 'Default' ? true : false
                   }
                 >
-                  <FontAwesomeIcon icon={ faTimes } />
+                  <FontAwesomeIcon icon={ faPen } />{' '}
                 </Button>
-              </Col>
-            </Row>
-            <Row>
-              {/* Spacing to align title and color */}
-              <Col
-                xs={ 1 }
-                sm={ 1 }
-                md={ 1 }
-                lg={ 1 }
-                xl={ 1 }
-                className="text-truncate"
-                title={ label.label }
-              ></Col>
-              <Col xs={ 10 } sm={ 10 } md={ 10 } lg={ 10 } xl={ 10 }>
-                <Form.Text
-                  // className={ [ 'text-muted', 'text-truncate' ].join(' ') }
-                  title={ label.description }
-                >
-                  {label.description}
-                </Form.Text>
-              </Col>
-            </Row>
-          </ListGroup.Item>
-        );
-      });
-    }
-
-    const labelsList = (
-      <ListGroup
-        style={ {
-          height: '50vh',
-          width: '20vw',
-          overflowY: 'scroll',
-          overflowX: 'hidden'
-        } }
-      >
-        {labelsListOptions}
-      </ListGroup>
-    );
-    // const labelsList = labelsListOptions;
-
-    return (
-      <>
-        {this.props.isLabelsListOpen ? (
-          <>
-            {/* <br/> */}
-            <Card>
-              <Card.Header>
-                <FontAwesomeIcon icon={ faTags } />{' '}
-                <FontAwesomeIcon icon={ faCog } /> Labels
-              </Card.Header>
-              {labelsList}
-              <Card.Footer className="text-muted">
-                <LabelModal
-                  color={ randomColor() }
-                  label={ '' }
-                  description={ '' }
-                  labelId={ null }
-                  show={ this.state.isLabelmodalShown }
-                  onLabelSaved={ this.onLabelSaved }
-                  openBtn={
-                    <Button variant="outline-secondary" block>
-                      <FontAwesomeIcon icon={ faTag } /> Create New Label
-                    </Button>
-                  }
-                />
-              </Card.Footer>
-            </Card>
-          </>
-        ) : (
-          ''
-        )}
-      </>
-    );
+              )}
+            </Col>
+            <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
+              <Button
+                title={ 'delete label' }
+                variant="link"
+                size="sm"
+                onClick={ e => {
+                  removeLabel(label.id, e);
+                } }
+                disabled={
+                  label.label === 'Default' ? true : false
+                }
+              >
+                <FontAwesomeIcon icon={ faTimes } />
+              </Button>
+            </Col>
+          </Row>
+          <Row>
+            {/* Spacing to align title and color */}
+            <Col
+              xs={ 1 }
+              sm={ 1 }
+              md={ 1 }
+              lg={ 1 }
+              xl={ 1 }
+              className="text-truncate"
+              title={ label.label }
+            ></Col>
+            <Col xs={ 10 } sm={ 10 } md={ 10 } lg={ 10 } xl={ 10 }>
+              <Form.Text
+                // className={ [ 'text-muted', 'text-truncate' ].join(' ') }
+                title={ label.description }
+              >
+                {label.description}
+              </Form.Text>
+            </Col>
+          </Row>
+        </ListGroup.Item>
+      );
+    });
   }
-}
+
+  const labelsList = (
+    <ListGroup
+      style={ {
+        height: '50vh',
+        width: '20vw',
+        overflowY: 'scroll',
+        overflowX: 'hidden'
+      } }
+    >
+      {labelsListOptions}
+    </ListGroup>
+  );
+
+  return (
+    <>
+      {isLabelsListOpen ? (
+        <>
+          {/* <br/> */}
+          <Card>
+            <Card.Header>
+              <FontAwesomeIcon icon={ faTags } />{' '}
+              <FontAwesomeIcon icon={ faCog } /> Labels
+            </Card.Header>
+            {labelsList}
+            <Card.Footer className="text-muted">
+              <LabelModal
+                color={ randomColor() }
+                label={ '' }
+                description={ '' }
+                labelId={ null }
+                show={ isLabelmodalShown }
+                onLabelSaved={ onLabelSaved }
+                openBtn={
+                  <Button variant="outline-secondary" block>
+                    <FontAwesomeIcon icon={ faTag } /> Create New Label
+                  </Button>
+                }
+              />
+            </Card.Footer>
+          </Card>
+        </>
+      ) : (
+        ''
+      )}
+    </>
+  );
+
+};
+
+LabelsList.propTypes = {
+  labels: PropTypes.any,
+  isLabelsListOpen: PropTypes.any,
+  onLabelDelete: PropTypes.any,
+  onLabelCreate: PropTypes.any,
+  onLabelUpdate: PropTypes.any
+};
 
 export default LabelsList;
