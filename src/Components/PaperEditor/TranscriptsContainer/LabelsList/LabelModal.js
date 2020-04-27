@@ -9,7 +9,6 @@ import LabelForm from './LabelForm';
 import PropTypes from 'prop-types';
 
 const LabelModal = (props) => {
-  // const [ show, setShow ] = useState(false);
   const { labelId, color, label, description,
     showButtonText, showButtonVariant, showButtonSize } = props;
 
