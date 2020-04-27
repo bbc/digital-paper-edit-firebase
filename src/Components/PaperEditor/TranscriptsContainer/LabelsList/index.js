@@ -7,6 +7,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faTag,
   faTags,
   faTimes,
   faPen,
@@ -20,12 +21,11 @@ import PropTypes from 'prop-types';
 
 const LabelsList = (props) => {
   const labels = props.labels;
-  const isOpen = props.isLabelsListOpen;
   const onLabelDelete = props.onLabelDelete;
   const onLabelCreate = props.onLabelCreate;
   const onLabelUpdate = props.onLabelUpdate;
 
-  const removeLabel = (id) => {
+  const handleDelete = (id) => {
     const response = window.confirm(
       'Click OK to delete the label, Cancel if you changed your mind'
     );
@@ -36,10 +36,7 @@ const LabelsList = (props) => {
     }
   };
 
-  // TODO: See if CreateNewLabelModal can be refactored to accomodate for edit label
-  // if not then separate model to achieve same
-  // https://stackoverflow.com/questions/43335452/pass-item-data-to-a-react-modal
-  const editLabel = (id, e) => {
+  const handleEdit = (id, e) => {
     const labelToEdit = labels.filter((label) => label.id === id);
     onLabelUpdate(labelToEdit.id, labelToEdit);
   };
@@ -52,7 +49,7 @@ const LabelsList = (props) => {
     }
   };
 
-  const EditableLabel = (id, label, color, description) => {
+  const EditableLabel = (id, color, label, description) => {
     return (
       <>
         <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
@@ -62,6 +59,13 @@ const LabelsList = (props) => {
             description={ description }
             labelId={ id }
             handleSave={ handleSave }
+            showButtonVariant={ 'link' }
+            showButtonSize={ 'sm' }
+            showButtonText={
+              <span>
+                {' '}
+                <FontAwesomeIcon icon={ faPen } />
+              </span> }
           />
         </Col>
         <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
@@ -70,7 +74,7 @@ const LabelsList = (props) => {
             variant="link"
             size="sm"
             onClick={ (e) => {
-              removeLabel(id, e);
+              handleDelete(id, e);
             } }
             disabled={ false }
           >
@@ -89,9 +93,7 @@ const LabelsList = (props) => {
             title={ 'edit label' }
             variant="link"
             size="sm"
-            onClick={ (e) => {
-              editLabel(id, e);
-            } }
+            onClick={ (e) => handleEdit(id, e) }
             disabled={ true }
           >
             <FontAwesomeIcon icon={ faPen } />{' '}
@@ -102,9 +104,7 @@ const LabelsList = (props) => {
             title={ 'delete label' }
             variant="link"
             size="sm"
-            onClick={ (e) => {
-              removeLabel(id, e);
-            } }
+            onClick={ (e) => handleDelete(id, e) }
             disabled={ true }
           >
             <FontAwesomeIcon icon={ faTimes } />
@@ -177,28 +177,29 @@ const LabelsList = (props) => {
 
   return (
     <>
-      {isOpen ? (
-        <>
-          <Card>
-            <Card.Header>
-              <FontAwesomeIcon icon={ faTags } /> <FontAwesomeIcon icon={ faCog } />{' '}
-              Labels
-            </Card.Header>
-            {labelsList}
-            <Card.Footer className="text-muted">
-              <LabelModal
-                color={ randomColor() }
-                label={ '' }
-                description={ '' }
-                labelId={ null }
-                handleSave={ handleSave }
-              />
-            </Card.Footer>
-          </Card>
-        </>
-      ) : (
-        ''
-      )}
+      <Card>
+        <Card.Header>
+          <FontAwesomeIcon icon={ faTags } /> <FontAwesomeIcon icon={ faCog } />{' '}
+          Labels
+        </Card.Header>
+        {labelsList}
+        <Card.Footer className="text-muted">
+          <LabelModal
+            color={ randomColor() }
+            label={ '' }
+            description={ '' }
+            labelId={ null }
+            handleSave={ handleSave }
+            showButtonVariant={ 'outline-secondary' }
+            showButtonSize={ '' }
+            showButtonText={
+              <span>
+                <FontAwesomeIcon icon={ faTag } />
+                {' '}Create New Label
+              </span> }
+          />
+        </Card.Footer>
+      </Card>
     </>
   );
 };
