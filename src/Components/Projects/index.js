@@ -16,20 +16,10 @@ const Projects = props => {
   const type = 'Project';
   const collection = new Collection(props.firebase, PROJECTS);
 
-  const createProject = async item => {
-    item.users = [ uid ];
-    const docRef = await collection.postItem(item);
-
-    item.url = `/projects/${ docRef.id }`;
-    docRef.update({
-      url: item.url
-    });
-
-    item.display = true;
-
+  const createDefaultLabel = async (projectId) => {
     const LabelsCollection = new Collection(
       props.firebase,
-      `/projects/${ docRef.id }/labels`
+      `/projects/${ projectId }/labels`
     );
 
     const defaultLabel = {
@@ -44,6 +34,20 @@ const Projects = props => {
     labelDocRef.update({
       id: labelDocRef.id
     });
+  };
+
+  const createProject = async item => {
+    item.users = [ uid ];
+    const docRef = await collection.postItem(item);
+
+    item.url = `/projects/${ docRef.id }`;
+    docRef.update({
+      url: item.url
+    });
+
+    item.display = true;
+
+    createDefaultLabel(docRef.id);
 
     return item;
   };
