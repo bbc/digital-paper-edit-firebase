@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTag,
-  faPen,
+  faPen
 } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -21,6 +21,7 @@ const LabelModal = (props) => {
     props.handleSave(newLabel);
     setShow(false);
   };
+
   const handleClose = () => {
     setShow(false);
   };
@@ -29,12 +30,15 @@ const LabelModal = (props) => {
     setShow(true);
   };
 
+  const DefaultButton = (
+    <Button variant="outline-secondary" block>
+      <FontAwesomeIcon icon={ faTag } /> Create New Label
+    </Button>);
+
   return (
     <>
       {props.label === 'Default' ?
-        <Button variant="outline-secondary" block>
-          <FontAwesomeIcon icon={ faTag } /> Create New Label
-        </Button> :
+        { DefaultButton } :
         <Button variant="link" size="sm" onClick={ handleShow } block>
           <span>
             {' '}
