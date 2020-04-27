@@ -12,22 +12,8 @@ import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
 
 const TranscriptMenu = (props) => {
   const labels = props.labels;
+  // needs refactor to do if/else logic of rendering LabelsList here
   const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
-
-  const updateSelectedLabel = (e, labelId) => {
-    const tempLabels = labels;
-    const previousActiveLabel = tempLabels.find((label) => {
-      return label.active;
-    });
-    if (previousActiveLabel) {
-      previousActiveLabel.active = false;
-    }
-    const activeLabel = tempLabels.find((label) => {
-      return label.id === labelId;
-    });
-    activeLabel.active = true;
-    props.setLabels(tempLabels);
-  };
 
   const HighlightButton = (
     <Button
@@ -104,13 +90,12 @@ const TranscriptMenu = (props) => {
 };
 
 TranscriptMenu.propTypes = {
-  labels: PropTypes.array,
-  handleClick: PropTypes.func,
   handleCreateAnnotation: PropTypes.func,
+  labels: PropTypes.array,
   onLabelCreate: PropTypes.any,
   onLabelDelete: PropTypes.any,
   onLabelUpdate: PropTypes.any,
-  setLabels: PropTypes.func
+  updateSelectedLabel: PropTypes.func
 };
 
 export default TranscriptMenu;
