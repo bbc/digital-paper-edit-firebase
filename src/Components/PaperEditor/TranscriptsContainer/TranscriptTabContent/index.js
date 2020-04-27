@@ -153,6 +153,7 @@ const TranscriptTabContent = (props) => {
 
   useEffect(() => {
     const getParagraphs = () => {
+      console.log(annotations, transcript);
       const groupedParagraphs = groupWordsInParagraphsBySpeakers(
         transcript.words,
         transcript.paragraphs
