@@ -17,8 +17,8 @@ const Paragraph = (props) => {
   const {
     transcriptId,
     paragraph,
-    displayPrefs,
-    showParagraphsMatchingSearch,
+    displayPref,
+    paragraphOnly,
     handleWordClick,
     labels,
     handleDeleteAnnotation,
@@ -27,20 +27,6 @@ const Paragraph = (props) => {
 
   const { speaker, words, text } = paragraph;
   const textWithoutPunctuation = removePunctuation(text);
-
-  const paragraphStyle = {
-    ...displayPrefs,
-    borderStyle: 'dashed',
-    borderWidth: '0.01em',
-    borderColor: 'lightgray',
-    padding: '0.5em',
-  };
-
-  if (!showParagraphsMatchingSearch && !paragraphStyle.display) {
-    delete paragraphStyle.display;
-    paragraphStyle.borderRight = '0.1em dashed lightgrey';
-    paragraphStyle.borderLeft = '0.1em dashed lightgrey';
-  }
 
   const getWordWithAnnotations = (word) => {
     const wordEl = (
@@ -77,7 +63,7 @@ const Paragraph = (props) => {
 
   return (
     <Row
-      style={ paragraphStyle }
+      style={ displayPref }
       className="paragraph"
       data-paragraph-text={ textWithoutPunctuation }
     >
@@ -110,7 +96,7 @@ const Paragraph = (props) => {
 };
 
 Paragraph.propTypes = {
-  displayPrefs: PropTypes.shape({
+  displayPref: PropTypes.shape({
     borderColor: PropTypes.any,
     borderStyle: PropTypes.any,
     borderWidth: PropTypes.any,
@@ -122,7 +108,7 @@ Paragraph.propTypes = {
   handleWordClick: PropTypes.any,
   labels: PropTypes.any,
   paragraph: PropTypes.any,
-  showParagraphsMatchingSearch: PropTypes.any,
+  paragraphOnly: PropTypes.any,
   transcriptId: PropTypes.any,
 };
 

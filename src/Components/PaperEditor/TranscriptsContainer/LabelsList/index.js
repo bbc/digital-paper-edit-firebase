@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Form from 'react-bootstrap/Form';
@@ -17,11 +17,9 @@ import cuid from 'cuid';
 import LabelModal from './LabelModal.js';
 import { randomColor } from './css-color-names.js';
 import PropTypes from 'prop-types';
-import cuid from 'cuid';
 
 const LabelsList = (props) => {
   const labels = props.labels;
-  const isOpen = props.isLabelsListOpen;
   const onLabelDelete = props.onLabelDelete;
   const onLabelCreate = props.onLabelCreate;
   const onLabelUpdate = props.onLabelUpdate;
@@ -177,36 +175,27 @@ const LabelsList = (props) => {
   );
 
   return (
-    <>
-      {isOpen ? (
-        <>
-          <Card>
-            <Card.Header>
-              <FontAwesomeIcon icon={ faTags } /> <FontAwesomeIcon icon={ faCog } />{' '}
-              Labels
-            </Card.Header>
-            {labelsList}
-            <Card.Footer className="text-muted">
-              <LabelModal
-                color={ randomColor() }
-                label={ '' }
-                description={ '' }
-                labelId={ null }
-                handleSave={ handleSave }
-              />
-            </Card.Footer>
-          </Card>
-        </>
-      ) : (
-        ''
-      )}
-    </>
+    <Card>
+      <Card.Header>
+        <FontAwesomeIcon icon={ faTags } /> <FontAwesomeIcon icon={ faCog } />{' '}
+        Labels
+      </Card.Header>
+      {labelsList}
+      <Card.Footer className="text-muted">
+        <LabelModal
+          color={ randomColor() }
+          label={ '' }
+          description={ '' }
+          labelId={ null }
+          handleSave={ handleSave }
+        />
+      </Card.Footer>
+    </Card>
   );
 };
 
 LabelsList.propTypes = {
   labels: PropTypes.any,
-  isLabelsListOpen: PropTypes.any,
   onLabelDelete: PropTypes.any,
   onLabelCreate: PropTypes.any,
   onLabelUpdate: PropTypes.any,

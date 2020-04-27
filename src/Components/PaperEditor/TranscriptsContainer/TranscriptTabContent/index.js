@@ -2,25 +2,17 @@
 import React, { useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
-import Paragraphs from '../Paragraphs';
-import onlyCallOnce from '../../../../Util/only-call-once/index.js';
-import SearchBar from '../SearchBar';
+import Paragraph from '../Paragraphs/Paragraph';
+// import onlyCallOnce from '../../../../Util/only-call-once/index.js';
+import SearchBar from '../SearchBar'; // move to same folder + rename to SearchTool
 import Collection from '../../../Firebase/Collection';
 import TranscriptMenu from './TranscriptMenu';
 import getTimeFromUserWordsSelection from '../get-user-selection.js';
-
-const getSpeakerLabels = (paragraphs) => {
-  const speakerSet = paragraphs.reduce((uniqueSpeakers, p) => {
-    uniqueSpeakers.add(p.speaker);
-
-    return uniqueSpeakers;
-  }, new Set());
-
-  return Array.from(speakerSet).map((speaker) => ({
-    value: speaker,
-    label: speaker,
-  }));
-};
+import paragraphWithAnnotations from '../Paragraphs/add-annotations-to-words-in-paragraphs.js';
+import groupWordsInParagraphsBySpeakers from '../Paragraphs/group-words-by-speakers.js';
+import findAnnotationsInWords from '../Paragraphs/find-annotation-in-paragraph.js';
+import cuid from 'cuid';
+import removePunctuation from '../../../../Util/remove-punctuation';
 
 const TranscriptTabContent = (props) => {
   const videoRef = useRef();
@@ -30,15 +22,18 @@ const TranscriptTabContent = (props) => {
 
   const [ labels, setLabels ] = useState();
   const [ annotations, setAnnotations ] = useState();
+  const [ speakers, setSpeakers ] = useState();
 
   const [ searchString, setSearchString ] = useState('');
-  const [ showMatch, setShowMatch ] = useState(false);
-  const [ searchLabels, setLabelSearch ] = useState([]);
-  const [ searchSpeakers, setSpeakerSearch ] = useState([]);
+  const [ paragraphOnly, setParagraphOnly ] = useState(false);
+  const [ selectedLabels, setSelectedLabels ] = useState([]);
+  const [ selectedSpeakers, setSelectedSpeakers ] = useState([]);
   const [ paragraphCSS, setParagraphsCSS ] = useState('');
   const [ searchHighlightCSS, setSearchHighlightCSS ] = useState('');
   const [ currentTime, setCurrentTime ] = useState();
   const [ isHighlighting, setIsHighlighting ] = useState(false);
+
+  const [ paragraphs, setParagraphs ] = useState([]);
 
   const mediaType = media ? media.type : '';
 
@@ -156,15 +151,73 @@ const TranscriptTabContent = (props) => {
     return () => {};
   }, [ isHighlighting, searchString ]);
 
-  const showLabelsReference = () => {};
+  useEffect(() => {
+    const getParagraphs = () => {
+      const groupedParagraphs = groupWordsInParagraphsBySpeakers(
+        transcript.words,
+        transcript.paragraphs
+      );
 
-  const handleLabelsSearchChange = (selectedOptionLabelSearch) => {};
+      return paragraphWithAnnotations(groupedParagraphs, annotations);
+    };
+
+    if ((transcript && transcript.paragraphs, transcript.words)) {
+      setParagraphs(getParagraphs(transcript));
+    }
+
+    return () => {};
+  }, [ annotations, transcript ]);
+
+  useEffect(() => {
+    const getSpeakerLabels = () => {
+      const speakerSet = transcript.paragraphs.reduce((uniqueSpeakers, p) => {
+        uniqueSpeakers.add(p.speaker);
+
+        return uniqueSpeakers;
+      }, new Set());
+
+      return Array.from(speakerSet).map((speaker) => ({
+        value: speaker,
+        label: speaker,
+      }));
+    };
+
+    if (transcript && transcript.paragraphs) {
+      setSpeakers(getSpeakerLabels(transcript.paragraphs));
+    }
+
+    return () => {};
+  }, [ transcript ]);
+
+  /* Paragraph text for data attribute for searches, without punctuation */
+  const findString = (text) => {
+    return text.includes(searchString);
+  };
+
+  const findSpeaker = (speaker) => {
+    if ((selectedSpeakers.length === 0) || (selectedSpeakers.find(
+      (spk) => spk.label === speaker))
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const findLabel = (label) => {
+    if ((selectedLabels.length === 0) || (selectedLabels.find((lb) => lb.id === label))) {
+      return true;
+    }
+
+    return false;
+  };
 
   const handleSearch = (e) => {
-    // TODO: debounce to optimise
     const text = e.target.value;
     if (text) {
       setSearchString(text);
+    } else {
+      setSearchString('');
     }
   };
 
@@ -278,11 +331,28 @@ const TranscriptTabContent = (props) => {
     setLabels(tempLabels);
   };
 
-  const currentWordTime = currentTime;
+  const isSearchResult = (text, speaker, label) => {
+    const textWithoutPunctuation = removePunctuation(text);
+    const lcSearchString = searchString.toLowerCase();
+
+    const foundSearchString = findString(
+      lcSearchString,
+      textWithoutPunctuation
+    );
+    const foundSpeaker = findSpeaker(speaker, selectedSpeakers);
+    const foundLabel = findLabel(label, selectedLabels);
+
+    if (foundSearchString || foundSpeaker || foundLabel) {
+      return true;
+    }
+
+    return false;
+  };
+
   const unplayedColor = 'grey';
 
   // Time to the nearest half second
-  const time = Math.round(currentWordTime * 4.0) / 4.0;
+  const time = Math.round(currentTime * 4.0) / 4.0;
   const highlights = (
     <style scoped>
       {`span.words[data-prev-times~="${ Math.floor(
@@ -327,10 +397,53 @@ const TranscriptTabContent = (props) => {
     );
   }
 
-  let speakers = null;
-  if (transcript && transcript.paragraphs) {
-    speakers = getSpeakerLabels(transcript.paragraphs);
-  }
+  const getParagraphEl = (paragraph) => {
+    let wordsAnnotations = []; // state?
+    if (annotations) {
+      wordsAnnotations = findAnnotationsInWords(
+        annotations,
+        paragraph.words
+      );
+    }
+
+    const displayPref = {
+      borderStyle: 'dashed',
+      borderWidth: '0.01em',
+      borderColor: 'lightgray',
+      padding: '0.5em'
+    };
+
+    if (!isSearchResult(paragraph.text, paragraph.speaker, wordsAnnotations.labelId)) {
+      displayPref.display = 'none';
+    }
+
+    if (!paragraphOnly) {
+      delete displayPref.display;
+      delete displayPref.borderWidth; // same as borderRight and left
+      displayPref.borderRight = '0.1em dashed lightgrey';
+      displayPref.borderLeft = '0.1em dashed lightgrey';
+    }
+
+    /**
+     * Create a Paragraph containing words, with or without annotation (overlay)
+     */
+    return (
+      <Paragraph
+        key={ cuid() }
+        transcriptId={ transcriptId }
+        paragraph={ paragraph }
+        paragraphOnly={ paragraphOnly }
+        displayPref={ displayPref }
+        handleWordClick={ (e) => (e.key === 'Enter' ? handleWordClick(e) : null) }
+        handleKeyDownTimecodes={ (e) =>
+          e.key === 'Enter' ? handleTimecodeClick(e) : null
+        }
+        labels={ labels }
+        handleDeleteAnnotation={ handleDeleteAnnotation }
+        handleEditAnnotation={ handleEditAnnotation }
+      />
+    );
+  };
 
   return (
     <>
@@ -346,14 +459,12 @@ const TranscriptTabContent = (props) => {
           {"{ background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }"}
           {"{ background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }"}
         </style>
-      )
-      }
+      )}
 
       <h2
         className={ [ 'text-truncate', 'text-muted' ].join(' ') }
         title={ `Transcript Title: ${ title }` }
       >
-        {/* <FontAwesomeIcon icon={ this.state.isVideoTranscriptPreviewShow === 'none' ? faEye : faEyeSlash } onClick={ this.handleVideoTranscriptPreviewDisplay }/> */}
         {title}
       </h2>
 
@@ -375,9 +486,12 @@ const TranscriptTabContent = (props) => {
           labels={ labels }
           speakers={ speakers }
           handleSearch={ handleSearch }
-          selectLabel={ () => setLabelSearch }
-          selectSpeaker={ () => setSpeakerSearch }
-          toggleShowMatch={ () => setShowMatch(!showMatch) }
+          selectLabel={ setSelectedLabels }
+          selectSpeaker={ setSelectedSpeakers }
+          paragraphOnly={ paragraphOnly }
+          toggleParagraphOnly={ () => setParagraphOnly(!paragraphOnly) }
+          selectedSpeakers={ selectedSpeakers }
+          selectedLabels={ selectedLabels }
         />
 
         <Card.Body
@@ -386,24 +500,7 @@ const TranscriptTabContent = (props) => {
           style={ { height: cardBodyHeight, overflow: 'scroll' } }
         >
           {highlights}
-
-          {transcript && transcript.paragraphs && labels && annotations ? (
-            <Paragraphs
-              transcriptId={ transcriptId }
-              labels={ labels }
-              annotations={ annotations }
-              transcript={ transcript }
-              searchString={ searchString }
-              showMatch={ showMatch }
-              searchLabels={ searchLabels }
-              searchSpeakers={ searchSpeakers }
-              handleTimecodeClick={ handleTimecodeClick }
-              handleWordClick={ handleWordClick }
-              handleCreateAnnotation={ handleCreateAnnotation }
-              handleDeleteAnnotation={ handleDeleteAnnotation }
-              handleEditAnnotation={ handleEditAnnotation }
-            />
-          ) : null}
+          {paragraphs.map((paragraph) => getParagraphEl(paragraph))}
         </Card.Body>
       </Card>
     </>
@@ -426,6 +523,7 @@ TranscriptTabContent.propTypes = {
   title: PropTypes.any,
   transcript: PropTypes.shape({
     paragraphs: PropTypes.any,
+    words: PropTypes.any,
   }),
   transcriptId: PropTypes.any,
 };

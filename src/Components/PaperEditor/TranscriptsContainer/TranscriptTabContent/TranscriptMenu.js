@@ -33,15 +33,17 @@ const TranscriptMenu = (props) => {
       id="bg-nested-dropdown"
       variant="outline-secondary"
     >
-      <LabelsList
-        isLabelsListOpen={ isLabelsListOpen }
-        labels={
-          labels && labels
-        }
-        onLabelUpdate={ props.onLabelUpdate }
-        onLabelCreate={ props.onLabelCreate }
-        onLabelDelete={ props.onLabelDelete }
-      />
+      {isLabelsListOpen ? (
+        <LabelsList
+          labels={
+            labels && labels
+          }
+          onLabelUpdate={ props.onLabelUpdate }
+          onLabelCreate={ props.onLabelCreate }
+          onLabelDelete={ props.onLabelDelete }
+        />
+      ) : ''}
+
     </DropdownButton>
   );
 
