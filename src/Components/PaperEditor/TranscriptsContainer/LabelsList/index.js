@@ -28,6 +28,7 @@ const LabelsList = (props) => {
     const response = window.confirm(
       'Click OK to delete the label, Cancel if you changed your mind'
     );
+
     if (response) {
       onLabelDelete(id);
     } else {

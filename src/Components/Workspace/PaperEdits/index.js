@@ -11,6 +11,7 @@ const PaperEdits = props => {
     props.firebase,
     `/projects/${ props.projectId }/paperedits`
   );
+
   const [ items, setItems ] = useState([]);
   const [ loading, setIsLoading ] = useState(false);
 

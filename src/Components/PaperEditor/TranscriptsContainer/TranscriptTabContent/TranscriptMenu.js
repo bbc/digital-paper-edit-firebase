@@ -12,20 +12,18 @@ import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
 
 const TranscriptMenu = (props) => {
   const labels = props.labels;
-  // needs refactor to do if/else logic of rendering LabelsList here
-  const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
 
   const HighlightButton = (
     <Button
       variant="outline-secondary"
       data-label-id={ 'default' }
-      onClick={ e => props.handleCreateAnnotation(e) }
+      onClick={ (e) => props.handleCreateAnnotation(e) }
     >
       <FontAwesomeIcon icon={ faHighlighter } flip="horizontal" /> Highlight
     </Button>
   );
 
-  const LabelButton = (
+  const EditLabelButton = (
     <DropdownButton
       drop={ 'right' }
       as={ ButtonGroup }
@@ -33,41 +31,34 @@ const TranscriptMenu = (props) => {
       id="bg-nested-dropdown"
       variant="outline-secondary"
     >
-      {isLabelsListOpen ? (
-        <LabelsList
-          labels={
-            labels && labels
-          }
-          onLabelUpdate={ props.onLabelUpdate }
-          onLabelCreate={ props.onLabelCreate }
-          onLabelDelete={ props.onLabelDelete }
-        />
-      ) : ''}
-
+      <LabelsList
+        labels={ labels && labels }
+        onLabelUpdate={ props.onLabelUpdate }
+        onLabelCreate={ props.onLabelCreate }
+        onLabelDelete={ props.onLabelDelete }
+      />
     </DropdownButton>
   );
 
-  const Labels = () => labels.map((label) =>
-    <Dropdown.Item
-      key={ `label_id_${ label.id }` }
-      data-label-id={ label.id }
-    >
-      <Row
-        value={ label.id }
-        onClick={ (e) => props.updateLabelSelection(e, label.id) }
-        data-label-id={ label.id }
-      >
-        <Col
-          xs={ 1 }
-          style={ { backgroundColor: label.color } }
+  const Labels = () =>
+    labels.map((label) => (
+      <Dropdown.Item key={ `label_id_${ label.id }` } data-label-id={ label.id }>
+        <Row
+          value={ label.id }
+          onClick={ (e) => props.updateLabelSelection(e, label.id) }
           data-label-id={ label.id }
-        ></Col>
-        <Col xs={ 1 } data-label-id={ label.id }>
-          {label.label}
-        </Col>
-      </Row>
-    </Dropdown.Item>
-  );
+        >
+          <Col
+            xs={ 1 }
+            style={ { backgroundColor: label.color } }
+            data-label-id={ label.id }
+          ></Col>
+          <Col xs={ 1 } data-label-id={ label.id }>
+            {label.label}
+          </Col>
+        </Row>
+      </Dropdown.Item>
+    ));
 
   return (
     <Row>
@@ -80,11 +71,9 @@ const TranscriptMenu = (props) => {
               variant="outline-secondary"
               data-lable-id={ 0 }
             />
-            <Dropdown.Menu>
-              {labels ? Labels() : null}
-            </Dropdown.Menu>
+            <Dropdown.Menu>{labels ? Labels() : null}</Dropdown.Menu>
           </Dropdown>
-          {LabelButton}
+          {EditLabelButton}
         </ButtonGroup>
       </Col>
     </Row>

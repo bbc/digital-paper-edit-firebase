@@ -34,7 +34,6 @@ const TranscriptTabContent = (props) => {
   const [ isHighlighting, setIsHighlighting ] = useState(false);
 
   const [ paragraphs, setParagraphs ] = useState([]);
-
   const mediaType = media ? media.type : '';
 
   const LabelsCollection = new Collection(
@@ -153,7 +152,6 @@ const TranscriptTabContent = (props) => {
 
   useEffect(() => {
     const getParagraphs = () => {
-      console.log(annotations, transcript);
       const groupedParagraphs = groupWordsInParagraphsBySpeakers(
         transcript.words,
         transcript.paragraphs
@@ -162,7 +160,7 @@ const TranscriptTabContent = (props) => {
       return paragraphWithAnnotations(groupedParagraphs, annotations);
     };
 
-    if ((transcript && transcript.paragraphs, transcript.words)) {
+    if ((transcript && transcript.paragraphs && transcript.words && annotations)) {
       setParagraphs(getParagraphs(transcript));
     }
 
@@ -241,9 +239,7 @@ const TranscriptTabContent = (props) => {
   const handleCreateAnnotation = async (e) => {
     const selection = getTimeFromUserWordsSelection();
     if (selection) {
-      const activeLabel = labels.find((label) => {
-        return label.active;
-      });
+      const activeLabel = labels.find((label) => label.active);
       if (activeLabel) {
         selection.labelId = activeLabel.id;
       } else {
