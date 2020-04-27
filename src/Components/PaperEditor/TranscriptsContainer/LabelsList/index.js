@@ -176,31 +176,29 @@ const LabelsList = (props) => {
   );
 
   return (
-    <>
-      <Card>
-        <Card.Header>
-          <FontAwesomeIcon icon={ faTags } /> <FontAwesomeIcon icon={ faCog } />{' '}
-          Labels
-        </Card.Header>
-        {labelsList}
-        <Card.Footer className="text-muted">
-          <LabelModal
-            color={ randomColor() }
-            label={ '' }
-            description={ '' }
-            labelId={ null }
-            handleSave={ handleSave }
-            showButtonVariant={ 'outline-secondary' }
-            showButtonSize={ '' }
-            showButtonText={
-              <span>
-                <FontAwesomeIcon icon={ faTag } />
-                {' '}Create New Label
-              </span> }
-          />
-        </Card.Footer>
-      </Card>
-    </>
+    <Card>
+      <Card.Header>
+        <FontAwesomeIcon icon={ faTags } /> <FontAwesomeIcon icon={ faCog } />{' '}
+        Labels
+      </Card.Header>
+      {labelsList}
+      <Card.Footer className="text-muted">
+        <LabelModal
+          color={ randomColor() }
+          label={ '' }
+          description={ '' }
+          labelId={ null }
+          handleSave={ handleSave }
+          showButtonVariant={ 'outline-secondary' }
+          showButtonSize={ '' }
+          showButtonText={
+            <span>
+              <FontAwesomeIcon icon={ faTag } />
+              {' '}Create New Label
+            </span> }
+        />
+      </Card.Footer>
+    </Card>
   );
 };
 

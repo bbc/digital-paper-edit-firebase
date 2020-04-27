@@ -42,7 +42,7 @@ const LabelModal = (props) => {
         </Modal.Header>
         <Modal.Body>
           <LabelForm
-            handleSave={ (e) => handleSave(e) }
+            handleSave={ handleSave }
             label={ label }
             description={ description }
             color={ color }
