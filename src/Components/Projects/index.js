@@ -27,6 +27,24 @@ const Projects = props => {
 
     item.display = true;
 
+    const LabelsCollection = new Collection(
+      props.firebase,
+      `/projects/${ docRef.id }/labels`
+    );
+
+    const defaultLabel = {
+      label: 'Default',
+      color: 'yellow',
+      value: 'yellow',
+      description: ''
+    };
+
+    const labelDocRef = await LabelsCollection.postItem(defaultLabel);
+
+    labelDocRef.update({
+      id: labelDocRef.id
+    });
+
     return item;
   };
 
