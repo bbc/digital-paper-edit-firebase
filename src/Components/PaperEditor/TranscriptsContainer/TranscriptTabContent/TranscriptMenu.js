@@ -12,6 +12,7 @@ import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
 
 const TranscriptMenu = (props) => {
   const labels = props.labels;
+  // needs refactor to do if/else logic of rendering LabelsList here
   const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
 
   const HighlightButton = (

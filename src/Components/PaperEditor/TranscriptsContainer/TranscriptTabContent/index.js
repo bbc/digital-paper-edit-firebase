@@ -46,6 +46,7 @@ const TranscriptTabContent = (props) => {
     firebase,
     `/projects/${ projectId }/labels`
   );
+
   const AnnotationsCollection = new Collection(
     firebase,
     `projects/${ projectId }/annotations`
@@ -92,7 +93,7 @@ const TranscriptTabContent = (props) => {
       getAnnotations();
     }
 
-    return () => { };
+    return () => {};
   }, [ AnnotationsCollection.collectionRef, annotations ]);
 
   useEffect(() => {
@@ -201,7 +202,7 @@ const TranscriptTabContent = (props) => {
       newAnnotation.id = docRef.id;
 
       docRef.update({
-        id: docRef.id
+        id: docRef.id,
       });
 
       const tempAnnotations = annotations;

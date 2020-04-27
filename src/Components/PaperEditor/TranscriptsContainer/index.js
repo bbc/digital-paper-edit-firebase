@@ -12,6 +12,7 @@ import PropTypes from 'prop-types';
 import cuid from 'cuid';
 
 import TranscriptTabContent from './TranscriptTabContent';
+import { withAuthorization } from '../../Session';
 
 const TranscriptsContainer = ({ transcripts, projectId, firebase }) => {
   const getStatusIcon = (status) => {
@@ -95,4 +96,5 @@ TranscriptsContainer.propTypes = {
   firebase: PropTypes.any,
 };
 
-export default TranscriptsContainer;
+const condition = (authUser) => !!authUser;
+export default withAuthorization(condition)(TranscriptsContainer);
