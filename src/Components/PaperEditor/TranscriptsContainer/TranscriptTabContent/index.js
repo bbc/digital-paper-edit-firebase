@@ -3,7 +3,6 @@ import React, { useRef, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Paragraph from '../Paragraphs/Paragraph';
-// import onlyCallOnce from '../../../../Util/only-call-once/index.js';
 import SearchBar from '../SearchBar'; // move to same folder + rename to SearchTool
 import Collection from '../../../Firebase/Collection';
 import TranscriptMenu from './TranscriptMenu';
@@ -147,7 +146,6 @@ const TranscriptTabContent = (props) => {
         const css = highlightWords(words);
         setParagraphsCSS(css.paragraphs);
         setSearchHighlightCSS(css.search);
-        // onlyCallOnce(highlightWords(words), 500);
         setIsHighlighting(false);
       } else {
         setParagraphsCSS('');
