@@ -40,10 +40,6 @@ const SearchBar = (props) => {
 
   const toggleShowSpeakers = () => setSearchBySpeaker(!searchBySpeaker);
 
-  const onChange = (e) => {
-    handleSearch(e);
-  };
-
   const handleShowAll = () => {
     setSearchBySpeaker(true);
     setSearchByLabel(true);
@@ -111,7 +107,7 @@ const SearchBar = (props) => {
           </InputGroup.Text>
         </InputGroup.Prepend>
         <FormControl
-          onChange={ onChange }
+          onChange={ handleSearch }
           placeholder="Search text..."
           aria-label="search"
           aria-describedby="search"
@@ -171,7 +167,7 @@ const SearchBar = (props) => {
 
       <Form.Check
         type="checkbox"
-        onChange={ onChange }
+        onChange={ handleSearch }
         defaultChecked={ paragraphOnly }
         onClick={ toggleParagraphOnly }
         label={
