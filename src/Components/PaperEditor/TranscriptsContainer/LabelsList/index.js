@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Form from 'react-bootstrap/Form';
@@ -29,6 +29,7 @@ const LabelsList = (props) => {
     const response = window.confirm(
       'Click OK to delete the label, Cancel if you changed your mind'
     );
+
     if (response) {
       onLabelDelete(id);
     } else {
@@ -204,7 +205,6 @@ const LabelsList = (props) => {
 
 LabelsList.propTypes = {
   labels: PropTypes.any,
-  isLabelsListOpen: PropTypes.any,
   onLabelDelete: PropTypes.any,
   onLabelCreate: PropTypes.any,
   onLabelUpdate: PropTypes.any,

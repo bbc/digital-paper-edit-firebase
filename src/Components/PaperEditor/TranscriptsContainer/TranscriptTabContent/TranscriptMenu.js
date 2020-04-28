@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -12,20 +12,18 @@ import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
 
 const TranscriptMenu = (props) => {
   const labels = props.labels;
-  // needs refactor to do if/else logic of rendering LabelsList here
-  const [ isLabelsListOpen, setIsLabelsListOpen ] = useState(true);
 
   const HighlightButton = (
     <Button
       variant="outline-secondary"
       data-label-id={ 'default' }
-      onClick={ e => props.handleCreateAnnotation(e) }
+      onClick={ (e) => props.handleCreateAnnotation(e) }
     >
       <FontAwesomeIcon icon={ faHighlighter } flip="horizontal" /> Highlight
     </Button>
   );
 
-  const LabelButton = (
+  const EditLabelButton = (
     <DropdownButton
       drop={ 'right' }
       as={ ButtonGroup }
@@ -34,10 +32,7 @@ const TranscriptMenu = (props) => {
       variant="outline-secondary"
     >
       <LabelsList
-        isLabelsListOpen={ isLabelsListOpen }
-        labels={
-          labels && labels
-        }
+        labels={ labels && labels }
         onLabelUpdate={ props.onLabelUpdate }
         onLabelCreate={ props.onLabelCreate }
         onLabelDelete={ props.onLabelDelete }
@@ -45,27 +40,25 @@ const TranscriptMenu = (props) => {
     </DropdownButton>
   );
 
-  const Labels = () => labels.map((label) =>
-    <Dropdown.Item
-      key={ `label_id_${ label.id }` }
-      data-label-id={ label.id }
-    >
-      <Row
-        value={ label.id }
-        onClick={ (e) => props.updateSelectedLabel(e, label.id) }
-        data-label-id={ label.id }
-      >
-        <Col
-          xs={ 1 }
-          style={ { backgroundColor: label.color } }
+  const Labels = () =>
+    labels.map((label) => (
+      <Dropdown.Item key={ `label_id_${ label.id }` } data-label-id={ label.id }>
+        <Row
+          value={ label.id }
+          onClick={ (e) => props.updateLabelSelection(e, label.id) }
           data-label-id={ label.id }
-        ></Col>
-        <Col xs={ 1 } data-label-id={ label.id }>
-          {label.label}
-        </Col>
-      </Row>
-    </Dropdown.Item>
-  );
+        >
+          <Col
+            xs={ 1 }
+            style={ { backgroundColor: label.color } }
+            data-label-id={ label.id }
+          ></Col>
+          <Col xs={ 1 } data-label-id={ label.id }>
+            {label.label}
+          </Col>
+        </Row>
+      </Dropdown.Item>
+    ));
 
   return (
     <Row>
@@ -78,11 +71,9 @@ const TranscriptMenu = (props) => {
               variant="outline-secondary"
               data-lable-id={ 0 }
             />
-            <Dropdown.Menu>
-              {labels ? Labels() : null}
-            </Dropdown.Menu>
+            <Dropdown.Menu>{labels ? Labels() : null}</Dropdown.Menu>
           </Dropdown>
-          {LabelButton}
+          {EditLabelButton}
         </ButtonGroup>
       </Col>
     </Row>
@@ -91,11 +82,11 @@ const TranscriptMenu = (props) => {
 
 TranscriptMenu.propTypes = {
   handleCreateAnnotation: PropTypes.func,
+  updateLabelSelection: PropTypes.func,
   labels: PropTypes.array,
   onLabelCreate: PropTypes.any,
   onLabelDelete: PropTypes.any,
   onLabelUpdate: PropTypes.any,
-  updateSelectedLabel: PropTypes.func
 };
 
 export default TranscriptMenu;

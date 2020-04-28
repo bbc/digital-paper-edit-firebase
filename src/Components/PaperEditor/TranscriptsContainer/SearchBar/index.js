@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Card from 'react-bootstrap/Card';
+import Badge from 'react-bootstrap/Badge';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import DropdownButton from 'react-bootstrap/DropdownButton';
@@ -12,7 +13,6 @@ import Select from 'react-select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCheck,
-  faAlignJustify,
   faFilter,
   faTag,
   faUser,
@@ -21,242 +21,182 @@ import {
 import colourStyles from '../LabelsList/select-color-styles.js';
 import speakersColorStyles from './select-speakers-color-styles.js';
 
-class SearchBar extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      showParagraphsMatchingSearch: false,
-      showTextSearchPreferences: false,
-      showSpeakersSearchPreferences: false,
-      showLabelsSearchPreferences: false
-    };
-  }
+const SearchBar = (props) => {
+  const [ searchByLabel, setSearchByLabel ] = useState(false);
+  const [ searchBySpeaker, setSearchBySpeaker ] = useState(false);
+  const {
+    speakers,
+    selectSpeaker,
+    selectedSpeakers,
+    labels,
+    selectLabel,
+    selectedLabels,
+    toggleParagraphOnly,
+    paragraphOnly,
+    handleSearch,
+  } = props;
 
-  handleToggleSearchTextPreferences = () => {
-    this.setState((state) => {
-      return { showTextSearchPreferences: !state.showTextSearchPreferences };
-    });
+  const toggleShowLabels = () => setSearchByLabel(!searchByLabel);
+
+  const toggleShowSpeakers = () => setSearchBySpeaker(!searchBySpeaker);
+
+  const handleShowAll = () => {
+    setSearchBySpeaker(true);
+    setSearchByLabel(true);
   };
 
-  handleToggleSearchLabelsPreferences = () => {
-    this.setState((state) => {
-      return {
-        showLabelsSearchPreferences: !state.showLabelsSearchPreferences
-      };
-    });
+  const handleHideAll = () => {
+    setSearchBySpeaker(false);
+    setSearchByLabel(false);
   };
 
-  handleToggleSearchSpeakersPreferences = () => {
-    this.setState((state) => {
-      return {
-        showSpeakersSearchPreferences: !state.showSpeakersSearchPreferences
-      };
-    });
-  };
+  const FilterDropdown = (
+    <DropdownButton
+      drop={ 'right' }
+      as={ InputGroup.Append }
+      variant="outline-secondary"
+      title={ <FontAwesomeIcon icon={ faFilter } title="Filter results" /> }
+    >
+      <Dropdown.Item
+        onClick={ toggleShowLabels }
+        title="Filter results by Labels"
+      >
+        <FontAwesomeIcon icon={ faTag } /> Labels{' '}
+        {searchByLabel ? (
+          <FontAwesomeIcon style={ { color: 'blue' } } icon={ faCheck } />
+        ) : (
+          ''
+        )}
+      </Dropdown.Item>
+      <Dropdown.Item
+        onClick={ toggleShowSpeakers }
+        title="Filter results by Speakers"
+      >
+        <FontAwesomeIcon icon={ faUser } /> Speakers{' '}
+        {searchBySpeaker ? (
+          <FontAwesomeIcon style={ { color: 'blue' } } icon={ faCheck } />
+        ) : (
+          ''
+        )}
+      </Dropdown.Item>
 
-  handleSpeakersSearchChange = selectedOptionSpeakerSearch => {
-    this.props.handleSpeakersSearchChange(selectedOptionSpeakerSearch);
-    this.setState({ selectedOptionSpeakerSearch });
-  };
+      <Dropdown.Item
+        onClick={ handleShowAll }
+        title="Show all of the above options"
+      >
+        All{' '}
+        {searchByLabel && searchBySpeaker ? (
+          <FontAwesomeIcon style={ { color: 'blue' } } icon={ faCheck } />
+        ) : (
+          ''
+        )}
+      </Dropdown.Item>
+      <Dropdown.Divider />
+      <Dropdown.Item onClick={ handleHideAll } title="Deselect all the options">
+        Deselect all
+      </Dropdown.Item>
+    </DropdownButton>
+  );
 
-   handleLabelsSearchChange = selectedOptionLabelSearch => {
-     this.props.handleLabelsSearchChange(selectedOptionLabelSearch);
-     this.setState({ selectedOptionLabelSearch });
-   };
+  return (
+    <Card.Header>
+      <InputGroup className="mb-3">
+        <InputGroup.Prepend>
+          <InputGroup.Text>
+            <FontAwesomeIcon icon={ faSearch } />
+          </InputGroup.Text>
+        </InputGroup.Prepend>
+        <FormControl
+          onChange={ handleSearch }
+          placeholder="Search text..."
+          aria-label="search"
+          aria-describedby="search"
+        />
+        {FilterDropdown}
+      </InputGroup>
 
-   handleShowParagraphsMatchingSearch = () => {
-     this.setState((state) => {
-       return { showParagraphsMatchingSearch: !state.showParagraphsMatchingSearch };
-     }, () => {
-       this.props.handleShowParagraphsMatchingSearch();
-     });
-   }
+      {searchByLabel ? (
+        <Row style={ { marginBottom: '10px' } }>
+          <Col xs={ 1 }>
+            <h4>
+              <Badge variant="secondary">
+                <FontAwesomeIcon icon={ faTag } />
+              </Badge>
+            </h4>
+          </Col>
+          <Col>
+            <Select
+              value={ selectedLabels }
+              onChange={ selectLabel }
+              isMulti
+              isSearchable
+              options={ labels }
+              styles={ colourStyles }
+              placeholder={ 'Filter by label...' }
+            />
+          </Col>
+        </Row>
+      ) : (
+        ''
+      )}
 
-   handleToggleAll = () => {
-     this.setState((state) => {
-       return {
-         showTextSearchPreferences: true,
-         showSpeakersSearchPreferences: true,
-         showLabelsSearchPreferences: true,
-         // defaults to show only matching paragraph to be checked
-         showParagraphsMatchingSearch: true
-       };
-     }, () => {
-       this.props.handleShowParagraphsMatchingSearch();
-     });
-   }
+      {searchBySpeaker ? (
+        <Row style={ { marginBottom: '10px' } }>
+          <Col xs={ 1 }>
+            <h4>
+              <Badge variant="secondary">
+                <FontAwesomeIcon icon={ faUser } />
+              </Badge>
+            </h4>
+          </Col>
+          <Col>
+            <Select
+              value={ selectedSpeakers }
+              onChange={ selectSpeaker }
+              isMulti
+              isSearchable
+              options={ speakers }
+              styles={ speakersColorStyles }
+              placeholder={ 'Filter by speaker...' }
+            />
+          </Col>
+        </Row>
+      ) : (
+        ''
+      )}
 
-   handleHideAll = () => {
-     this.setState((state) => {
-       return {
-         showTextSearchPreferences: false,
-         showSpeakersSearchPreferences: false,
-         showLabelsSearchPreferences: false,
-         // remove preferences for showing matching paragraphjs when removing filters
-         showParagraphsMatchingSearch: false
-       };
-     }, () => {
-       this.props.handleShowParagraphsMatchingSearch();
-     });
-   }
-
-   /* TODO: move searchBar to a Search Toolbar component? */
-   render() {
-
-     return (
-       <>
-         <Card.Header>
-           <InputGroup className="mb-3">
-             <InputGroup.Prepend>
-               <InputGroup.Text>
-                 <FontAwesomeIcon icon={ faSearch } />
-               </InputGroup.Text>
-             </InputGroup.Prepend>
-             {/* Search */}
-             <FormControl
-               //  TODO: pass labels, speakers, and paragraph pref
-               onChange={ (e) => {this.props.handleSearch(e, {
-                 showParagraphsMatchingSearch: this.state.showParagraphsMatchingSearch,
-                 showLabelsSearchPreferences: this.state.showLabelsSearchPreferences,
-                 showSpeakersSearchPreferences: this.state.showSpeakersSearchPreferences
-               });} }
-               placeholder="Search text..."
-               aria-label="search"
-               aria-describedby="search"
-             />
-             <DropdownButton
-               drop={ 'right' }
-               as={ InputGroup.Append }
-               variant="outline-secondary"
-               title={ <>
-                 <FontAwesomeIcon icon={ faFilter }
-                   title="Filter results" />
-               </> }
-             >
-               <Dropdown.Item
-                 onClick={ this.handleToggleSearchLabelsPreferences }
-                 title="Filter results by Labels"
-               >
-                 <FontAwesomeIcon icon={ faTag } />  Labels {this.state.showLabelsSearchPreferences ?
-                   <FontAwesomeIcon style={ { color:'blue' } } icon={ faCheck } />
-                   : ''}
-               </Dropdown.Item>
-               <Dropdown.Item
-                 onClick={ this.handleToggleSearchSpeakersPreferences }
-                 title="Filter results by Speakers"
-               >
-                 <FontAwesomeIcon icon={ faUser } /> Speakers  {this.state.showSpeakersSearchPreferences ?
-                   <FontAwesomeIcon style={ { color:'blue' } } icon={ faCheck } />
-                   : ''}
-               </Dropdown.Item>
-               <Dropdown.Item
-                 onClick={ this.handleToggleSearchTextPreferences }
-                 title="Show only matching paragraphs"
-               >
-                 <FontAwesomeIcon icon={ faAlignJustify }/> Paragraphs only {this.state.showTextSearchPreferences ?
-                   <FontAwesomeIcon style={ { color:'blue' } } icon={ faCheck } />
-                   : ''}
-               </Dropdown.Item>
-               <Dropdown.Item
-                 onClick={ this.handleToggleAll }
-                 title="Show all of the above options"
-               >
-                 All {this.state.showLabelsSearchPreferences && this.state.showSpeakersSearchPreferences && this.state.showTextSearchPreferences ?
-                   <FontAwesomeIcon style={ { color:'blue' } } icon={ faCheck } />
-                   : ''}
-               </Dropdown.Item>
-               <Dropdown.Divider />
-               <Dropdown.Item
-                 onClick={ this.handleHideAll }
-                 title="Deselect all the options"
-               >
-                 Deselect all
-               </Dropdown.Item>
-             </DropdownButton>
-           </InputGroup>
-
-           { this.state.showLabelsSearchPreferences
-             ? <>
-               <Row className="mb-3">
-                 <Col xs={ 1 } sm={ 1 } md={ 1 } ld={ 1 } xl={ 1 }>
-                   <InputGroup.Prepend>
-                     <InputGroup.Text>
-                       <FontAwesomeIcon icon={ faTag } />
-                     </InputGroup.Text>
-                   </InputGroup.Prepend>
-                 </Col>
-                 <Col xs={ 10 } sm={ 11 } md={ 11 } ld={ 11 } xl={ 11 }>
-                   <Select
-                     value={ this.state.selectedOptionLabelSearch }
-                     onChange={ this.handleLabelsSearchChange }
-                     isMulti
-                     isSearchable
-                     options={ this.props.labels }
-                     styles={ colourStyles }
-                     placeholder={ 'Filter by label...' }
-                   />
-                 </Col>
-               </Row>
-             </>
-             : ''}
-
-           { this.state.showSpeakersSearchPreferences
-             ? <>
-               <Row className="mb-3">
-                 <Col xs={ 1 } sm={ 1 } md={ 1 } ld={ 1 } xl={ 1 }>
-                   <InputGroup.Prepend>
-                     <InputGroup.Text>
-                       <FontAwesomeIcon icon={ faUser } />
-                     </InputGroup.Text>
-                   </InputGroup.Prepend>
-                 </Col>
-                 <Col xs={ 10 } sm={ 11 } md={ 11 } ld={ 11 } xl={ 11 }>
-                   <Select
-                     value={ this.state.selectedOptionSpeakerSearch }
-                     onChange={ this.handleSpeakersSearchChange }
-                     isMulti
-                     isSearchable
-                     options={ this.props.speakersOptions }
-                     styles={ speakersColorStyles }
-                     placeholder={ 'Filter by speaker...' }
-                   />
-                 </Col>
-               </Row>
-             </>
-             : ''}
-
-           { this.state.showTextSearchPreferences
-             ? (<>
-               <Form.Check
-                 type="checkbox"
-                 checked={ this.state.showParagraphsMatchingSearch }
-                 onChange={ this.handleShowParagraphsMatchingSearch }
-                 label={ <>
-                   <Form.Text
-                     className="text-muted"
-                     title="Show only matching paragraphs"
-                     onClick={ this.handleShowParagraphsMatchingSearch }
-                   >
-                     Show only matching paragraphs
-                   </Form.Text>
-                 </> }
-               />
-             </>)
-             : ''}
-
-         </Card.Header>
-       </>
-     );
-   }
-}
+      <Form.Check
+        type="checkbox"
+        onChange={ handleSearch }
+        defaultChecked={ paragraphOnly }
+        onClick={ toggleParagraphOnly }
+        label={
+          <>
+            <Form.Text
+              className="text-muted"
+              title="Show only matching paragraphs"
+            >
+              Show only matching paragraphs
+            </Form.Text>
+          </>
+        }
+      />
+    </Card.Header>
+  );
+};
 
 SearchBar.propTypes = {
-  handleLabelsSearchChange: PropTypes.func,
   handleSearch: PropTypes.func,
-  handleShowParagraphsMatchingSearch: PropTypes.func,
-  handleSpeakersSearchChange: PropTypes.func,
   labels: PropTypes.any,
-  speakersOptions: PropTypes.any
+  paragraphOnly: PropTypes.any,
+  searchByLabel: PropTypes.any,
+  searchBySpeaker: PropTypes.any,
+  selectLabel: PropTypes.any,
+  selectSpeaker: PropTypes.any,
+  selectedLabels: PropTypes.any,
+  selectedSpeakers: PropTypes.any,
+  speakers: PropTypes.any,
+  toggleParagraphOnly: PropTypes.any,
 };
 
 export default SearchBar;
