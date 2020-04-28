@@ -62,7 +62,7 @@ const AnnotationOverlayTrigger = (props) => {
       />{' '}
       {note}
       <br />
-      <FontAwesomeIcon icon={ faPen } onClick={ handleEditAnnotation } />
+      <FontAwesomeIcon icon={ faPen } onClick={ () => handleEditAnnotation(id) } />
     </Popover>
   );
 
