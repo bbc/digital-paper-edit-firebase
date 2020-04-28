@@ -17,7 +17,6 @@ const Paragraph = (props) => {
   const {
     transcriptId,
     paragraph,
-    // paragraphOnly,
     isSearchResult,
     handleWordClick,
     labels,
@@ -68,10 +67,6 @@ const Paragraph = (props) => {
       borderColor: 'lightgray',
       padding: '0.5em'
     };
-
-    // if (paragraphOnly && !display) {
-    //   displayPref.display = 'none';
-    // // }
 
     if (isSearchResult) {
       displayPref.borderRight = '0.1em dashed lightgrey';
