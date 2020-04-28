@@ -244,7 +244,7 @@ const TranscriptTabContent = (props) => {
 
     const isParagraphSearchResult = (paragraph) => {
       const wordsAnnotation = paragraph.words.find(w => w.hasOwnProperty('annotation'));
-      const labelId = wordsAnnotation ? wordsAnnotation.annotation.id : '';
+      const labelId = wordsAnnotation ? wordsAnnotation.annotation.labelId : '';
 
       if (
         isSearchResult(
