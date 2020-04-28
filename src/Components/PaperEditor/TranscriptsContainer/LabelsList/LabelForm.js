@@ -72,7 +72,7 @@ const LabelForm = (props) => {
         id: labelId
       };
       setLabel(tempLabel);
-      props.onLabelSaved(tempLabel);
+      props.handleSave(tempLabel);
     }
     else {
       alert('choose a valid color');
@@ -164,7 +164,7 @@ LabelForm.propTypes = {
   label: PropTypes.any,
   description: PropTypes.any,
   labelId: PropTypes.any,
-  onLabelSaved: PropTypes.any
+  handleSave: PropTypes.any
 };
 
 export default LabelForm;
