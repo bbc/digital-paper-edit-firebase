@@ -145,11 +145,11 @@ const ProgrammeScriptContainer = (props) => {
     const handleUpdatePreview = async () => {
       const newPlaylist = await getPlaylist(elements);
       setPlaylist(newPlaylist);
+      setResetPreview(false);
     };
 
     if (resetPreview && elements && elements.length > 0) {
       handleUpdatePreview();
-      setResetPreview(false);
     }
   }, [ elements, resetPreview, firebase.storage.storage, transcripts ]);
 
@@ -167,9 +167,37 @@ const ProgrammeScriptContainer = (props) => {
     };
   });
 
-  const handleReorder = (newElements) => {
+  const updateWordTimings = (newElements) => {
+    console.log('Inside update word timings');
+    const paperEdits = newElements.filter((element) => element.type === 'paper-cut');
+
+    const updatedElements = paperEdits.reduce((durationCounter, paperEdit) => {
+      const paperEditDuration = paperEdit.end - paperEdit.start;
+
+      paperEdit.words.map((word) => {
+        const newStartTime = paperEdit.vcStart + word.start + durationCounter.startTime;
+        const newEndTime = newStartTime + (word.end - word.start);
+        word.start = newStartTime;
+        word.end = newEndTime;
+
+        return word;
+      });
+
+      durationCounter.startTime += paperEditDuration;
+      durationCounter.elements.push(paperEdit);
+
+      return durationCounter;
+
+    }, { startTime: 0, elements: [] });
+
+    return updatedElements.elements;
+  };
+
+  const handleReorder = async (newElements) => {
     console.log(newElements);
-    setElements(newElements);
+    const updatedWords = await updateWordTimings(newElements);
+    console.log('updated words', updatedWords);
+    setElements(updatedWords);
     setResetPreview(true);
   };
 
@@ -252,6 +280,8 @@ const ProgrammeScriptContainer = (props) => {
           type: 'paper-cut',
           start: result.start,
           end: result.end,
+          vcStart: prevDuration.startTime,
+          vcEnd: prevDuration.startTime + (result.end - result.start),
           words: [],
           speaker: result.speaker,
           transcriptId: result.transcriptId,
@@ -286,6 +316,7 @@ const ProgrammeScriptContainer = (props) => {
 
   const handleDoubleClickOnProgrammeScript = (e) => {
     console.log('Handling double click...');
+    console.log('e', e);
     if (e.target.className === 'words') {
       const wordCurrentTime = e.target.dataset.start;
       console.log('element dataset: : ', e.target.dataset);
