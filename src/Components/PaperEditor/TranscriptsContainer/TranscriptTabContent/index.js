@@ -56,7 +56,7 @@ const TranscriptTabContent = (props) => {
 
   const AnnotationsCollection = new Collection(
     firebase,
-    `projects/${ projectId }/transcriptions/${ transcriptId }/annotations`
+    `projects/${ projectId }/transcripts/${ transcriptId }/annotations`
   );
 
   useEffect(() => {
