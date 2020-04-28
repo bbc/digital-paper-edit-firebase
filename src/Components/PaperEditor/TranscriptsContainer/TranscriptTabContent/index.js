@@ -9,7 +9,6 @@ import TranscriptMenu from './TranscriptMenu';
 import getTimeFromUserWordsSelection from '../get-user-selection.js';
 import paragraphWithAnnotations from '../Paragraphs/add-annotations-to-words-in-paragraphs.js';
 import groupWordsInParagraphsBySpeakers from '../Paragraphs/group-words-by-speakers.js';
-import findAnnotationsInWords from '../Paragraphs/find-annotation-in-paragraph.js';
 import cuid from 'cuid';
 import removePunctuation from '../../../../Util/remove-punctuation';
 
@@ -244,16 +243,14 @@ const TranscriptTabContent = (props) => {
     };
 
     const isParagraphSearchResult = (paragraph) => {
-      let wordsAnnotations = { labelId: '' };
-      if (annotations) {
-        wordsAnnotations = findAnnotationsInWords(annotations, paragraph.words);
-      }
+      const wordsAnnotation = paragraph.words.find(w => w.hasOwnProperty('annotation').annotation);
+      const labelId = wordsAnnotation ? wordsAnnotation.id : '';
 
       if (
         isSearchResult(
           paragraph.text,
           paragraph.speaker,
-          wordsAnnotations.labelId
+          labelId
         )
       ) {
         return true;
@@ -301,7 +298,6 @@ const TranscriptTabContent = (props) => {
 
     return () => {};
   }, [
-    annotations,
     hasSearch,
     paragraphOnly,
     paragraphs,
