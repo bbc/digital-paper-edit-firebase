@@ -243,8 +243,8 @@ const TranscriptTabContent = (props) => {
     };
 
     const isParagraphSearchResult = (paragraph) => {
-      const wordsAnnotation = paragraph.words.find(w => w.hasOwnProperty('annotation').annotation);
-      const labelId = wordsAnnotation ? wordsAnnotation.id : '';
+      const wordsAnnotation = paragraph.words.find(w => w.hasOwnProperty('annotation'));
+      const labelId = wordsAnnotation ? wordsAnnotation.annotation.id : '';
 
       if (
         isSearchResult(
