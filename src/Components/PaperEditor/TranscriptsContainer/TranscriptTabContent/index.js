@@ -15,26 +15,34 @@ import cuid from 'cuid';
 import removePunctuation from '../../../../Util/remove-punctuation';
 
 const TranscriptTabContent = (props) => {
-  const videoRef = useRef();
-
   const { transcriptId, projectId, title, firebase, media, transcript } = props;
+
+  // media
+  const videoRef = useRef();
   const [ url, setUrl ] = useState();
+  const [ currentTime, setCurrentTime ] = useState();
+  const mediaType = media ? media.type : '';
 
   const [ labels, setLabels ] = useState();
   const [ annotations, setAnnotations ] = useState();
   const [ speakers, setSpeakers ] = useState();
 
+  // search terms
   const [ searchString, setSearchString ] = useState('');
-  const [ paragraphOnly, setParagraphOnly ] = useState(false);
   const [ selectedLabels, setSelectedLabels ] = useState([]);
   const [ selectedSpeakers, setSelectedSpeakers ] = useState([]);
+  const [ hasSearch, setHasSearch ] = useState(false);
+
+  // search display
+  const [ paragraphOnly, setParagraphOnly ] = useState(true);
+  const [ paragraphs, setParagraphs ] = useState([]);
+  const [ displayParagraphs, setDisplayParagraphs ] = useState([]);
+  const [ isSearchResults, setIsSearchResults ] = useState([]);
+
+  // highlight
   const [ paragraphCSS, setParagraphsCSS ] = useState('');
   const [ searchHighlightCSS, setSearchHighlightCSS ] = useState('');
-  const [ currentTime, setCurrentTime ] = useState();
   const [ isHighlighting, setIsHighlighting ] = useState(false);
-
-  const [ paragraphs, setParagraphs ] = useState([]);
-  const mediaType = media ? media.type : '';
 
   const LabelsCollection = new Collection(
     firebase,
@@ -188,35 +196,106 @@ const TranscriptTabContent = (props) => {
     return () => {};
   }, [ transcript ]);
 
-  /* Paragraph text for data attribute for searches, without punctuation */
-  const findString = (text) => {
-    return text.includes(searchString);
-  };
-
-  const findSpeaker = (speaker) => {
-    if ((selectedSpeakers.length === 0) || (selectedSpeakers.find(
-      (spk) => spk.label === speaker))
-    ) {
-      return true;
+  useEffect(() => {
+    if (searchString !== '' || selectedSpeakers.length > 0 || selectedLabels.length > 0) {
+      setHasSearch(true);
+    } else {
+      setHasSearch(false);
     }
 
-    return false;
-  };
+    return () => {
+      setHasSearch(false);
+    };
+  }, [ searchString, selectedLabels, selectedSpeakers ]);
 
-  const findLabel = (label) => {
-    if ((selectedLabels.length === 0) || (selectedLabels.find((lb) => lb.id === label))) {
-      return true;
+  useEffect(() => {
+    /* Paragraph text for data attribute for searches, without punctuation */
+    const findString = (str, text) => str ? text.includes(str) : false;
+
+    const findSpeaker = (speaker) => !!(selectedSpeakers.find((spk) => spk.label === speaker));
+
+    const findLabel = (label) => !!(selectedLabels.find((lb) => lb.id === label));
+
+    const isSearchResult = (text, speaker, label) => {
+      const textWithoutPunctuation = removePunctuation(text);
+      const lcSearchString = searchString.toLowerCase();
+
+      const foundSearchString = findString(
+        lcSearchString,
+        textWithoutPunctuation
+      );
+
+      const foundSpeaker = findSpeaker(speaker, selectedSpeakers);
+      const foundLabel = findLabel(label, selectedLabels);
+
+      if (foundSearchString || foundSpeaker || foundLabel) {
+        return true;
+      }
+
+      return false;
+    };
+
+    const isParagraphSearchResult = (paragraph) => {
+      let wordsAnnotations = { labelId: '' };
+      if (annotations) {
+        wordsAnnotations = findAnnotationsInWords(
+          annotations,
+          paragraph.words
+        );
+      }
+
+      if (isSearchResult(paragraph.text, paragraph.speaker, wordsAnnotations.labelId)) {
+        return true;
+      }
+
+      return false;
+    };
+
+    const setAllDisplays = (display) => {
+      const displayAllParagraphs = paragraphs.map(p => display);
+      setDisplayParagraphs(displayAllParagraphs);
+    };
+    const setAllSearchResults = (searchResult) => {
+      const searchResults = paragraphs.map(p => searchResult);
+      setIsSearchResults(searchResults);
+    };
+
+    if (paragraphs) {
+      if (paragraphOnly) {
+        // don't style borders
+        setAllSearchResults(false);
+        if (hasSearch) {
+          const foundParagraphs = paragraphs.map(p => isParagraphSearchResult(p));
+          setDisplayParagraphs(foundParagraphs);
+        } else {
+          setAllDisplays(true);
+        }
+      } else {
+        // display all with styled borders for found paragraphs
+        setAllDisplays(true);
+        if (hasSearch) {
+          const foundParagraphs = paragraphs.map(p => isParagraphSearchResult(p));
+          setIsSearchResults(foundParagraphs);
+        } else {
+          setAllSearchResults(false);
+        }
+      }
+    } else {
+      setAllDisplays(true);
     }
 
-    return false;
-  };
+    return () => {
+    };
+  }, [ annotations, hasSearch, paragraphOnly, paragraphs, searchString, selectedLabels, selectedSpeakers ]);
 
   const handleSearch = (e) => {
-    const text = e.target.value;
-    if (text) {
-      setSearchString(text);
-    } else {
-      setSearchString('');
+    if (e.target.type !== 'checkbox') {
+      const text = e.target.value;
+      if (text) {
+        setSearchString(text);
+      } else {
+        setSearchString('');
+      }
     }
   };
 
@@ -328,24 +407,6 @@ const TranscriptTabContent = (props) => {
     setLabels(tempLabels);
   };
 
-  const isSearchResult = (text, speaker, label) => {
-    const textWithoutPunctuation = removePunctuation(text);
-    const lcSearchString = searchString.toLowerCase();
-
-    const foundSearchString = findString(
-      lcSearchString,
-      textWithoutPunctuation
-    );
-    const foundSpeaker = findSpeaker(speaker, selectedSpeakers);
-    const foundLabel = findLabel(label, selectedLabels);
-
-    if (foundSearchString || foundSpeaker || foundLabel) {
-      return true;
-    }
-
-    return false;
-  };
-
   const unplayedColor = 'grey';
 
   // Time to the nearest half second
@@ -394,32 +455,7 @@ const TranscriptTabContent = (props) => {
     );
   }
 
-  const getParagraphEl = (paragraph) => {
-    let wordsAnnotations = []; // state?
-    if (annotations) {
-      wordsAnnotations = findAnnotationsInWords(
-        annotations,
-        paragraph.words
-      );
-    }
-
-    const displayPref = {
-      borderStyle: 'dashed',
-      borderWidth: '0.01em',
-      borderColor: 'lightgray',
-      padding: '0.5em'
-    };
-
-    if (!isSearchResult(paragraph.text, paragraph.speaker, wordsAnnotations.labelId)) {
-      displayPref.display = 'none';
-    }
-
-    if (!paragraphOnly) {
-      delete displayPref.display;
-      delete displayPref.borderWidth; // same as borderRight and left
-      displayPref.borderRight = '0.1em dashed lightgrey';
-      displayPref.borderLeft = '0.1em dashed lightgrey';
-    }
+  const getParagraphEl = (paragraph, isSearchResult) => {
 
     /**
      * Create a Paragraph containing words, with or without annotation (overlay)
@@ -429,18 +465,23 @@ const TranscriptTabContent = (props) => {
         key={ cuid() }
         transcriptId={ transcriptId }
         paragraph={ paragraph }
-        paragraphOnly={ paragraphOnly }
-        displayPref={ displayPref }
+        labels={ labels }
+        isSearchResult={ isSearchResult }
         handleWordClick={ (e) => (e.key === 'Enter' ? handleWordClick(e) : null) }
         handleKeyDownTimecodes={ (e) =>
           e.key === 'Enter' ? handleTimecodeClick(e) : null
         }
-        labels={ labels }
         handleDeleteAnnotation={ handleDeleteAnnotation }
         handleEditAnnotation={ handleEditAnnotation }
       />
     );
   };
+
+  const Paragraphs = paragraphs
+    .filter((paragraph, displayIndex) => displayParagraphs[displayIndex])
+    .map((paragraph, searchResultIndex) =>
+      getParagraphEl(paragraph, isSearchResults[searchResultIndex])
+    );
 
   return (
     <>
@@ -472,23 +513,21 @@ const TranscriptTabContent = (props) => {
             labels={ labels }
             updateLabelSelection={ updateLabelSelection }
             handleCreateAnnotation={ handleCreateAnnotation }
-            handleEditAnnotation={ handleEditAnnotation }
-            handleDeleteAnnotation={ handleDeleteAnnotation }
             onLabelCreate={ onLabelCreate }
             onLabelUpdate={ onLabelUpdate }
             onLabelDelete={ onLabelDelete }
           />
         </Card.Header>
         <SearchBar
+          handleSearch={ handleSearch }
           labels={ labels }
           speakers={ speakers }
-          handleSearch={ handleSearch }
           selectLabel={ setSelectedLabels }
           selectSpeaker={ setSelectedSpeakers }
           paragraphOnly={ paragraphOnly }
-          toggleParagraphOnly={ () => setParagraphOnly(!paragraphOnly) }
           selectedSpeakers={ selectedSpeakers }
           selectedLabels={ selectedLabels }
+          toggleParagraphOnly={ () => setParagraphOnly(!paragraphOnly) }
         />
 
         <Card.Body
@@ -497,7 +536,7 @@ const TranscriptTabContent = (props) => {
           style={ { height: cardBodyHeight, overflow: 'scroll' } }
         >
           {highlights}
-          {paragraphs.map((paragraph) => getParagraphEl(paragraph))}
+          {paragraphs ? Paragraphs : null}
         </Card.Body>
       </Card>
     </>

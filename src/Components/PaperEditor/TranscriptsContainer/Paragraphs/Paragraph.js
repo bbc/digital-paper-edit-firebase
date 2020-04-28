@@ -17,8 +17,8 @@ const Paragraph = (props) => {
   const {
     transcriptId,
     paragraph,
-    displayPref,
-    paragraphOnly,
+    // paragraphOnly,
+    isSearchResult,
     handleWordClick,
     labels,
     handleDeleteAnnotation,
@@ -61,9 +61,29 @@ const Paragraph = (props) => {
 
   const wordsElements = words.map((word) => getWordWithAnnotations(word));
 
+  const getDisplayPref = () => {
+    const displayPref = {
+      borderStyle: 'dashed',
+      borderWidth: '0.01em',
+      borderColor: 'lightgray',
+      padding: '0.5em'
+    };
+
+    // if (paragraphOnly && !display) {
+    //   displayPref.display = 'none';
+    // // }
+
+    if (isSearchResult) {
+      displayPref.borderRight = '0.1em dashed lightgrey';
+      displayPref.borderLeft = '0.1em dashed lightgrey';
+    }
+
+    return displayPref;
+  };
+
   return (
     <Row
-      style={ displayPref }
+      style={ getDisplayPref() }
       className="paragraph"
       data-paragraph-text={ textWithoutPunctuation }
     >
@@ -96,20 +116,15 @@ const Paragraph = (props) => {
 };
 
 Paragraph.propTypes = {
-  displayPref: PropTypes.shape({
-    borderColor: PropTypes.any,
-    borderStyle: PropTypes.any,
-    borderWidth: PropTypes.any,
-    display: PropTypes.any,
-    padding: PropTypes.any,
-  }),
+  display: PropTypes.any,
   handleDeleteAnnotation: PropTypes.any,
   handleEditAnnotation: PropTypes.any,
   handleWordClick: PropTypes.any,
   labels: PropTypes.any,
   paragraph: PropTypes.any,
   paragraphOnly: PropTypes.any,
-  transcriptId: PropTypes.any,
+  isSearchResult: PropTypes.any,
+  transcriptId: PropTypes.any
 };
 
 export default Paragraph;

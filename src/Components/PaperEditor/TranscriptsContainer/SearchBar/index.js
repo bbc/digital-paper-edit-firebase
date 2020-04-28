@@ -22,35 +22,36 @@ import colourStyles from '../LabelsList/select-color-styles.js';
 import speakersColorStyles from './select-speakers-color-styles.js';
 
 const SearchBar = (props) => {
-  const [ paragraphOnly, setParagraphOnly ] = useState(true);
-  const [ searchBySpeaker, setSearchBySpeaker ] = useState(false);
   const [ searchByLabel, setSearchByLabel ] = useState(false);
-
-  const toggleParagraphyOnly = () => setParagraphOnly(!paragraphOnly);
+  const [ searchBySpeaker, setSearchBySpeaker ] = useState(false);
+  const {
+    speakers,
+    selectSpeaker,
+    selectedSpeakers,
+    labels,
+    selectLabel,
+    selectedLabels,
+    toggleParagraphOnly,
+    paragraphOnly,
+    handleSearch,
+  } = props;
 
   const toggleShowLabels = () => setSearchByLabel(!searchByLabel);
 
   const toggleShowSpeakers = () => setSearchBySpeaker(!searchBySpeaker);
 
-  const handleToggleAll = () => {
-    setParagraphOnly(true);
+  const onChange = (e) => {
+    handleSearch(e);
+  };
+
+  const handleShowAll = () => {
     setSearchBySpeaker(true);
     setSearchByLabel(true);
   };
 
   const handleHideAll = () => {
-    setParagraphOnly(false);
     setSearchBySpeaker(false);
     setSearchByLabel(false);
-  };
-
-  const onChange = (e) => {
-    console.log('onchange', paragraphOnly, searchByLabel, searchBySpeaker);
-    props.handleSearch(e, {
-      paragraphOnly,
-      searchByLabel,
-      searchBySpeaker
-    });
   };
 
   const FilterDropdown = (
@@ -84,21 +85,18 @@ const SearchBar = (props) => {
       </Dropdown.Item>
 
       <Dropdown.Item
-        onClick={ handleToggleAll }
+        onClick={ handleShowAll }
         title="Show all of the above options"
       >
         All{' '}
-        {searchByLabel && searchBySpeaker && paragraphOnly ? (
+        {searchByLabel && searchBySpeaker ? (
           <FontAwesomeIcon style={ { color: 'blue' } } icon={ faCheck } />
         ) : (
           ''
         )}
       </Dropdown.Item>
       <Dropdown.Divider />
-      <Dropdown.Item
-        onClick={ handleHideAll }
-        title="Deselect all the options"
-      >
+      <Dropdown.Item onClick={ handleHideAll } title="Deselect all the options">
         Deselect all
       </Dropdown.Item>
     </DropdownButton>
@@ -122,7 +120,7 @@ const SearchBar = (props) => {
       </InputGroup>
 
       {searchByLabel ? (
-        <Row style={ { 'marginBottom': '10px' } }>
+        <Row style={ { marginBottom: '10px' } }>
           <Col xs={ 1 }>
             <h4>
               <Badge variant="secondary">
@@ -132,11 +130,11 @@ const SearchBar = (props) => {
           </Col>
           <Col>
             <Select
-              value={ props.selectedLabels }
-              onChange={ props.selectLabel }
+              value={ selectedLabels }
+              onChange={ selectLabel }
               isMulti
               isSearchable
-              options={ props.labels }
+              options={ labels }
               styles={ colourStyles }
               placeholder={ 'Filter by label...' }
             />
@@ -147,7 +145,7 @@ const SearchBar = (props) => {
       )}
 
       {searchBySpeaker ? (
-        <Row style={ { 'margin-bottom': '10px' } }>
+        <Row style={ { marginBottom: '10px' } }>
           <Col xs={ 1 }>
             <h4>
               <Badge variant="secondary">
@@ -157,11 +155,11 @@ const SearchBar = (props) => {
           </Col>
           <Col>
             <Select
-              value={ props.selectedSpeakers }
-              onChange={ props.selectSpeaker }
+              value={ selectedSpeakers }
+              onChange={ selectSpeaker }
               isMulti
               isSearchable
-              options={ props.speakers }
+              options={ speakers }
               styles={ speakersColorStyles }
               placeholder={ 'Filter by speaker...' }
             />
@@ -175,7 +173,7 @@ const SearchBar = (props) => {
         type="checkbox"
         onChange={ onChange }
         defaultChecked={ paragraphOnly }
-        onClick={ toggleParagraphyOnly }
+        onClick={ toggleParagraphOnly }
         label={
           <>
             <Form.Text
@@ -193,13 +191,16 @@ const SearchBar = (props) => {
 
 SearchBar.propTypes = {
   handleSearch: PropTypes.func,
-  selectLabel: PropTypes.func,
-  selectSpeaker: PropTypes.func,
-  selectedSpeakers: PropTypes.any,
-  selectedLabels: PropTypes.any,
   labels: PropTypes.any,
+  paragraphOnly: PropTypes.any,
+  searchByLabel: PropTypes.any,
+  searchBySpeaker: PropTypes.any,
+  selectLabel: PropTypes.any,
+  selectSpeaker: PropTypes.any,
+  selectedLabels: PropTypes.any,
+  selectedSpeakers: PropTypes.any,
   speakers: PropTypes.any,
-  toggleShowMatch: PropTypes.func,
+  toggleParagraphOnly: PropTypes.any
 };
 
 export default SearchBar;
