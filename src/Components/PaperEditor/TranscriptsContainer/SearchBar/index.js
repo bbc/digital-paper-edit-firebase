@@ -196,7 +196,7 @@ SearchBar.propTypes = {
   selectedLabels: PropTypes.any,
   selectedSpeakers: PropTypes.any,
   speakers: PropTypes.any,
-  toggleParagraphOnly: PropTypes.any
+  toggleParagraphOnly: PropTypes.any,
 };
 
 export default SearchBar;

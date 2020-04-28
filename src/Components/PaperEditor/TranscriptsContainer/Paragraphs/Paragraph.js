@@ -65,7 +65,7 @@ const Paragraph = (props) => {
       borderStyle: 'dashed',
       borderWidth: '0.01em',
       borderColor: 'lightgray',
-      padding: '0.5em'
+      padding: '0.5em',
     };
 
     if (isSearchResult) {
@@ -119,7 +119,7 @@ Paragraph.propTypes = {
   paragraph: PropTypes.any,
   paragraphOnly: PropTypes.any,
   isSearchResult: PropTypes.any,
-  transcriptId: PropTypes.any
+  transcriptId: PropTypes.any,
 };
 
 export default Paragraph;

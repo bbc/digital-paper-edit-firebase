@@ -168,7 +168,12 @@ const TranscriptTabContent = (props) => {
       return paragraphWithAnnotations(groupedParagraphs, annotations);
     };
 
-    if ((transcript && transcript.paragraphs && transcript.words && annotations)) {
+    if (
+      transcript &&
+      transcript.paragraphs &&
+      transcript.words &&
+      annotations
+    ) {
       setParagraphs(getParagraphs(transcript));
     }
 
@@ -197,7 +202,11 @@ const TranscriptTabContent = (props) => {
   }, [ transcript ]);
 
   useEffect(() => {
-    if (searchString !== '' || selectedSpeakers.length > 0 || selectedLabels.length > 0) {
+    if (
+      searchString !== '' ||
+      selectedSpeakers.length > 0 ||
+      selectedLabels.length > 0
+    ) {
       setHasSearch(true);
     } else {
       setHasSearch(false);
@@ -210,11 +219,12 @@ const TranscriptTabContent = (props) => {
 
   useEffect(() => {
     /* Paragraph text for data attribute for searches, without punctuation */
-    const findString = (str, text) => str ? text.includes(str) : false;
+    const findString = (str, text) => (str ? text.includes(str) : false);
 
-    const findSpeaker = (speaker) => !!(selectedSpeakers.find((spk) => spk.label === speaker));
+    const findSpeaker = (speaker) =>
+      !!selectedSpeakers.find((spk) => spk.label === speaker);
 
-    const findLabel = (label) => !!(selectedLabels.find((lb) => lb.id === label));
+    const findLabel = (label) => !!selectedLabels.find((lb) => lb.id === label);
 
     const isSearchResult = (text, speaker, label) => {
       const textWithoutPunctuation = removePunctuation(text);
@@ -238,13 +248,16 @@ const TranscriptTabContent = (props) => {
     const isParagraphSearchResult = (paragraph) => {
       let wordsAnnotations = { labelId: '' };
       if (annotations) {
-        wordsAnnotations = findAnnotationsInWords(
-          annotations,
-          paragraph.words
-        );
+        wordsAnnotations = findAnnotationsInWords(annotations, paragraph.words);
       }
 
-      if (isSearchResult(paragraph.text, paragraph.speaker, wordsAnnotations.labelId)) {
+      if (
+        isSearchResult(
+          paragraph.text,
+          paragraph.speaker,
+          wordsAnnotations.labelId
+        )
+      ) {
         return true;
       }
 
@@ -252,11 +265,11 @@ const TranscriptTabContent = (props) => {
     };
 
     const setAllDisplays = (display) => {
-      const displayAllParagraphs = paragraphs.map(p => display);
+      const displayAllParagraphs = paragraphs.map((p) => display);
       setDisplayParagraphs(displayAllParagraphs);
     };
     const setAllSearchResults = (searchResult) => {
-      const searchResults = paragraphs.map(p => searchResult);
+      const searchResults = paragraphs.map((p) => searchResult);
       setIsSearchResults(searchResults);
     };
 
@@ -265,7 +278,9 @@ const TranscriptTabContent = (props) => {
         // don't style borders
         setAllSearchResults(false);
         if (hasSearch) {
-          const foundParagraphs = paragraphs.map(p => isParagraphSearchResult(p));
+          const foundParagraphs = paragraphs.map((p) =>
+            isParagraphSearchResult(p)
+          );
           setDisplayParagraphs(foundParagraphs);
         } else {
           setAllDisplays(true);
@@ -274,7 +289,9 @@ const TranscriptTabContent = (props) => {
         // display all with styled borders for found paragraphs
         setAllDisplays(true);
         if (hasSearch) {
-          const foundParagraphs = paragraphs.map(p => isParagraphSearchResult(p));
+          const foundParagraphs = paragraphs.map((p) =>
+            isParagraphSearchResult(p)
+          );
           setIsSearchResults(foundParagraphs);
         } else {
           setAllSearchResults(false);
@@ -284,9 +301,16 @@ const TranscriptTabContent = (props) => {
       setAllDisplays(true);
     }
 
-    return () => {
-    };
-  }, [ annotations, hasSearch, paragraphOnly, paragraphs, searchString, selectedLabels, selectedSpeakers ]);
+    return () => {};
+  }, [
+    annotations,
+    hasSearch,
+    paragraphOnly,
+    paragraphs,
+    searchString,
+    selectedLabels,
+    selectedSpeakers,
+  ]);
 
   const handleSearch = (e) => {
     if (e.target.type !== 'checkbox') {
@@ -456,7 +480,6 @@ const TranscriptTabContent = (props) => {
   }
 
   const getParagraphEl = (paragraph, isSearchResult) => {
-
     /**
      * Create a Paragraph containing words, with or without annotation (overlay)
      */
