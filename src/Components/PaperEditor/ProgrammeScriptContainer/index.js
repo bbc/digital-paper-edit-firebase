@@ -26,7 +26,8 @@ import {
 
 import {
   updateWordTimings,
-  updateWordTimingsAfterInsert
+  updateWordTimingsAfterInsert,
+  updateWordTimingsAfterDelete
 } from './reset-word-timings';
 
 import PropTypes from 'prop-types';
@@ -175,7 +176,6 @@ const ProgrammeScriptContainer = (props) => {
   const handleReorder = async (newElements, oldIndex, newIndex) => {
     console.log('reorder elements: ', newElements);
     const updatedWords = await updateWordTimings(newElements, oldIndex, newIndex);
-    console.log('updated words', updatedWords);
     setElements(updatedWords);
     setResetPreview(true);
   };
@@ -185,7 +185,8 @@ const ProgrammeScriptContainer = (props) => {
     const confirmDelete = window.confirm('Are you sure you want to delete?');
     if (confirmDelete) {
       console.log('Deleting');
-      const newElements = JSON.parse(JSON.stringify(elements));
+      const timeCorrectElements = updateWordTimingsAfterDelete(elements, i);
+      const newElements = JSON.parse(JSON.stringify(timeCorrectElements));
       newElements.splice(i, 1);
       setElements(newElements);
       setResetPreview(true);

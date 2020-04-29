@@ -58,8 +58,21 @@ const updateWordTimings = (newElements, oldIndex, newIndex) => {
   return updatedElementTimings.elements;
 };
 
-const updateWordTimingsAfterDelete = () => {
+const updateWordTimingsAfterDelete = (elements, index) => {
+  const elementsClone = elements;
+  const deletedElementDuration = elementsClone[index].end - elements[index].start;
+  const updatedElements = elementsClone.slice(index + 1, elements.length).filter((element) => element.type === 'paper-cut');;
+  updatedElements.map((element) => {
+    element.vcStart -= deletedElementDuration;
+    element.vcEnd -= deletedElementDuration;
+    element.words.map((word) => {
+      word.start -= deletedElementDuration;
+      word.end -= deletedElementDuration;
+    });
+    elementsClone[element.index] = element;
+  });
 
+  return elementsClone;
 };
 
 const updateWordTimingsAfterInsert = (newElements, insertIndex) => {
@@ -96,4 +109,5 @@ const updateWordTimingsAfterInsert = (newElements, insertIndex) => {
 
 export {
   updateWordTimings,
-  updateWordTimingsAfterInsert };
+  updateWordTimingsAfterInsert,
+  updateWordTimingsAfterDelete };
