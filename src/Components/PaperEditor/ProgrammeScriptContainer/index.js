@@ -109,6 +109,12 @@ const ProgrammeScriptContainer = (props) => {
       duration: element.end - element.start,
     });
 
+    const getMediaUrl = async (item) => {
+      return await firebase.storage.storage
+        .ref(item.ref)
+        .getDownloadURL();
+    };
+
     const getPlaylist = async (els) => {
       const paperEdits = els.filter((element) => element.type === 'paper-cut');
 
@@ -131,25 +137,18 @@ const ProgrammeScriptContainer = (props) => {
       const { playlist: playlistItems } = results;
       playlistItems = await Promise.all(
         playlistItems.map(async (item) => {
-          item.src = await firebase.storage.storage
-            .ref(item.ref)
-            .getDownloadURL();
+          item.src = await getMediaUrl(item);
 
           return item;
         })
       );
 
-      return playlistItems;
-    };
-
-    const handleUpdatePreview = async () => {
-      const newPlaylist = await getPlaylist(elements);
-      setPlaylist(newPlaylist);
+      setPlaylist(playlistItems);
     };
 
     if (resetPreview && elements && elements.length > 0) {
-      handleUpdatePreview();
       setResetPreview(false);
+      getPlaylist(elements);
     }
   }, [ elements, resetPreview, firebase.storage.storage, transcripts ]);
 
@@ -166,13 +165,6 @@ const ProgrammeScriptContainer = (props) => {
       window.removeEventListener('resize', updateVideoContextWidth);
     };
   });
-
-  const handleReorder = (newElements) => {
-    console.log('Handling reorder...');
-    setElements(newElements);
-    setResetPreview(true);
-    console.log('Reordered');
-  };
 
   const handleDelete = (i) => {
     console.log('Handling delete...');
@@ -211,8 +203,8 @@ const ProgrammeScriptContainer = (props) => {
 
   const onSortEnd = ({ oldIndex, newIndex }) => {
     const newElements = arrayMove(elements, oldIndex, newIndex);
-    handleReorder(newElements);
     setElements(newElements);
+    setResetPreview(true);
   };
 
   const getInsertElementIndex = () => {
@@ -228,7 +220,6 @@ const ProgrammeScriptContainer = (props) => {
     console.log('Handling add transcript selection...');
     const result = getDataFromUserWordsSelection();
     if (result) {
-      // result.words
       // TODO: if there's just one speaker in selection do following
       // if it's multiple split list of words into multiple groups
       // and add a papercut for each to the programme script
@@ -338,7 +329,6 @@ const ProgrammeScriptContainer = (props) => {
           <Row noGutters>
             <Col sm={ 12 } md={ 3 }>
               <Button
-                // block
                 variant="outline-secondary"
                 onClick={ handleAddTranscriptSelectionToProgrammeScript }
                 title="Add a text selection, select text in the transcript, then click this button to add it to the programme script"
