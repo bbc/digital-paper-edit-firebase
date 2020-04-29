@@ -1,19 +1,21 @@
+const reindexList = (newElements) => {
+  return (
+    newElements.map((element, i) => {
+      element.index = i;
+
+      return element;
+    })
+  );
+};
+
 const updateWordTimings = (newElements, oldIndex, newIndex) => {
   console.log('Inside update word timings');
   console.log('oldIndex: : ', oldIndex, 'newIndex: ', newIndex);
 
   // Makes sure all elements' index numbers are up to date
-  const reindexedList = newElements.map((element, i) => {
-    element.index = i;
-
-    return element;
-  });
-
-  console.log('reindexed list: ', reindexedList);
+  const reindexedList = reindexList(newElements);
 
   const updatedElementTimings = reindexedList.reduce((result, element) => {
-    console.log('result', result);
-    console.log('element', element);
 
     // If the element index falls within the reorder, recalcultate word timings
     if (element.type === 'paper-cut') {
@@ -60,8 +62,38 @@ const updateWordTimingsAfterDelete = () => {
 
 };
 
-const updateWordTimingsAfterInsert = () => {
+const updateWordTimingsAfterInsert = (newElements, insertIndex) => {
+  const newElement = newElements[insertIndex]; // Insert index is where the new element was added
+  const newPaperEditDuration = newElement.end - newElement.start;
 
+  // Makes sure all elements' index numbers are up to date
+  const reindexedList = reindexList(newElements);
+
+  // Only looks for paper-cuts in the programme script after the insertion point
+  const elementsToUpdate = reindexedList.slice(insertIndex + 1, newElements.length).filter((element) => element.type === 'paper-cut');;
+  if (elementsToUpdate) {
+    elementsToUpdate.map((element) => {
+
+      // Updates video context start and end times by length of insertion
+      element.vcStart += newPaperEditDuration;
+      element.vcEnd += newPaperEditDuration;
+      // Adds the length of the newly inserted paper-cut element to all word timings in subsequent paper-cuts
+      element.words.map((word) => {
+        word.start += newPaperEditDuration;
+        word.end += newPaperEditDuration;
+      });
+
+      // Updates the word timings in the reindexed list
+      reindexedList[element.index] = element;
+    });
+    console.log('reindexed list', reindexedList);
+  } else {
+    console.log('No elements to update here');
+  }
+
+  return reindexedList;
 };
 
-export { updateWordTimings };
+export {
+  updateWordTimings,
+  updateWordTimingsAfterInsert };

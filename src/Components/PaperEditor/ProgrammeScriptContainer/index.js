@@ -25,7 +25,8 @@ import {
 } from './divide-words-selections-into-paragraphs';
 
 import {
-  updateWordTimings
+  updateWordTimings,
+  updateWordTimingsAfterInsert
 } from './reset-word-timings';
 
 import PropTypes from 'prop-types';
@@ -176,7 +177,6 @@ const ProgrammeScriptContainer = (props) => {
     const updatedWords = await updateWordTimings(newElements, oldIndex, newIndex);
     console.log('updated words', updatedWords);
     setElements(updatedWords);
-    setResetPreview(false);
     setResetPreview(true);
   };
 
@@ -226,12 +226,10 @@ const ProgrammeScriptContainer = (props) => {
 
   const getTranscriptSelectionStartTime = (insertIndex) => {
     const prevElements = elements.slice(0, insertIndex);
-    console.log('prev elements', prevElements);
 
     const paperEdits = prevElements.filter((element) => element.type === 'paper-cut');
 
     const totalDuration = paperEdits.reduce((prevResult, paperEdit) => {
-      console.log('prev result', prevResult);
       const paperEditDuration = paperEdit.end - paperEdit.start;
       prevResult.startTime += paperEditDuration;
 
@@ -250,6 +248,8 @@ const ProgrammeScriptContainer = (props) => {
       const newElements = JSON.parse(JSON.stringify(elements));
 
       const insertElementIndex = getInsertElementIndex();
+
+      // Calcultates the starting time of the new element
       const prevDuration = getTranscriptSelectionStartTime(insertElementIndex);
       let newElement;
       if (isOneParagraph(result.words)) {
@@ -267,6 +267,8 @@ const ProgrammeScriptContainer = (props) => {
           labelId: [],
         };
         const selectionWords = result.words;
+
+        // Recalculates the word start and end times for the programmeScript
         selectionWords.map((word, i) => {
           const newStart = (word.start - result.start) + prevDuration.startTime;
           const wordDuration = (word.end - word.start);
@@ -283,7 +285,8 @@ const ProgrammeScriptContainer = (props) => {
         });
       }
       newElements.splice(insertElementIndex, 0, newElement);
-      setElements(newElements);
+      const updatedElements = updateWordTimingsAfterInsert(newElements, insertElementIndex);
+      setElements(updatedElements);
       setResetPreview(true);
     } else {
       console.log('nothing selected');
