@@ -24,6 +24,10 @@ import {
   isOneParagraph,
 } from './divide-words-selections-into-paragraphs';
 
+import {
+  updateWordTimings
+} from './reset-word-timings';
+
 import PropTypes from 'prop-types';
 
 const ProgrammeScriptContainer = (props) => {
@@ -167,37 +171,12 @@ const ProgrammeScriptContainer = (props) => {
     };
   });
 
-  const updateWordTimings = (newElements) => {
-    console.log('Inside update word timings');
-    const paperEdits = newElements.filter((element) => element.type === 'paper-cut');
-
-    const updatedElements = paperEdits.reduce((durationCounter, paperEdit) => {
-      const paperEditDuration = paperEdit.end - paperEdit.start;
-
-      paperEdit.words.map((word) => {
-        const newStartTime = paperEdit.vcStart + word.start + durationCounter.startTime;
-        const newEndTime = newStartTime + (word.end - word.start);
-        word.start = newStartTime;
-        word.end = newEndTime;
-
-        return word;
-      });
-
-      durationCounter.startTime += paperEditDuration;
-      durationCounter.elements.push(paperEdit);
-
-      return durationCounter;
-
-    }, { startTime: 0, elements: [] });
-
-    return updatedElements.elements;
-  };
-
-  const handleReorder = async (newElements) => {
-    console.log(newElements);
-    const updatedWords = await updateWordTimings(newElements);
+  const handleReorder = async (newElements, oldIndex, newIndex) => {
+    console.log('reorder elements: ', newElements);
+    const updatedWords = await updateWordTimings(newElements, oldIndex, newIndex);
     console.log('updated words', updatedWords);
     setElements(updatedWords);
+    setResetPreview(false);
     setResetPreview(true);
   };
 
@@ -233,7 +212,7 @@ const ProgrammeScriptContainer = (props) => {
   const onSortEnd = ({ oldIndex, newIndex }) => {
     const newElements = arrayMove(elements, oldIndex, newIndex);
     console.log('handling reorder...');
-    handleReorder(newElements);
+    handleReorder(newElements, oldIndex, newIndex);
     setElements(newElements);
   };
 
