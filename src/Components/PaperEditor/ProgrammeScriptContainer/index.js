@@ -255,6 +255,7 @@ const ProgrammeScriptContainer = (props) => {
       // if it's multiple split list of words into multiple groups
       // and add a papercut for each to the programme script
       const newElements = JSON.parse(JSON.stringify(elements));
+      console.log(result);
 
       const insertElementIndex = getInsertElementIndex();
 
