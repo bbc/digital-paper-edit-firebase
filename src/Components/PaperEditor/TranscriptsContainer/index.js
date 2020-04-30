@@ -12,14 +12,9 @@ import PropTypes from 'prop-types';
 import cuid from 'cuid';
 
 import TranscriptTabContent from './TranscriptTabContent';
+import { withAuthorization } from '../../Session';
 
-const TranscriptsContainer = ({
-  transcripts,
-  projectId,
-  labels,
-  annotations,
-  firebase,
-}) => {
+const TranscriptsContainer = ({ transcripts, projectId, firebase }) => {
   const getStatusIcon = (status) => {
     if (status === 'in-progress') {
       return <FontAwesomeIcon icon={ faClock } />;
@@ -52,8 +47,6 @@ const TranscriptsContainer = ({
         <TranscriptTabContent
           projectId={ projectId }
           transcriptId={ id }
-          labels={ labels }
-          annotations={ annotations }
           title={ title }
           transcript={ { words: words, paragraphs: paragraphs } } // Words and Paragraphs are the fields we want to get from Firestore
           media={ media }
@@ -98,11 +91,10 @@ const TranscriptsContainer = ({
 };
 
 TranscriptsContainer.propTypes = {
-  labels: PropTypes.any,
   projectId: PropTypes.any,
   transcripts: PropTypes.any,
-  annotations: PropTypes.any,
-  firebase: PropTypes.any
+  firebase: PropTypes.any,
 };
 
-export default TranscriptsContainer;
+const condition = (authUser) => !!authUser;
+export default withAuthorization(condition)(TranscriptsContainer);

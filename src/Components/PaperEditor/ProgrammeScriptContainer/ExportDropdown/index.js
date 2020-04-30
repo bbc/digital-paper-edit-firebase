@@ -102,10 +102,13 @@ const ExportDropdown = (props) => {
   };
 
   const handleExportADL = () => {
-    // alert('this function has not been implemented yet');
     const edlSq = getSequenceJsonEDL();
+    if (edlSq.events.length == 0) {
+      alert('Cannot export empty paper edit ADL');
+
+      return;
+    }
     const firstElement = edlSq.events[0];
-    // const result = generateADL(edlSq);
     const result = generateADL({
       projectOriginator: 'Digital Paper Edit',
       // TODO: it be good to change sequence for the ADL to be same schema
@@ -123,7 +126,6 @@ const ExportDropdown = (props) => {
       frameRate: firstElement.fps,
       projectName: edlSq.title
     });
-
     console.log('ADL Result', result);
     downloadjs(result, `${ title }.adl`, 'text/plain');
   };

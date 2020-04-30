@@ -1,8 +1,9 @@
-import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import React from 'react';
 import removePunctuation from '../../../../Util/remove-punctuation';
 
-class Word extends Component {
-  generatePreviousTimes = (start) => {
+const Word = (props) => {
+  const generatePreviousTimes = (start) => {
     let prevTimes = '';
 
     for (let i = 0; i < start; i++) {
@@ -16,42 +17,42 @@ class Word extends Component {
     }
 
     return prevTimes;
-  }
-  render() {
-    const { transcriptId, speaker, word } = this.props;
-    // console.log('this.props.paragraph', this.props.transcriptId);
-    // const result = this.props.paragraph.map(word => {
+  };
+  const { transcriptId, speaker, word, handleKeyPress } = props;
 
-    return (
-      <span
-        title={ `start:${ word.start } - end:${ word.end }` }
-        data-prev-times = { this.generatePreviousTimes( word.start) }
-        className={ [ 'words',
-          // , styles.highlightedWord
-        ].join(' ') }
-        data-start={ word.start }
-        // TODO: make/Use helper function in Util - removePunctuation
-        data-text={ removePunctuation(word.text) }
-        // data-text={ word.text }
-        data-end={ word.end }
-        data-transcript-id={ transcriptId }
-        data-speaker={ speaker }
-        key={ 'key_' + word.id + '_' + word.end }
-        // tabIndex="0"
-        role="button"
-        aria-pressed="false"
-        onKeyDown={ this.props.handleKeyDownWords }
-      >
-        {word.text}{' '}
-      </span>
-    );
-    // });
+  return (
+    <span
+      title={ `start:${ word.start } - end:${ word.end }` }
+      data-prev-times={ generatePreviousTimes(word.start) }
+      className={ [
+        'words',
+        // , styles.highlightedWord
+      ].join(' ') }
+      data-start={ word.start }
+      data-text={ removePunctuation(word.text) }
+      data-end={ word.end }
+      data-transcript-id={ transcriptId }
+      data-speaker={ speaker }
+      key={ 'key_' + word.id + '_' + word.end }
+      role="button"
+      aria-pressed="false"
+      onKeyDown={ handleKeyPress }
+    >
+      {word.text}{' '}
+    </span>
+  );
+};
 
-    // return (
-    //   <>{result}</>
-
-    // );
-  }
+Word.propTypes = {
+  handleKeyPress: PropTypes.any,
+  speaker: PropTypes.any,
+  transcriptId: PropTypes.any,
+  word: PropTypes.shape({
+    end: PropTypes.any,
+    id: PropTypes.any,
+    start: PropTypes.any,
+    text: PropTypes.any,
+  }),
 };
 
 export default Word;
