@@ -118,11 +118,10 @@ const updateTranscriptsStatus = async (
     }
     const userId = usersAudioDataJob.user;
     const fileName = `users/${userId}/audio/${job.id}.wav`;
-    console.log("checking for fileName", fileName);
 
     try {
       response = await getJobStatus(fileName, config);
-      console.log("response", response);
+      console.debug(`Response from STT for ${fileName}:`, response);
     } catch (err) {
       console.error(
         `[ERROR] Failed to get STT jobs status for ${fileName}: ${err}`
