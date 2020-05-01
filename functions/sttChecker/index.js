@@ -11,7 +11,8 @@ const {
 const psttAdapter = require("./psttAdapter");
 
 const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
-  const ONE_DAY_IN_NANOSECONDS = 3600 * 24 * 1000;
+  const NUMBER_OF_HOURS = 6
+  const ONE_DAY_IN_NANOSECONDS = 3600 * NUMBER_OF_HOURS * 1000;
   const timeDifference = sttCheckerExecTime - lastUpdatedTime;
   return {
     expired: timeDifference >= ONE_DAY_IN_NANOSECONDS,
