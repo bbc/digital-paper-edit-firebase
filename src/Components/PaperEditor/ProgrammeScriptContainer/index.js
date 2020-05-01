@@ -41,7 +41,7 @@ const ProgrammeScriptContainer = (props) => {
   const [ elements, setElements ] = useState();
   const [ title, setTitle ] = useState('');
   const [ resetPreview, setResetPreview ] = useState(false);
-  const [ timeOnClick, setTimeOnClick ] = useState();
+  const [ currentTime, setCurrentTime ] = useState();
 
   const SortableList = SortableContainer(({ children }) => (
     <ul style={ { listStyle: 'none', padding: '0px' } }>{children}</ul>
