@@ -1,34 +1,29 @@
-const reindexList = (newElements) => {
-  return (
-    newElements.map((element, i) => {
-      element.index = i;
+// Updates index numbers of programme script elements
+const reindexList = (elements) => {
+  const reindexedList = elements.map((element, i) => {
+    element.index = i;
 
-      return element;
-    })
-  );
+    return element;
+  });
+
+  return reindexedList;
 };
 
-const updateWordTimings = (newElements, oldIndex, newIndex) => {
-  console.log('Inside update word timings');
-  console.log('oldIndex: : ', oldIndex, 'newIndex: ', newIndex);
-
-  // Makes sure all elements' index numbers are up to date
-  const reindexedList = reindexList(newElements);
-
+const updateWordTimings = (elements) => {
+  const reindexedList = reindexList(elements);
   const updatedElementTimings = reindexedList.reduce((result, element) => {
 
-    // If the element index falls within the reorder, recalcultate word timings
+    // Re-calcultate word timings
     if (element.type === 'paper-cut') {
       const paperCut = element;
       const paperCutDuration = element.end - element.start;
 
-      // Adjusts word timings for paper-cut elements
       paperCut.words.map((word) => {
         const wordDuration = word.end - word.start;
-        const newStartTime = (word.start - paperCut.vcStart) + result.duration;
-        const newEndTime = newStartTime + wordDuration;
-        word.start = newStartTime;
-        word.end = newEndTime;
+        const wordStartTime = (word.start - paperCut.vcStart) + result.duration;
+        const wordEndTime = wordStartTime + wordDuration;
+        word.start = wordStartTime;
+        word.end = wordEndTime;
 
         return word;
       });
@@ -59,9 +54,9 @@ const updateWordTimings = (newElements, oldIndex, newIndex) => {
 };
 
 const updateWordTimingsAfterDelete = (elements, index) => {
-  const elementsClone = elements;
-  const deletedElementDuration = elementsClone[index].end - elements[index].start;
-  const updatedElements = elementsClone.slice(index + 1, elements.length).filter((element) => element.type === 'paper-cut');;
+  const reindexedList = reindexList(elements);
+  const deletedElementDuration = reindexedList[index].end - elements[index].start;
+  const updatedElements = reindexedList.slice(index, elements.length).filter((element) => element.type === 'paper-cut');;
   updatedElements.map((element) => {
     element.vcStart -= deletedElementDuration;
     element.vcEnd -= deletedElementDuration;
@@ -69,27 +64,26 @@ const updateWordTimingsAfterDelete = (elements, index) => {
       word.start -= deletedElementDuration;
       word.end -= deletedElementDuration;
     });
-    elementsClone[element.index] = element;
+    reindexedList[element.index] = element;
   });
 
-  return elementsClone;
+  return reindexedList;
 };
 
-const updateWordTimingsAfterInsert = (newElements, insertIndex) => {
-  const newElement = newElements[insertIndex]; // Insert index is where the new element was added
+const updateWordTimingsAfterInsert = (elements, insertIndex) => {
+  const newElement = elements[insertIndex]; // Insert index is where the new element was added
   const newPaperEditDuration = newElement.end - newElement.start;
-
-  // Makes sure all elements' index numbers are up to date
-  const reindexedList = reindexList(newElements);
+  const reindexedList = reindexList(elements);
 
   // Only looks for paper-cuts in the programme script after the insertion point
-  const elementsToUpdate = reindexedList.slice(insertIndex + 1, newElements.length).filter((element) => element.type === 'paper-cut');;
+  const elementsToUpdate = reindexedList.slice(insertIndex + 1, elements.length).filter((element) => element.type === 'paper-cut');;
   if (elementsToUpdate) {
     elementsToUpdate.map((element) => {
 
       // Updates video context start and end times by length of insertion
       element.vcStart += newPaperEditDuration;
       element.vcEnd += newPaperEditDuration;
+
       // Adds the length of the newly inserted paper-cut element to all word timings in subsequent paper-cuts
       element.words.map((word) => {
         word.start += newPaperEditDuration;
@@ -99,7 +93,6 @@ const updateWordTimingsAfterInsert = (newElements, insertIndex) => {
       // Updates the word timings in the reindexed list
       reindexedList[element.index] = element;
     });
-    console.log('reindexed list', reindexedList);
   } else {
     console.log('No elements to update here');
   }

@@ -189,9 +189,9 @@ const ProgrammeScriptContainer = (props) => {
     const confirmDelete = window.confirm('Are you sure you want to delete?');
     if (confirmDelete) {
       console.log('Deleting');
-      const timeCorrectElements = updateWordTimingsAfterDelete(elements, i);
-      const newElements = JSON.parse(JSON.stringify(timeCorrectElements));
-      newElements.splice(i, 1);
+      const reorderedList = JSON.parse(JSON.stringify(elements));
+      reorderedList.splice(i, 1);
+      const newElements = updateWordTimingsAfterDelete(reorderedList, i);
       setElements(newElements);
       setResetPreview(true);
       console.log('Deleted');
@@ -308,11 +308,8 @@ const ProgrammeScriptContainer = (props) => {
 
   const handleDoubleClickOnProgrammeScript = (e) => {
     console.log('Handling double click...');
-    console.log('e', e);
     if (e.target.className === 'words') {
       const wordCurrentTime = e.target.dataset.start;
-      console.log('element dataset: : ', e.target.dataset);
-      console.log('wordCurrentTime::', wordCurrentTime);
       setCurrentTime(wordCurrentTime);
     }
   };
