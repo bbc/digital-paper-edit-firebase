@@ -29,7 +29,7 @@ const isValidJob = (execTimestamp, transcript) => {
     lastUpdatedTime
   );
 
-  // make sure objectKey exists in upload
+  // TODO make sure objectKey exists in upload
 
   if (expired) {
     console.debug(
@@ -52,11 +52,11 @@ const getJobStatus = async (fileName, config) => {
   const headers = {
     "Content-Type": "application/json",
     "X-API-Key": config.key,
-  }
+  };
   const body = {
-    "serviceName": "dpe",
-    "fileName": fileName,
-  }
+    serviceName: "dpe",
+    fileName: fileName,
+  };
   const request = {
     method: "POST",
     headers: headers,
@@ -91,6 +91,15 @@ const updateTranscription = async (admin, transcriptId, projectId, update) => {
   await docRef.update(update);
 };
 
+const getUserfromJob = (usersAudioData, jobId) => {
+  const usersAudioDataJob = usersAudioData[jobId];
+  if (!usersAudioDataJob) {
+    console.log(`[ERROR] Job ID {jobId} not found`);
+    return "";
+  }
+  return usersAudioDataJob.user;
+};
+
 const updateTranscriptsStatus = async (
   admin,
   projectTranscripts,
@@ -102,47 +111,51 @@ const updateTranscriptsStatus = async (
     async (job) => {
       console.debug(`Job ${job.id} expired, updating status to Error`);
       const { projectId } = job.data();
-      await updateTranscription(admin, job.id, projectId, { status: "error" });
+      await updateTranscription(admin, job.id, projectId, {
+        status: "error",
+        message: "Job expired",
+      });
     }
   );
 
   let validJobs = filterValidJobs(projectTranscripts, execTimestamp);
 
   await validJobs.forEach(async (job) => {
-    let response;
-    const usersAudioDataJob = usersAudioData[job.id];
-    if (!usersAudioDataJob) {
-      console.log(`[ERROR] Job ID {job.id} not found`);
-      return;
-    }
-    const userId = usersAudioDataJob.user;
-    const fileName = `users/${userId}/audio/${job.id}.wav`;
+    const jobId = job.id;
+    const userId = getUserfromJob(usersAudioData, jobId);
+    const { projectId, message } = job.data();
+    const fileName = `users/${userId}/audio/${jobId}.wav`;
 
     try {
-      response = await getJobStatus(fileName, config);
+      const response = await getJobStatus(fileName, config);
+      const MESSAGE = "Transcribing...";
+
+      if (response.status === "in-progress" && message === MESSAGE) {
+        return;
+      }
+
+      const update = {
+        payload: response.transcript,
+        status: response.status,
+        message: MESSAGE,
+      };
+
+      if (response.status === "success") {
+        const { words, paragraphs } = psttAdapter(update.payload.items);
+        update.words = words;
+        update.paragraphs = paragraphs;
+        update.status = "done";
+      }
+
+      await updateTranscription(admin, job.id, projectId, update);
+      console.debug(`Updated ${job.id} with data`, update);
+
     } catch (err) {
       console.error(
         `[ERROR] Failed to get STT jobs status for ${fileName}: ${err}`
       );
       return;
     }
-
-    if (response.status === "in-progress") {
-      return;
-    }
-
-    let update = { payload: response.transcript, status: response.status };
-
-    if (update.status === "success") {
-      const { words, paragraphs } = psttAdapter(update.payload.items);
-      update.words = words;
-      update.paragraphs = paragraphs;
-      update.status = "done";
-    }
-
-    const { projectId } = job.data();
-    await updateTranscription(admin, job.id, projectId, update);
-    console.debug(`Updated ${job.id} with data`, update);
   });
 };
 

@@ -89,6 +89,17 @@ const updateFirestore = async (admin, object) => {
 
   if (folder === "uploads") {
     const transcriptionUpdate = getTranscriptionUpdate(object);
+    transcriptionUpdate.message = "Stripping audio...";
+    await updateTranscription(
+      admin,
+      transcriptionUpdate,
+      transcriptId,
+      projectId
+    );
+  } else if (folder === "audio") {
+    const transcriptionUpdate = {
+      message: "Sending media to a Speech-to-text service...",
+    };
     await updateTranscription(
       admin,
       transcriptionUpdate,
