@@ -313,7 +313,7 @@ const ProgrammeScriptContainer = (props) => {
       const wordCurrentTime = e.target.dataset.start;
       console.log('element dataset: : ', e.target.dataset);
       console.log('wordCurrentTime::', wordCurrentTime);
-      setTimeOnClick(wordCurrentTime);
+      setCurrentTime(wordCurrentTime);
     }
   };
 
@@ -360,7 +360,7 @@ const ProgrammeScriptContainer = (props) => {
       <Card>
         <Card.Header ref={ previewCardRef }>
           {playlist ? (
-            <PreviewCanvas width={ width } playlist={ playlist } currentTime={ timeOnClick }/>
+            <PreviewCanvas width={ width } playlist={ playlist } currentTime={ currentTime }/>
           ) : null}
         </Card.Header>
         <Card.Header>
