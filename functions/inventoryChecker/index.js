@@ -21,7 +21,7 @@ const deleteFirestore = async (admin, object) => {
 
 const getUserUpdate = (object) => {
   const { metadata, size, contentType, md5Hash, timeCreated, name } = object;
-  const { originalName, duration } = metadata;
+  const { originalName, duration, projectId } = metadata;
 
   return {
     originalName: originalName ? originalName : "",
@@ -31,6 +31,7 @@ const getUserUpdate = (object) => {
     timeCreated: timeCreated,
     duration: duration ? duration : 0,
     ref: name,
+    projectId: projectId
   };
 };
 
