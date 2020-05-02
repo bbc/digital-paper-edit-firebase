@@ -149,17 +149,12 @@ const ProgrammeScriptContainer = (props) => {
         })
       );
 
-      return playlistItems;
-    };
-
-    const handleUpdatePreview = async () => {
-      const newPlaylist = await getPlaylist(elements);
-      setPlaylist(newPlaylist);
-      setResetPreview(false);
+      setPlaylist(playlistItems);
     };
 
     if (resetPreview && elements && elements.length > 0) {
-      handleUpdatePreview();
+      getPlaylist(elements);
+      setResetPreview(false);
     }
   }, [ elements, resetPreview, firebase.storage.storage, transcripts ]);
 
@@ -181,18 +176,16 @@ const ProgrammeScriptContainer = (props) => {
     console.log('reorder elements: ', newElements);
     const updatedWords = await updateWordTimings(newElements, oldIndex, newIndex);
     setElements(updatedWords);
-    setResetPreview(true);
   };
 
-  const handleDelete = (i) => {
+  const handleDelete = async (i) => {
     console.log('Handling delete...');
     const confirmDelete = window.confirm('Are you sure you want to delete?');
     if (confirmDelete) {
-      console.log('Deleting');
       const reorderedList = JSON.parse(JSON.stringify(elements));
-      reorderedList.splice(i, 1);
-      const newElements = updateWordTimingsAfterDelete(reorderedList, i);
-      setElements(newElements);
+      const updatedWords = await updateWordTimingsAfterDelete(reorderedList, i);
+      updatedWords.splice(i, 1);
+      setElements(updatedWords);
       setResetPreview(true);
       console.log('Deleted');
     } else {
@@ -255,7 +248,6 @@ const ProgrammeScriptContainer = (props) => {
       // if it's multiple split list of words into multiple groups
       // and add a papercut for each to the programme script
       const newElements = JSON.parse(JSON.stringify(elements));
-      console.log(result);
 
       const insertElementIndex = getInsertElementIndex();
 
