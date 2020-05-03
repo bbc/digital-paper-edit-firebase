@@ -172,12 +172,6 @@ const ProgrammeScriptContainer = (props) => {
     };
   });
 
-  const handleReorder = async (newElements, oldIndex, newIndex) => {
-    console.log('reorder elements: ', newElements);
-    const updatedWords = await updateWordTimings(newElements, oldIndex, newIndex);
-    setElements(updatedWords);
-  };
-
   const handleDelete = async (i) => {
     console.log('Handling delete...');
     const confirmDelete = window.confirm('Are you sure you want to delete?');
@@ -207,11 +201,11 @@ const ProgrammeScriptContainer = (props) => {
     }
   };
 
-  const onSortEnd = ({ oldIndex, newIndex }) => {
+  const onSortEnd = async ({ oldIndex, newIndex }) => {
     const newElements = arrayMove(elements, oldIndex, newIndex);
     console.log('handling reorder...');
-    handleReorder(newElements, oldIndex, newIndex);
-    setElements(newElements);
+    const updatedWords = await updateWordTimings(newElements, oldIndex, newIndex);
+    setElements(updatedWords);
     setResetPreview(true);
   };
 
