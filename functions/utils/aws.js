@@ -35,7 +35,7 @@ const getSignedUrl = async (aws, fileName, durationSeconds) => {
 }
   
 const uploadS3Stream = async (url, stream, size) => {
-  console.log(`[START] Upload to S3: ${uploadUrl}`);
+  console.log(`[START] Upload to S3: ${url}`);
   const headers = {
     "Content-length": size,
   };
