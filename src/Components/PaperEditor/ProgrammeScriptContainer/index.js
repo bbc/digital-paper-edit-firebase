@@ -8,7 +8,7 @@ import arrayMove from 'array-move';
 import { SortableContainer } from 'react-sortable-hoc';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 import ProgrammeElements from '@bbc/digital-paper-edit-storybook/ProgrammeElements';
@@ -57,10 +57,10 @@ const ProgrammeScriptContainer = (props) => {
     `/projects/${ projectId }/paperedits`
   );
 
-  const handleSaveProgrammeScript = async () => {
+  const handleSaveProgrammeScript = async (newelements) => {
     console.log('Saving...');
-    if (elements) {
-      const newElements = JSON.parse(JSON.stringify(elements));
+    if (newelements) {
+      const newElements = JSON.parse(JSON.stringify(newelements));
       const insertPointElement = newElements.find((el) => el.type === 'insert');
 
       if (insertPointElement) {
@@ -182,6 +182,7 @@ const ProgrammeScriptContainer = (props) => {
       setElements(updatedWords);
       setResetPreview(true);
       console.log('Deleted');
+      handleSaveProgrammeScript(newElements);
     } else {
       console.log('Not deleting');
     }
@@ -197,6 +198,8 @@ const ProgrammeScriptContainer = (props) => {
       newElements[i] = currentElement;
       setElements(newElements);
       setResetPreview(true);
+      console.log('Edited');
+      handleSaveProgrammeScript(newElements);
     } else {
     }
   };
@@ -207,6 +210,7 @@ const ProgrammeScriptContainer = (props) => {
     const updatedWords = await updateWordTimings(newElements, oldIndex, newIndex);
     setElements(updatedWords);
     setResetPreview(true);
+    handleSaveProgrammeScript(newElements);
   };
 
   const getInsertElementIndex = () => {
@@ -283,6 +287,7 @@ const ProgrammeScriptContainer = (props) => {
       newElements.splice(insertElementIndex, 0, newElement);
       const updatedElements = updateWordTimingsAfterInsert(newElements, insertElementIndex);
       setElements(updatedElements);
+      handleSaveProgrammeScript(newElements);
       setResetPreview(true);
     } else {
       console.log('nothing selected');
@@ -325,6 +330,7 @@ const ProgrammeScriptContainer = (props) => {
         newElements.splice(insertElementIndex, 0, newElement);
         setElements(newElements);
         console.log('Added element');
+        handleSaveProgrammeScript(newElements);
         setResetPreview(true);
       } else {
         console.log('Not adding element');
@@ -368,18 +374,6 @@ const ProgrammeScriptContainer = (props) => {
                 title={ title }
                 elements={ elements }
               ></ExportDropdown>
-            </Col>
-            <Col sm={ 12 } md={ 1 }>
-              <Button
-                variant="outline-secondary"
-                onClick={ handleSaveProgrammeScript }
-                // size="sm"
-                title="save programme script"
-                block
-              >
-                <FontAwesomeIcon icon={ faSave } />
-                {/* Save */}
-              </Button>
             </Col>
           </Row>
         </Card.Header>

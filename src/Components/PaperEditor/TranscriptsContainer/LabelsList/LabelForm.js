@@ -48,8 +48,9 @@ const LabelForm = (props) => {
     setColor(randomColor());
   };
 
-  const handleColorPickerChangeComplete = () => {
-    setColor({ color: chroma(color.hex).name() });
+  const handleColorPickerChangeComplete = (e) => {
+    const colorValue = e.hex;
+    setColor(chroma(colorValue).name());
   };
 
   const handleManualColorChange = (e) => {
