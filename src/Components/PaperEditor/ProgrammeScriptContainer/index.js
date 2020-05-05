@@ -178,6 +178,7 @@ const ProgrammeScriptContainer = (props) => {
       setElements(newElements);
       setResetPreview(true);
       console.log('Deleted');
+      handleSaveProgrammeScript();
     } else {
       console.log('Not deleting');
     }
@@ -205,12 +206,14 @@ const ProgrammeScriptContainer = (props) => {
     const newElements = arrayMove(elements, oldIndex, newIndex);
     setElements(newElements);
     setResetPreview(true);
+    handleSaveProgrammeScript();
   };
 
   const getInsertElementIndex = () => {
     const insertElement = elements.find((el) => {
       return el.type === 'insert';
     });
+    handleSaveProgrammeScript();
 
     return elements.indexOf(insertElement);
   };
