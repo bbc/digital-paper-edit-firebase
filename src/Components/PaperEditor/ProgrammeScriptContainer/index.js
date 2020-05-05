@@ -75,7 +75,7 @@ const ProgrammeScriptContainer = (props) => {
     }
   };
 
-  const hadleSaveButton = () => {
+  const handleSaveButton = () => {
     handleSaveProgrammeScript();
     alert('Programme script has been saved successfully!');
   };
