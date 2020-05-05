@@ -75,11 +75,6 @@ const ProgrammeScriptContainer = (props) => {
     }
   };
 
-  const handleSaveButton = () => {
-    handleSaveProgrammeScript();
-    alert('Programme script has been saved successfully!');
-  };
-
   useEffect(() => {
     const getPaperEdit = async () => {
       try {
