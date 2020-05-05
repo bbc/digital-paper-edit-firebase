@@ -218,7 +218,6 @@ const ProgrammeScriptContainer = (props) => {
     const insertElement = elements.find((el) => {
       return el.type === 'insert';
     });
-    handleSaveProgrammeScript();
 
     return elements.indexOf(insertElement);
   };
@@ -269,6 +268,7 @@ const ProgrammeScriptContainer = (props) => {
       }
       newElements.splice(insertElementIndex, 0, newElement);
       setElements(newElements);
+      handleSaveProgrammeScript();
       setResetPreview(true);
     } else {
       console.log('nothing selected');
