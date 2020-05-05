@@ -173,7 +173,7 @@ See [docs](./docs) folder
 - [`docs/user-journey/user-journey.md`](./docs/user-journey/user-journey.md) overview of main features of the app.
 - [`docs/notes/`](./docs/notes/) contains unsorted dev notes on various aspects of the project (think of it as drafts).
 - [`docs/guides/`](./docs/guides/) contains good to know/how to on various aspects of the project.
-    - [`guides/create-new-users](./docs/guides/create-new-users.md) contains instructions for adding new users to DPE
+    - [`guides/create-new-users](./docs/guides/create-new-users.md)` contains instructions for adding new users to DPE
 - [`docs/adr/`](./docs/adr/) contains [Architecture Decision Record](https://github.com/joelparkerhenderson/architecture_decision_record).
 
 > An architectural decision record (ADR) is a document that captures an important architectural decision made along with its context and consequences.
