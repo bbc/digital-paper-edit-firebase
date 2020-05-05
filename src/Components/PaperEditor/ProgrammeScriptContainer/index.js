@@ -75,6 +75,11 @@ const ProgrammeScriptContainer = (props) => {
     }
   };
 
+  const hadleSaveButton = () => {
+    handleSaveProgrammeScript();
+    alert('Programme script has been saved successfully!');
+  };
+
   useEffect(() => {
     const getPaperEdit = async () => {
       try {
@@ -354,7 +359,7 @@ const ProgrammeScriptContainer = (props) => {
             <Col sm={ 12 } md={ 1 }>
               <Button
                 variant="outline-secondary"
-                onClick={ handleSaveProgrammeScript }
+                onClick={ hadleSaveButton }
                 // size="sm"
                 title="save programme script"
                 block
