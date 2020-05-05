@@ -50,10 +50,10 @@ const ProgrammeScriptContainer = (props) => {
     `/projects/${ projectId }/paperedits`
   );
 
-  const handleSaveProgrammeScript = async () => {
+  const handleSaveProgrammeScript = async (newelements) => {
     console.log('Saving...');
-    if (elements) {
-      const newElements = JSON.parse(JSON.stringify(elements));
+    if (newelements) {
+      const newElements = JSON.parse(JSON.stringify(newelements));
       const insertPointElement = newElements.find((el) => el.type === 'insert');
 
       if (insertPointElement) {
@@ -178,7 +178,7 @@ const ProgrammeScriptContainer = (props) => {
       setElements(newElements);
       setResetPreview(true);
       console.log('Deleted');
-      handleSaveProgrammeScript();
+      handleSaveProgrammeScript(newElements);
     } else {
       console.log('Not deleting');
     }
@@ -196,7 +196,7 @@ const ProgrammeScriptContainer = (props) => {
       setElements(newElements);
       setResetPreview(true);
       console.log('Edited');
-      handleSaveProgrammeScript();
+      handleSaveProgrammeScript(newElements);
     } else {
       // either newText is empty or they hit cancel
       console.log('Not editing');
@@ -207,7 +207,7 @@ const ProgrammeScriptContainer = (props) => {
     const newElements = arrayMove(elements, oldIndex, newIndex);
     setElements(newElements);
     setResetPreview(true);
-    handleSaveProgrammeScript();
+    handleSaveProgrammeScript(newElements);
   };
 
   const getInsertElementIndex = () => {
@@ -264,7 +264,7 @@ const ProgrammeScriptContainer = (props) => {
       }
       newElements.splice(insertElementIndex, 0, newElement);
       setElements(newElements);
-      handleSaveProgrammeScript();
+      handleSaveProgrammeScript(newElements);
       setResetPreview(true);
     } else {
       console.log('nothing selected');
@@ -310,7 +310,7 @@ const ProgrammeScriptContainer = (props) => {
         newElements.splice(insertElementIndex, 0, newElement);
         setElements(newElements);
         console.log('Added element');
-        handleSaveProgrammeScript();
+        handleSaveProgrammeScript(newElements);
         setResetPreview(true);
       } else {
         console.log('Not adding element');
