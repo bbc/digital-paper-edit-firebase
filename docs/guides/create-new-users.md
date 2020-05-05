@@ -11,8 +11,9 @@
 
 6. Enter the user's UID value in the `Document Id` field in the modal. 
 7. Add the following to the document:
-    a. `projects`: []
-    b. `role`: 'ADMIN'
+
+    1. `projects`: []
+    2. `role`: 'ADMIN'
 
 ![Add fields and ID to new user document](../img/add-user-modal.png)
 
