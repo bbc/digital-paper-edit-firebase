@@ -359,7 +359,7 @@ const ProgrammeScriptContainer = (props) => {
             <Col sm={ 12 } md={ 1 }>
               <Button
                 variant="outline-secondary"
-                onClick={ hadleSaveButton }
+                onClick={ handleSaveButton }
                 // size="sm"
                 title="save programme script"
                 block
