@@ -75,7 +75,7 @@ const ProgrammeScriptContainer = (props) => {
     }
   };
 
-  const hadleSaveButton = () => {
+  const handleSaveButton = () => {
     handleSaveProgrammeScript();
     alert('Programme script has been saved successfully!');
   };
@@ -356,6 +356,21 @@ const ProgrammeScriptContainer = (props) => {
                 elements={ elements }
               ></ExportDropdown>
             </Col>
+<<<<<<< HEAD
+=======
+            <Col sm={ 12 } md={ 1 }>
+              <Button
+                variant="outline-secondary"
+                onClick={ handleSaveButton }
+                // size="sm"
+                title="save programme script"
+                block
+              >
+                <FontAwesomeIcon icon={ faSave } />
+                {/* Save */}
+              </Button>
+            </Col>
+>>>>>>> 7dafbcbb0bac11f870a7dc7eb800f5705415a164
           </Row>
         </Card.Header>
         <Card.Body>
