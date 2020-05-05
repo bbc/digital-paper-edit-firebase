@@ -8,7 +8,7 @@ import arrayMove from 'array-move';
 import { SortableContainer } from 'react-sortable-hoc';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 import ProgrammeElements from '@bbc/digital-paper-edit-storybook/ProgrammeElements';
@@ -196,6 +196,7 @@ const ProgrammeScriptContainer = (props) => {
       setElements(newElements);
       setResetPreview(true);
       console.log('Edited');
+      handleSaveProgrammeScript();
     } else {
       // either newText is empty or they hit cancel
       console.log('Not editing');
@@ -309,6 +310,7 @@ const ProgrammeScriptContainer = (props) => {
         newElements.splice(insertElementIndex, 0, newElement);
         setElements(newElements);
         console.log('Added element');
+        handleSaveProgrammeScript();
         setResetPreview(true);
       } else {
         console.log('Not adding element');
@@ -351,21 +353,6 @@ const ProgrammeScriptContainer = (props) => {
                 elements={ elements }
               ></ExportDropdown>
             </Col>
-<<<<<<< HEAD
-=======
-            <Col sm={ 12 } md={ 1 }>
-              <Button
-                variant="outline-secondary"
-                onClick={ handleSaveButton }
-                // size="sm"
-                title="save programme script"
-                block
-              >
-                <FontAwesomeIcon icon={ faSave } />
-                {/* Save */}
-              </Button>
-            </Col>
->>>>>>> 7dafbcbb0bac11f870a7dc7eb800f5705415a164
           </Row>
         </Card.Header>
         <Card.Body>
