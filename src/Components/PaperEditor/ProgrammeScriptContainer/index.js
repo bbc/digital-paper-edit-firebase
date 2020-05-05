@@ -356,18 +356,6 @@ const ProgrammeScriptContainer = (props) => {
                 elements={ elements }
               ></ExportDropdown>
             </Col>
-            <Col sm={ 12 } md={ 1 }>
-              <Button
-                variant="outline-secondary"
-                onClick={ hadleSaveButton }
-                // size="sm"
-                title="save programme script"
-                block
-              >
-                <FontAwesomeIcon icon={ faSave } />
-                {/* Save */}
-              </Button>
-            </Col>
           </Row>
         </Card.Header>
         <Card.Body>
