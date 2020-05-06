@@ -1,9 +1,9 @@
-const fetch = require("node-fetch");
+const fetch = require('node-fetch');
 
 const getSignedUrl = async (aws, fileName, durationSeconds) => {
   const headers = {
-    "Content-Type": "application/json",
-    "X-API-Key": aws.api.uploader.key,
+    'Content-Type': 'application/json',
+    'X-API-Key': aws.api.uploader.key,
   };
 
   const body = {
