@@ -57,9 +57,9 @@ const ProgrammeScriptContainer = (props) => {
     `/projects/${ projectId }/paperedits`
   );
 
-  const handleSaveProgrammeScript = async (newElements) => {
-    console.log('Saving...');
-    if (newElements) {
+  const handleSaveProgrammeScript = async (els) => {
+    if (els) {
+      const newElements = JSON.parse(JSON.stringify(els));
       const insertPointElement = newElements.find((el) => el.type === 'insert');
 
       if (insertPointElement) {
@@ -180,6 +180,7 @@ const ProgrammeScriptContainer = (props) => {
       updatedWords.splice(i, 1);
       setElements(updatedWords);
       setResetPreview(true);
+      handleSaveProgrammeScript(updatedWords);
       console.log('Deleted');
     } else {
       console.log('Not deleting');
@@ -206,6 +207,7 @@ const ProgrammeScriptContainer = (props) => {
     const updatedWords = await updateWordTimings(newElements, oldIndex, newIndex);
     setElements(updatedWords);
     setResetPreview(true);
+    handleSaveProgrammeScript(updatedWords);
   };
 
   const getInsertElementIndex = () => {
@@ -283,6 +285,7 @@ const ProgrammeScriptContainer = (props) => {
       const updatedElements = updateWordTimingsAfterInsert(newElements, insertElementIndex);
       setElements(updatedElements);
       setResetPreview(true);
+      handleSaveProgrammeScript(updatedElements);
     } else {
       console.log('nothing selected');
       alert(
@@ -325,6 +328,7 @@ const ProgrammeScriptContainer = (props) => {
         setElements(newElements);
         console.log('Added element');
         setResetPreview(true);
+        handleSaveProgrammeScript(newElements);
       } else {
         console.log('Not adding element');
       }
@@ -367,18 +371,6 @@ const ProgrammeScriptContainer = (props) => {
                 title={ title }
                 elements={ elements }
               ></ExportDropdown>
-            </Col>
-            <Col sm={ 12 } md={ 1 }>
-              <Button
-                variant="outline-secondary"
-                onClick={ handleSaveProgrammeScript }
-                // size="sm"
-                title="save programme script"
-                block
-              >
-                <FontAwesomeIcon icon={ faSave } />
-                {/* Save */}
-              </Button>
             </Col>
           </Row>
         </Card.Header>
