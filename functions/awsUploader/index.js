@@ -10,34 +10,14 @@ exports.createHandler = async (snap, bucket, aws, context) => {
   const metadata = snap.data();
   const durationSeconds = Math.ceil(metadata.duration);
   const fileSize = metadata.size;
-  const params = {
-    Bucket: aws.name,
-    Key: destPath,
-    Expires: 60 * 5,
-    Metadata: {
-      "duration": `${durationSeconds}`,
-    }
-  }
-  const signedUrl = await getSignedUrl(aws, params);
-
-  console.log("[START] Upload to S3");
   try {
-    const promise = uploadS3Stream(signedUrl, readStream, fileSize);
-    const res = await promise;
-    if (res.ok) {
-      console.log(
-        `[SUCCESS] File upload PUT request sent with status ${res.status}`
-      );
-    } else {
-      throw new Error(
-        `status ${res.status} - ${res.statusText}`
-      );
-    }
+    const uploadUrl = await getSignedUrl(aws, fileName, durationSeconds);
+    await uploadS3Stream(uploadUrl, readStream, fileSize);
+    console.log(
+      `[COMPLETE] Finished upload to s3://${aws.bucket.name}/${destPath}`
+    );
   } catch (err) {
-    return console.error("[ERROR] Failed to upload to S3:", err);
+    console.error(`[ERROR] ${err}`);
+    return;
   }
-
-  return console.log(
-    `[COMPLETE] Finished upload to s3://${aws.name}/${destPath}`
-  );
 };
