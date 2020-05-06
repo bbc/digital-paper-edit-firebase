@@ -548,8 +548,8 @@ const TranscriptTabContent = (props) => {
         />
 
         <Card.Body
-          // onDoubleClick={ handleWordClick }
-          // onClick={ handleTimecodeClick }
+          onDoubleClick={ handleWordClick }
+          onClick={ handleTimecodeClick }
           style={ { height: cardBodyHeight, overflow: 'scroll' } }
         >
           {highlights}
