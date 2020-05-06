@@ -197,6 +197,7 @@ const ProgrammeScriptContainer = (props) => {
       newElements[i] = currentElement;
       setElements(newElements);
       setResetPreview(true);
+      handleSaveProgrammeScript(newElements);
     } else {
     }
   };
