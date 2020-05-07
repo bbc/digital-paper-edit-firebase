@@ -111,7 +111,9 @@ const TranscriptTabContent = (props) => {
 
   useEffect(() => {
     const highlightWords = (words) => {
+      console.log('words: ', words);
       const dataParagraphText = words.join(' ');
+      console.log('dPT: ', dataParagraphText);
 
       const css = words.reduce(
         (res, word) => {

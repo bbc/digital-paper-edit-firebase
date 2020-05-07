@@ -239,13 +239,15 @@ const ProgrammeScriptContainer = (props) => {
   const handleAddTranscriptSelectionToProgrammeScript = () => {
     console.log('Handling add transcript selection...');
     const result = getDataFromUserWordsSelection();
+    console.log('result:  :', result);
     if (result) {
       // TODO: if there's just one speaker in selection do following
       // if it's multiple split list of words into multiple groups
       // and add a papercut for each to the programme script
-      const newElements = JSON.parse(JSON.stringify(elements));
+      const elementsClone = JSON.parse(JSON.stringify(elements));
 
       const insertElementIndex = getInsertElementIndex();
+      console.log('is 1 P: : ', isOneParagraph(result.words));
 
       // Calcultates the starting time of the new element
       const prevDuration = getTranscriptSelectionStartTime(insertElementIndex);
@@ -253,7 +255,7 @@ const ProgrammeScriptContainer = (props) => {
       if (isOneParagraph(result.words)) {
         newElement = {
           id: cuid(),
-          index: newElements.length,
+          index: elementsClone.length,
           type: 'paper-cut',
           start: result.start,
           end: result.end,
@@ -281,9 +283,43 @@ const ProgrammeScriptContainer = (props) => {
           };
           newElement.words.push(newWord);
         });
+      } else {
+        const wordsArray = divideWordsSelectionsIntoParagraphs(result.words);
+        wordsArray.forEach((array) => { // reduce?
+          console.log('array: ', array);
+          newElement = {
+            id: cuid(),
+            index: elementsClone.length,
+            type: 'paper-cut',
+            start: array[0].start,
+            end: array[array.length - 1].end,
+            // vcStart: prevDuration.startTime,
+            // vcEnd: prevDuration.startTime + (result.end - result.start),
+            // words: [],
+            // speaker: result.speaker,
+            // transcriptId: result.transcriptId,
+            // labelId: [],
+          };
+
+          console.log('new el: : ', newElement);
+          selectionWords.map((word, i) => {
+            const newStart = (word.start - result.start) + prevDuration.startTime;
+            const wordDuration = (word.end - word.start);
+            const newEnd = newStart + wordDuration;
+            const newWord = {
+              index: i,
+              start: newStart,
+              end: newEnd,
+              speaker: result.speaker,
+              text: word.text,
+              transcriptId: word.transcriptId
+            };
+            newElement.words.push(newWord);
+          });
+        });
       }
-      newElements.splice(insertElementIndex, 0, newElement);
-      const updatedElements = updateWordTimingsAfterInsert(newElements, insertElementIndex);
+      elementsClone.splice(insertElementIndex, 0, newElement);
+      const updatedElements = updateWordTimingsAfterInsert(elementsClone, insertElementIndex);
       setElements(updatedElements);
       setResetPreview(true);
       handleSaveProgrammeScript(updatedElements);
