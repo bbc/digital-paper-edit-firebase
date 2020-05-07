@@ -239,7 +239,6 @@ const ProgrammeScriptContainer = (props) => {
   const handleAddTranscriptSelectionToProgrammeScript = () => {
     console.log('Handling add transcript selection...');
     const result = getDataFromUserWordsSelection();
-    console.log('result:  :', result);
     if (result) {
       // TODO: if there's just one speaker in selection do following
       // if it's multiple split list of words into multiple groups
@@ -247,10 +246,10 @@ const ProgrammeScriptContainer = (props) => {
       const elementsClone = JSON.parse(JSON.stringify(elements));
 
       const insertElementIndex = getInsertElementIndex();
-      console.log('is 1 P: : ', isOneParagraph(result.words));
 
       // Calcultates the starting time of the new element
       const prevDuration = getTranscriptSelectionStartTime(insertElementIndex);
+      console.log('previous duration: ', prevDuration);
       let newElement;
       if (isOneParagraph(result.words)) {
         newElement = {
@@ -283,46 +282,61 @@ const ProgrammeScriptContainer = (props) => {
           };
           newElement.words.push(newWord);
         });
+
+        elementsClone.splice(insertElementIndex, 0, newElement);
+        const updatedElements = updateWordTimingsAfterInsert(elementsClone, insertElementIndex);
+        setElements(updatedElements);
+        setResetPreview(true);
+        handleSaveProgrammeScript(updatedElements);
+
       } else {
         const wordsArray = divideWordsSelectionsIntoParagraphs(result.words);
-        wordsArray.forEach((array) => { // reduce?
+        const elsToAdd = wordsArray.reduce((prevResult, array) => {
+          console.log('prev result', prevResult);
           console.log('array: ', array);
           newElement = {
             id: cuid(),
-            index: elementsClone.length,
+            index: elementsClone.length, // FIX
             type: 'paper-cut',
             start: array[0].start,
             end: array[array.length - 1].end,
-            // vcStart: prevDuration.startTime,
-            // vcEnd: prevDuration.startTime + (result.end - result.start),
-            // words: [],
-            // speaker: result.speaker,
-            // transcriptId: result.transcriptId,
-            // labelId: [],
+            vcStart: prevResult.prevDuration,
+            vcEnd: prevResult.prevDuration + (array[array.length - 1].end - array[0].start),
+            words: [],
+            speaker: array[0].speaker,
+            transcriptId: array[0].transcriptId,
+            labelId: [],
           };
 
-          console.log('new el: : ', newElement);
-          selectionWords.map((word, i) => {
-            const newStart = (word.start - result.start) + prevDuration.startTime;
+          const paperCutDuration = newElement.end - newElement.start;
+
+          array.map((word, i) => {
+            const newStart = (word.start - newElement.start) + prevResult.prevDuration;
             const wordDuration = (word.end - word.start);
             const newEnd = newStart + wordDuration;
             const newWord = {
               index: i,
               start: newStart,
               end: newEnd,
-              speaker: result.speaker,
+              speaker: newElement.speaker,
               text: word.text,
               transcriptId: word.transcriptId
             };
             newElement.words.push(newWord);
           });
-        });
+
+          prevResult.prevDuration += paperCutDuration;
+          prevResult.elements.push(newElement);
+
+          return prevResult;
+        }, { elements: [], prevDuration: prevDuration.startTime });
+
+        elementsClone.splice(insertElementIndex, 0, ...elsToAdd.elements);
+        const updatedElements = updateWordTimingsAfterInsert(elementsClone, insertElementIndex);
+        setElements(updatedElements);
+        setResetPreview(true);
+        handleSaveProgrammeScript(updatedElements);
       }
-      elementsClone.splice(insertElementIndex, 0, newElement);
-      const updatedElements = updateWordTimingsAfterInsert(elementsClone, insertElementIndex);
-      setElements(updatedElements);
-      setResetPreview(true);
-      handleSaveProgrammeScript(updatedElements);
     } else {
       console.log('nothing selected');
       alert(
