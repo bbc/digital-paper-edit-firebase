@@ -109,6 +109,8 @@ const updateTranscriptsStatus = async (
 
   let validJobs = filterValidJobs(projectTranscripts, execTimestamp);
 
+  console.debug(`${validJobs.length} valid jobs to process`);
+
   await validJobs.forEach(async (job) => {
     let response;
     const usersAudioDataJob = usersAudioData[job.id];
@@ -178,12 +180,11 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
   } catch (err) {
     return console.error("[ERROR] Could not get valid Jobs", err);
   }
-
-  return console.log(
-    `[COMPLETE] Checking STT jobs for in-progress transcriptions`
-  );
 };
 
 exports.createHandler = async (admin, config, context) => {
   await sttCheckRunner(admin, config, context.timestamp);
+  console.log(
+    `[COMPLETE] Checking STT jobs for in-progress transcriptions`
+  );
 };
