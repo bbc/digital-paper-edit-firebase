@@ -184,7 +184,7 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
 
 exports.createHandler = async (admin, config, context) => {
   await sttCheckRunner(admin, config, context.timestamp);
-  console.log(
+  return console.log(
     `[COMPLETE] Checking STT jobs for in-progress transcriptions`
   );
 };
