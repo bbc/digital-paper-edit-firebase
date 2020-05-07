@@ -109,6 +109,8 @@ const updateTranscriptsStatus = async (
 
   let validJobs = filterValidJobs(projectTranscripts, execTimestamp);
 
+  console.debug(`${validJobs.length} valid jobs to process`);
+
   await validJobs.forEach(async (job) => {
     let response;
     const usersAudioDataJob = usersAudioData[job.id];
