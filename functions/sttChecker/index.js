@@ -11,7 +11,7 @@ const {
 const psttAdapter = require("./psttAdapter");
 
 const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
-  const NUMBER_OF_HOURS = 6
+  const NUMBER_OF_HOURS = 6;
   const ONE_DAY_IN_NANOSECONDS = 3600 * NUMBER_OF_HOURS * 1000;
   const timeDifference = sttCheckerExecTime - lastUpdatedTime;
   return {
@@ -130,29 +130,26 @@ const updateTranscriptsStatus = async (
     const fileName = `users/${userId}/audio/${jobId}.wav`;
 
     try {
+      const update = { message: "Transcribing..." };
       const response = await getJobStatus(fileName, config);
-      const MESSAGE = "Transcribing...";
 
-      if (response.status === "in-progress" && message === MESSAGE) {
-        return;
+      if (response.status) {
+        if (response.status === "in-progress" && message === update.message) {
+          return;
+        }
+
+        update.payload = response.transcript;
+        update.status = response.status;
+
+        if (response.status === "success") {
+          const { words, paragraphs } = psttAdapter(update.payload.items);
+          update.words = words;
+          update.paragraphs = paragraphs;
+          update.status = "done";
+        }
       }
-
-      const update = {
-        payload: response.transcript,
-        status: response.status,
-        message: MESSAGE,
-      };
-
-      if (response.status === "success") {
-        const { words, paragraphs } = psttAdapter(update.payload.items);
-        update.words = words;
-        update.paragraphs = paragraphs;
-        update.status = "done";
-      }
-
       await updateTranscription(admin, job.id, projectId, update);
       console.debug(`Updated ${job.id} with data`, update);
-
     } catch (err) {
       console.error(
         `[ERROR] Failed to get STT jobs status for ${fileName}: ${err}`
