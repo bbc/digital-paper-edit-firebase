@@ -8,7 +8,7 @@ import arrayMove from 'array-move';
 import { SortableContainer } from 'react-sortable-hoc';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faSave } from '@fortawesome/free-solid-svg-icons';
 
 import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 import ProgrammeElements from '@bbc/digital-paper-edit-storybook/ProgrammeElements';
@@ -24,6 +24,12 @@ import {
   isOneParagraph,
 } from './divide-words-selections-into-paragraphs';
 
+import {
+  updateWordTimings,
+  updateWordTimingsAfterInsert,
+  updateWordTimingsAfterDelete
+} from './reset-word-timings';
+
 import PropTypes from 'prop-types';
 
 const ProgrammeScriptContainer = (props) => {
@@ -35,6 +41,7 @@ const ProgrammeScriptContainer = (props) => {
   const [ elements, setElements ] = useState();
   const [ title, setTitle ] = useState('');
   const [ resetPreview, setResetPreview ] = useState(false);
+  const [ currentTime, setCurrentTime ] = useState();
 
   const SortableList = SortableContainer(({ children }) => (
     <ul style={ { listStyle: 'none', padding: '0px' } }>{children}</ul>
@@ -50,10 +57,9 @@ const ProgrammeScriptContainer = (props) => {
     `/projects/${ projectId }/paperedits`
   );
 
-  const handleSaveProgrammeScript = async (newelements) => {
-    console.log('Saving...');
-    if (newelements) {
-      const newElements = JSON.parse(JSON.stringify(newelements));
+  const handleSaveProgrammeScript = async (els) => {
+    if (els) {
+      const newElements = JSON.parse(JSON.stringify(els));
       const insertPointElement = newElements.find((el) => el.type === 'insert');
 
       if (insertPointElement) {
@@ -125,7 +131,6 @@ const ProgrammeScriptContainer = (props) => {
           const playlistItem = getPlaylistItem(paperEdit);
           playlistItem.ref = transcript.media.ref;
           playlistItem.start = prevResult.startTime;
-
           prevResult.playlist.push(playlistItem);
           prevResult.startTime += playlistItem.duration;
 
@@ -134,7 +139,7 @@ const ProgrammeScriptContainer = (props) => {
         { startTime: 0, playlist: [] }
       );
 
-      const { playlist: playlistItems } = results;
+      let { playlist: playlistItems } = results;
       playlistItems = await Promise.all(
         playlistItems.map(async (item) => {
           item.src = await getMediaUrl(item);
@@ -147,8 +152,8 @@ const ProgrammeScriptContainer = (props) => {
     };
 
     if (resetPreview && elements && elements.length > 0) {
-      setResetPreview(false);
       getPlaylist(elements);
+      setResetPreview(false);
     }
   }, [ elements, resetPreview, firebase.storage.storage, transcripts ]);
 
@@ -166,19 +171,17 @@ const ProgrammeScriptContainer = (props) => {
     };
   });
 
-  const handleDelete = (i) => {
+  const handleDelete = async (i) => {
     console.log('Handling delete...');
     const confirmDelete = window.confirm('Are you sure you want to delete?');
-    // Using confirm() breaks it so we use window.confirm()
-    // See last comment https://helperbyte.com/questions/72323/how-to-work-with-a-confirm-to-react
     if (confirmDelete) {
-      console.log('Deleting');
-      const newElements = JSON.parse(JSON.stringify(elements));
-      newElements.splice(i, 1);
-      setElements(newElements);
+      const reorderedList = JSON.parse(JSON.stringify(elements));
+      const updatedWords = await updateWordTimingsAfterDelete(reorderedList, i);
+      updatedWords.splice(i, 1);
+      setElements(updatedWords);
       setResetPreview(true);
+      handleSaveProgrammeScript(updatedWords);
       console.log('Deleted');
-      handleSaveProgrammeScript(newElements);
     } else {
       console.log('Not deleting');
     }
@@ -190,24 +193,22 @@ const ProgrammeScriptContainer = (props) => {
     const currentElement = newElements[i];
     const newText = prompt('Edit', currentElement.text);
     if (newText) {
-      console.log('Editing...');
       currentElement.text = newText;
       newElements[i] = currentElement;
       setElements(newElements);
       setResetPreview(true);
-      console.log('Edited');
       handleSaveProgrammeScript(newElements);
     } else {
-      // either newText is empty or they hit cancel
-      console.log('Not editing');
     }
   };
 
-  const onSortEnd = ({ oldIndex, newIndex }) => {
+  const onSortEnd = async ({ oldIndex, newIndex }) => {
     const newElements = arrayMove(elements, oldIndex, newIndex);
-    setElements(newElements);
+    console.log('handling reorder...');
+    const updatedWords = await updateWordTimings(newElements, oldIndex, newIndex);
+    setElements(updatedWords);
     setResetPreview(true);
-    handleSaveProgrammeScript(newElements);
+    handleSaveProgrammeScript(updatedWords);
   };
 
   const getInsertElementIndex = () => {
@@ -218,7 +219,23 @@ const ProgrammeScriptContainer = (props) => {
     return elements.indexOf(insertElement);
   };
 
-  // // [old comment] TODO: needs to handle when selection spans across multiple paragraphs
+  const getTranscriptSelectionStartTime = (insertIndex) => {
+    const prevElements = elements.slice(0, insertIndex);
+
+    const paperEdits = prevElements.filter((element) => element.type === 'paper-cut');
+
+    const totalDuration = paperEdits.reduce((prevResult, paperEdit) => {
+      const paperEditDuration = paperEdit.end - paperEdit.start;
+      prevResult.startTime += paperEditDuration;
+
+      return prevResult;
+    },
+    { startTime: 0 }
+    );
+
+    return totalDuration;
+  };
+
   const handleAddTranscriptSelectionToProgrammeScript = () => {
     console.log('Handling add transcript selection...');
     const result = getDataFromUserWordsSelection();
@@ -227,45 +244,49 @@ const ProgrammeScriptContainer = (props) => {
       // if it's multiple split list of words into multiple groups
       // and add a papercut for each to the programme script
       const newElements = JSON.parse(JSON.stringify(elements));
-      // TODO: insert at insert point
 
       const insertElementIndex = getInsertElementIndex();
+
+      // Calcultates the starting time of the new element
+      const prevDuration = getTranscriptSelectionStartTime(insertElementIndex);
       let newElement;
       if (isOneParagraph(result.words)) {
-        // create new element
-        // TODO: Create new element could be refactored into helper function
         newElement = {
           id: cuid(),
           index: newElements.length,
           type: 'paper-cut',
           start: result.start,
           end: result.end,
+          vcStart: prevDuration.startTime,
+          vcEnd: prevDuration.startTime + (result.end - result.start),
+          words: [],
           speaker: result.speaker,
-          words: result.words,
           transcriptId: result.transcriptId,
           labelId: [],
         };
-      } else {
-        const paragraphs = divideWordsSelectionsIntoParagraphs(result.words);
-        paragraphs.reverse().forEach((paragraph) => {
-          newElement = {
-            id: cuid(),
-            index: newElements.length,
-            type: 'paper-cut',
-            start: paragraph[0].start,
-            end: paragraph[paragraph.length - 1].end,
-            speaker: paragraph[0].speaker,
-            words: paragraph,
-            transcriptId: paragraph[0].transcriptId,
-            // TODO: ignoring labels for now
-            labelId: [],
+        const selectionWords = result.words;
+
+        // Recalculates the word start and end times for the programmeScript
+        selectionWords.map((word, i) => {
+          const newStart = (word.start - result.start) + prevDuration.startTime;
+          const wordDuration = (word.end - word.start);
+          const newEnd = newStart + wordDuration;
+          const newWord = {
+            index: i,
+            start: newStart,
+            end: newEnd,
+            speaker: result.speaker,
+            text: word.text,
+            transcriptId: word.transcriptId
           };
+          newElement.words.push(newWord);
         });
       }
       newElements.splice(insertElementIndex, 0, newElement);
-      setElements(newElements);
-      handleSaveProgrammeScript(newElements);
+      const updatedElements = updateWordTimingsAfterInsert(newElements, insertElementIndex);
+      setElements(updatedElements);
       setResetPreview(true);
+      handleSaveProgrammeScript(updatedElements);
     } else {
       console.log('nothing selected');
       alert(
@@ -278,10 +299,7 @@ const ProgrammeScriptContainer = (props) => {
     console.log('Handling double click...');
     if (e.target.className === 'words') {
       const wordCurrentTime = e.target.dataset.start;
-      // TODO: set current time in preview canvas
-      // Video context probably needs more info like, which clip/track in the sequence?
-      // investigate how to set currentTime in video context
-      console.log('wordCurrentTime::', wordCurrentTime);
+      setCurrentTime(wordCurrentTime);
     }
   };
 
@@ -310,8 +328,8 @@ const ProgrammeScriptContainer = (props) => {
         newElements.splice(insertElementIndex, 0, newElement);
         setElements(newElements);
         console.log('Added element');
-        handleSaveProgrammeScript(newElements);
         setResetPreview(true);
+        handleSaveProgrammeScript(newElements);
       } else {
         console.log('Not adding element');
       }
@@ -328,7 +346,9 @@ const ProgrammeScriptContainer = (props) => {
       </h2>
       <Card>
         <Card.Header ref={ previewCardRef }>
-          <PreviewCanvas width={ width } playlist={ playlist } />
+          {playlist ? (
+            <PreviewCanvas width={ width } playlist={ playlist } currentTime={ currentTime }/>
+          ) : null}
         </Card.Header>
         <Card.Header>
           <Row noGutters>
