@@ -15,7 +15,7 @@ const updateWordTimings = (elements) => {
 
     // Re-calcultate word timings
     if (element.type === 'paper-cut') {
-      const paperCut = element;
+      const paperCut = JSON.parse(JSON.stringify(element));;
       const paperCutDuration = element.end - element.start;
 
       paperCut.words.map((word) => {
