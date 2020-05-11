@@ -316,19 +316,33 @@ const TranscriptTabContent = (props) => {
     }
   };
 
-  const handleTimecodeClick = (e) => {
-    if (e.key === 'Enter' && e.target.classList.contains('timecode')) {
-      const wordEl = e.target;
-      videoRef.current.currentTime = wordEl.dataset.start;
-      videoRef.current.play();
-    }
+  const wordTimingEvent = (e) => {
+    const wordEl = e.target;
+    videoRef.current.currentTime = wordEl.dataset.start;
+    videoRef.current.play();
   };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && e.target.className === 'words') {
-      const wordEl = e.target;
-      videoRef.current.currentTime = wordEl.dataset.start;
-      videoRef.current.play();
+      wordTimingEvent(e);
+    }
+  };
+
+  const handleKeyDownTimecodes = (e) => {
+    if (e.key === 'Enter' && e.target.classList.contains('timecode')) {
+      wordTimingEvent(e);
+    }
+  };
+
+  const onDoubleClick = (e) => {
+    if (e.target.className === 'words') {
+      wordTimingEvent(e);
+    }
+  };
+
+  const onClick = (e) => {
+    if (e.target.classList.contains('timecode')) {
+      wordTimingEvent(e);
     }
   };
 
@@ -483,7 +497,7 @@ const TranscriptTabContent = (props) => {
         labels={ labels }
         isSearchResult={ isSearchResult }
         handleKeyPress={ handleKeyPress }
-        handleKeyDownTimecodes={ handleTimecodeClick }
+        handleKeyDownTimecodes={ handleKeyDownTimecodes }
         handleDeleteAnnotation={ handleDeleteAnnotation }
         handleEditAnnotation={ handleEditAnnotation }
       />
@@ -544,8 +558,8 @@ const TranscriptTabContent = (props) => {
         />
 
         <Card.Body
-          onDoubleClick={ handleWordClick }
-          onClick={ handleTimecodeClick }
+          onDoubleClick={ onDoubleClick }
+          onClick={ onClick }
           style={ { height: cardBodyHeight, overflow: 'scroll' } }
         >
           {highlights}
