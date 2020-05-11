@@ -251,7 +251,6 @@ const ProgrammeScriptContainer = (props) => {
       const prevDuration = getTranscriptSelectionStartTime(insertElementIndex);
       let newElement;
       if (isOneParagraph(result.words)) {
-        console.log('PROCESSING IS ONE PARAGRAPH!!');
         newElement = {
           id: cuid(),
           index: elementsClone.length,
@@ -293,32 +292,23 @@ const ProgrammeScriptContainer = (props) => {
         const wordsArray = divideWordsSelectionsIntoParagraphs(result.words);
 
         const elsToAdd = wordsArray.reduce((prevResult, array) => {
-          const newElStart = prevResult.newDuration;
-
-          // if (prevResult.elements.length) {
-          //   console.log('elements: ', prevResult.elements);
-          //   newElStart = prevResult.elements[elements.length - 1].vcEnd;
-          // } else {
-          //   newElStart = prevResult.newDuration;
-          // }
-
-          console.log('new El start: ', newElStart);
+          const elStart = prevResult.newDuration;
+          const elEnd = elStart + (array[array.length - 1].end - array[0].start);
+          const paperCutDuration = elEnd - elStart;
 
           newElement = {
             id: cuid(),
-            index: elementsClone.length, // FIX
+            index: prevResult.index,
             type: 'paper-cut',
             start: parseFloat(array[0].start),
             end: parseFloat(array[array.length - 1].end),
-            // vcStart: newElStart,
-            // vcEnd: newElStart + (array[array.length - 1].end - array[0].start),
+            vcStart: elStart,
+            vcEnd: elEnd,
             words: [],
             speaker: array[0].speaker,
             transcriptId: array[0].transcriptId,
             labelId: [],
           };
-
-          const paperCutDuration = newElement.end - newElement.start;
 
           const words = array;
           words.map((word, i ) => {
@@ -336,26 +326,16 @@ const ProgrammeScriptContainer = (props) => {
             newElement.words.push(newWord);
           });
 
-          newElement.vcStart = newElStart;
-          newElement.vcEnd = newElStart + (array[array.length - 1].end - array[0].start);
-
-          console.log(newElement);
-
           prevResult.elements.push(newElement);
           prevResult.newDuration += paperCutDuration;
+          prevResult.index += 1;
 
           return prevResult;
-        }, { elements: [], newDuration: prevDuration.startTime });
-
-        console.log('els to Add: ', elsToAdd);
+        }, { elements: [], newDuration: prevDuration.startTime, index: elements.length - 1 });
 
         elementsClone.splice(insertElementIndex, 0, ...elsToAdd.elements);
-        console.log('EC: ', elementsClone);
-
         const updatedElements = await updateWordTimings(elementsClone);
-        console.log('UE', updatedElements);
         setElements(updatedElements);
-        console.log('updated elements: ', updatedElements);
         setResetPreview(true);
         handleSaveProgrammeScript(updatedElements);
       }

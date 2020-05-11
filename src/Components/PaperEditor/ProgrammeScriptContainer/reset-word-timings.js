@@ -77,6 +77,7 @@ const updateWordTimingsAfterInsert = (elements, insertIndex) => {
   // Only looks for paper-cuts in the programme script after the insertion point
   const elementsToUpdate = reindexedList.slice(insertIndex + 1, elements.length).filter((element) => element.type === 'paper-cut');;
   if (elementsToUpdate) {
+    console.log('Els to update: : : : ', elementsToUpdate);
     elementsToUpdate.map((element) => {
 
       // Updates video context start and end times by length of insertion
