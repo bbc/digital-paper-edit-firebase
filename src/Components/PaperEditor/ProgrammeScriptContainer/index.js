@@ -139,7 +139,7 @@ const ProgrammeScriptContainer = (props) => {
         { startTime: 0, playlist: [] }
       );
 
-      const { playlist: playlistItems } = results;
+      let { playlist: playlistItems } = results;
       playlistItems = await Promise.all(
         playlistItems.map(async (item) => {
           item.src = await getMediaUrl(item);
