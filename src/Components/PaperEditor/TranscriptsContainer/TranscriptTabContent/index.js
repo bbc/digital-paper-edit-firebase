@@ -328,13 +328,13 @@ const TranscriptTabContent = (props) => {
     }
   };
 
-  const onDoubleClick = (e) => {
+  const handleWordClick = (e) => {
     if (e.target.className === 'words') {
       wordTimingEvent(e);
     }
   };
 
-  const onClick = (e) => {
+  const handleTimecodeClick = (e) => {
     if (e.target.classList.contains('timecode')) {
       wordTimingEvent(e);
     }
@@ -560,8 +560,8 @@ const TranscriptTabContent = (props) => {
         />
 
         <Card.Body
-          onDoubleClick={ onDoubleClick }
-          onClick={ onClick }
+          onDoubleClick={ handleWordClick }
+          onClick={ handleTimecodeClick }
           style={ { height: cardBodyHeight, overflow: 'scroll' } }
         >
           {highlights}
