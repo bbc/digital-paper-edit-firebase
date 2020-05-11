@@ -322,12 +322,6 @@ const TranscriptTabContent = (props) => {
     videoRef.current.play();
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && e.target.className === 'words') {
-      wordTimingEvent(e);
-    }
-  };
-
   const handleKeyDownTimecodes = (e) => {
     if (e.key === 'Enter' && e.target.classList.contains('timecode')) {
       wordTimingEvent(e);
@@ -343,6 +337,14 @@ const TranscriptTabContent = (props) => {
   const onClick = (e) => {
     if (e.target.classList.contains('timecode')) {
       wordTimingEvent(e);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && e.target.className === 'words') {
+      const wordEl = e.target;
+      videoRef.current.currentTime = wordEl.dataset.start;
+      videoRef.current.play();
     }
   };
 
