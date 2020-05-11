@@ -6,7 +6,6 @@ import { shortTimecode } from '@bbc/react-transcript-editor/timecodeConverter';
 import Word from './Word';
 import AnnotationOverlayTrigger from './AnnotationOverlayTrigger';
 import styles from './index.module.css';
-import cuid from 'cuid';
 import removePunctuation from '../../../../Util/remove-punctuation';
 
 /**
@@ -32,7 +31,6 @@ const Paragraph = (props) => {
       <Word
         transcriptId={ transcriptId }
         speaker={ speaker }
-        key={ cuid() }
         word={ word }
         handleKeyPress={ handleWordClick }
       />
@@ -41,7 +39,6 @@ const Paragraph = (props) => {
     if (word.annotation) {
       return (
         <AnnotationOverlayTrigger
-          key={ cuid() }
           words={ wordEl }
           labels={ labels }
           annotation={ word.annotation }
@@ -122,4 +119,4 @@ Paragraph.propTypes = {
   transcriptId: PropTypes.any,
 };
 
-export default Paragraph;
+export default React.memo(Paragraph);
