@@ -9,7 +9,6 @@ import TranscriptMenu from './TranscriptMenu';
 import getTimeFromUserWordsSelection from '../get-user-selection.js';
 import paragraphWithAnnotations from '../Paragraphs/add-annotations-to-words-in-paragraphs.js';
 import groupWordsInParagraphsBySpeakers from '../Paragraphs/group-words-by-speakers.js';
-import cuid from 'cuid';
 import removePunctuation from '../../../../Util/remove-punctuation';
 
 const TranscriptTabContent = (props) => {
@@ -319,16 +318,32 @@ const TranscriptTabContent = (props) => {
     }
   };
 
-  const handleTimecodeClick = (e) => {
-    if (e.target.classList.contains('timecode')) {
-      const wordEl = e.target;
-      videoRef.current.currentTime = wordEl.dataset.start;
-      videoRef.current.play();
+  const wordTimingEvent = (e) => {
+    const wordEl = e.target;
+    videoRef.current.currentTime = wordEl.dataset.start;
+    videoRef.current.play();
+  };
+
+  const handleKeyDownTimecodes = (e) => {
+    if (e.key === 'Enter' && e.target.classList.contains('timecode')) {
+      wordTimingEvent(e);
     }
   };
 
   const handleWordClick = (e) => {
     if (e.target.className === 'words') {
+      wordTimingEvent(e);
+    }
+  };
+
+  const handleTimecodeClick = (e) => {
+    if (e.target.classList.contains('timecode')) {
+      wordTimingEvent(e);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && e.target.className === 'words') {
       const wordEl = e.target;
       videoRef.current.currentTime = wordEl.dataset.start;
       videoRef.current.play();
@@ -481,15 +496,12 @@ const TranscriptTabContent = (props) => {
      */
     return (
       <Paragraph
-        key={ cuid() }
         transcriptId={ transcriptId }
         paragraph={ paragraph }
         labels={ labels }
         isSearchResult={ isSearchResult }
-        handleWordClick={ (e) => (e.key === 'Enter' ? handleWordClick(e) : null) }
-        handleKeyDownTimecodes={ (e) =>
-          e.key === 'Enter' ? handleTimecodeClick(e) : null
-        }
+        handleKeyPress={ handleKeyPress }
+        handleKeyDownTimecodes={ handleKeyDownTimecodes }
         handleDeleteAnnotation={ handleDeleteAnnotation }
         handleEditAnnotation={ handleEditAnnotation }
       />

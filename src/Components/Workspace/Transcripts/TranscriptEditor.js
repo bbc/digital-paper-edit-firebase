@@ -88,8 +88,6 @@ const TranscriptEditor = ({ match, firebase }) => {
   };
 
   const saveButtonHandler = async () => {
-    alert('save to server');
-
     // TODO: decide how to deal with transcript corrections
     // exporting digitalpaperedit in @bbc/react-transcript-editor@latest doesn't give you
     // corrected text with timecodes, only "original" uncorrected text even if transcript might

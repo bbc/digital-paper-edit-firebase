@@ -139,7 +139,7 @@ const ProgrammeScriptContainer = (props) => {
         { startTime: 0, playlist: [] }
       );
 
-      const { playlist: playlistItems } = results;
+      let { playlist: playlistItems } = results;
       playlistItems = await Promise.all(
         playlistItems.map(async (item) => {
           item.src = await getMediaUrl(item);
@@ -205,7 +205,7 @@ const ProgrammeScriptContainer = (props) => {
   const onSortEnd = async ({ oldIndex, newIndex }) => {
     const newElements = arrayMove(elements, oldIndex, newIndex);
     console.log('handling reorder...');
-    const updatedWords = await updateWordTimings(newElements, oldIndex, newIndex);
+    const updatedWords = await updateWordTimings(newElements);
     setElements(updatedWords);
     setResetPreview(true);
     handleSaveProgrammeScript(updatedWords);
@@ -236,7 +236,7 @@ const ProgrammeScriptContainer = (props) => {
     return totalDuration;
   };
 
-  const handleAddTranscriptSelectionToProgrammeScript = () => {
+  const handleAddTranscriptSelectionToProgrammeScript = async () => {
     console.log('Handling add transcript selection...');
     const result = getDataFromUserWordsSelection();
     if (result) {
@@ -249,9 +249,9 @@ const ProgrammeScriptContainer = (props) => {
 
       // Calcultates the starting time of the new element
       const prevDuration = getTranscriptSelectionStartTime(insertElementIndex);
-      console.log('previous duration: ', prevDuration);
       let newElement;
       if (isOneParagraph(result.words)) {
+        console.log('PROCESSING IS ONE PARAGRAPH!!');
         newElement = {
           id: cuid(),
           index: elementsClone.length,
@@ -291,17 +291,27 @@ const ProgrammeScriptContainer = (props) => {
 
       } else {
         const wordsArray = divideWordsSelectionsIntoParagraphs(result.words);
+
         const elsToAdd = wordsArray.reduce((prevResult, array) => {
-          console.log('prev result', prevResult);
-          console.log('array: ', array);
+          const newElStart = prevResult.newDuration;
+
+          // if (prevResult.elements.length) {
+          //   console.log('elements: ', prevResult.elements);
+          //   newElStart = prevResult.elements[elements.length - 1].vcEnd;
+          // } else {
+          //   newElStart = prevResult.newDuration;
+          // }
+
+          console.log('new El start: ', newElStart);
+
           newElement = {
             id: cuid(),
             index: elementsClone.length, // FIX
             type: 'paper-cut',
-            start: array[0].start,
-            end: array[array.length - 1].end,
-            vcStart: prevResult.prevDuration,
-            vcEnd: prevResult.prevDuration + (array[array.length - 1].end - array[0].start),
+            start: parseFloat(array[0].start),
+            end: parseFloat(array[array.length - 1].end),
+            // vcStart: newElStart,
+            // vcEnd: newElStart + (array[array.length - 1].end - array[0].start),
             words: [],
             speaker: array[0].speaker,
             transcriptId: array[0].transcriptId,
@@ -310,8 +320,9 @@ const ProgrammeScriptContainer = (props) => {
 
           const paperCutDuration = newElement.end - newElement.start;
 
-          array.map((word, i) => {
-            const newStart = (word.start - newElement.start) + prevResult.prevDuration;
+          const words = array;
+          words.map((word, i ) => {
+            const newStart = (word.start - newElement.start) + prevResult.newDuration;
             const wordDuration = (word.end - word.start);
             const newEnd = newStart + wordDuration;
             const newWord = {
@@ -325,15 +336,26 @@ const ProgrammeScriptContainer = (props) => {
             newElement.words.push(newWord);
           });
 
-          prevResult.prevDuration += paperCutDuration;
+          newElement.vcStart = newElStart;
+          newElement.vcEnd = newElStart + (array[array.length - 1].end - array[0].start);
+
+          console.log(newElement);
+
           prevResult.elements.push(newElement);
+          prevResult.newDuration += paperCutDuration;
 
           return prevResult;
-        }, { elements: [], prevDuration: prevDuration.startTime });
+        }, { elements: [], newDuration: prevDuration.startTime });
+
+        console.log('els to Add: ', elsToAdd);
 
         elementsClone.splice(insertElementIndex, 0, ...elsToAdd.elements);
-        const updatedElements = updateWordTimingsAfterInsert(elementsClone, insertElementIndex);
+        console.log('EC: ', elementsClone);
+
+        const updatedElements = await updateWordTimings(elementsClone);
+        console.log('UE', updatedElements);
         setElements(updatedElements);
+        console.log('updated elements: ', updatedElements);
         setResetPreview(true);
         handleSaveProgrammeScript(updatedElements);
       }

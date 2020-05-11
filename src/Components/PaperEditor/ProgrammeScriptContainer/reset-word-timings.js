@@ -15,7 +15,7 @@ const updateWordTimings = (elements) => {
 
     // Re-calcultate word timings
     if (element.type === 'paper-cut') {
-      const paperCut = element;
+      const paperCut = JSON.parse(JSON.stringify(element));;
       const paperCutDuration = element.end - element.start;
 
       paperCut.words.map((word) => {
@@ -74,7 +74,6 @@ const updateWordTimingsAfterInsert = (elements, insertIndex) => {
   const newElement = elements[insertIndex]; // Insert index is where the new element was added
   const newPaperEditDuration = newElement.end - newElement.start;
   const reindexedList = reindexList(elements);
-
   // Only looks for paper-cuts in the programme script after the insertion point
   const elementsToUpdate = reindexedList.slice(insertIndex + 1, elements.length).filter((element) => element.type === 'paper-cut');;
   if (elementsToUpdate) {

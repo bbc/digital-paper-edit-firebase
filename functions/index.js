@@ -24,7 +24,7 @@ exports.onDeleteBucketObjUpdateFirestore = bucketTrigger.onDelete((obj) =>
 exports.onCreateAudioFirestoreUploadToAWS = functions.firestore
   .document("apps/digital-paper-edit/users/{userId}/audio/{itemId}")
   .onCreate((snap, context) =>
-    awsUploader.createHandler(snap, bucket, config.aws.bucket, context)
+    awsUploader.createHandler(snap, bucket, config.aws, context)
   );
 
 const maxRuntimeOpts = {
@@ -39,8 +39,8 @@ exports.onCreateFirestoreUploadStripAndUploadAudio = functions
     audioStripper.createHandler(snap, bucket, context)
   );
 
-const runSchedule = config.aws.api.schedule || "every 60 minutes";
+const runSchedule = config.aws.api.transcriber.schedule || "every 60 minutes";
 
 exports.cronSTTJobChecker = functions.pubsub
   .schedule(runSchedule)
-  .onRun((context) => sttChecker.createHandler(admin, config.aws.api, context));
+  .onRun((context) => sttChecker.createHandler(admin, config.aws.api.transcriber, context));

@@ -55,4 +55,4 @@ Word.propTypes = {
   }),
 };
 
-export default Word;
+export default React.memo(Word);
