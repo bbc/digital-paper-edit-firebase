@@ -19,6 +19,7 @@ const TranscriptTabContent = (props) => {
   const [ url, setUrl ] = useState();
   const [ currentTime, setCurrentTime ] = useState();
   const mediaType = media ? media.type : '';
+  const mediaRef = media ? media.ref : '';
 
   const [ labels, setLabels ] = useState();
   const [ annotations, setAnnotations ] = useState();
@@ -98,7 +99,7 @@ const TranscriptTabContent = (props) => {
   useEffect(() => {
     const getUrl = async () => {
       const dlUrl = await firebase.storage.storage
-        .ref(media.ref)
+        .ref(mediaRef)
         .getDownloadURL();
       setUrl(dlUrl);
     };
@@ -106,7 +107,7 @@ const TranscriptTabContent = (props) => {
     if (!url) {
       getUrl();
     }
-  }, [ projectId, transcriptId, firebase.storage, media.ref, url ]);
+  }, [ projectId, transcriptId, firebase.storage, mediaRef, url ]);
 
   useEffect(() => {
     const highlightWords = (words) => {
