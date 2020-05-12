@@ -219,6 +219,7 @@ const ProgrammeScriptContainer = (props) => {
     return elements.indexOf(insertElement);
   };
 
+  // Calcultates the duration of the programme script playlist up to the point of the new insertion
   const getTranscriptSelectionStartTime = (insertIndex) => {
     const prevElements = elements.slice(0, insertIndex);
 
@@ -236,9 +237,11 @@ const ProgrammeScriptContainer = (props) => {
     return totalDuration;
   };
 
-  const addParagraphToProgrammeScript = (selection, insertElementIndex) => {
+  const formatSingleParagaph = (selection) => {
     console.log('Adding one paragraph...');
-    const prevDuration = getTranscriptSelectionStartTime(insertElementIndex);
+    const insertElementIndex = getInsertElementIndex();
+    const playlistStartTime = getTranscriptSelectionStartTime(insertElementIndex);
+    const paperCutDuration = selection.end - selection.start;
 
     const newElement = {
       id: cuid(),
@@ -246,25 +249,25 @@ const ProgrammeScriptContainer = (props) => {
       type: 'paper-cut',
       start: selection.start,
       end: selection.end,
-      vcStart: prevDuration.startTime,
-      vcEnd: prevDuration.startTime + (selection.end - selection.start),
+      vcStart: playlistStartTime.startTime,
+      vcEnd: playlistStartTime.startTime + paperCutDuration,
       words: [],
       speaker: selection.speaker,
       transcriptId: selection.transcriptId,
       labelId: [],
     };
 
-    const selectionWords = selection.words;
+    const selectedWords = selection.words;
 
     // Recalcultates word timings to align with programme script playlist
-    selectionWords.map((word, i) => {
-      const newStart = (word.start - selection.start) + prevDuration.startTime;
+    selectedWords.map((word, i) => {
+      const wordStartTime = (word.start - selection.start) + playlistStartTime.startTime;
       const wordDuration = (word.end - word.start);
-      const newEnd = newStart + wordDuration;
+      const wordEndTime = wordStartTime + wordDuration;
       const newWord = {
         index: i,
-        start: newStart,
-        end: newEnd,
+        start: wordStartTime,
+        end: wordEndTime,
         speaker: selection.speaker,
         text: word.text,
         transcriptId: word.transcriptId
@@ -276,54 +279,62 @@ const ProgrammeScriptContainer = (props) => {
 
   };
 
-  const addParagraphsToProgrammeScript = (selection, insertElementIndex) => {
+  const formatMultipleParagraphs = (selection, insertElementIndex) => {
     console.log('Adding multiple paragraphs...');
-    const prevDuration = getTranscriptSelectionStartTime(insertElementIndex);
+    const playlistStartTime = getTranscriptSelectionStartTime(insertElementIndex);
     const paragraphSelections = divideWordsSelectionsIntoParagraphs(selection.words);
 
-    const elsToAdd = paragraphSelections.reduce((prevResult, words) => {
-      const elStart = prevResult.newDuration;
-      const elEnd = elStart + (words[words.length - 1].end - words[0].start);
-      const paperCutDuration = elEnd - elStart;
+    const paperEditElements = paragraphSelections.reduce((prevResult, paragraph) => {
+      // Calculates start and end times in the programme script playlist
+      const paperCutStart = prevResult.newDuration;
+      const paperCutDuration = paragraph[paragraph.length - 1].end - paragraph[0].start;
+      const paperCutEnd = paperCutStart + paperCutDuration;
 
-      const newElement = {
+      // Stores start and end times corresponding to the original media file and transcription
+      const transcriptStart = parseFloat(paragraph[0].start);
+      const transcriptEnd = parseFloat(paragraph[paragraph.length - 1].end);
+
+      const paperCutSpeaker = paragraph[0].speaker;
+      const paperCutTranscriptId = paragraph[0].transcriptId;
+
+      const newPaperCut = {
         id: cuid(),
         index: prevResult.index,
         type: 'paper-cut',
-        start: parseFloat(words[0].start),
-        end: parseFloat(words[words.length - 1].end),
-        vcStart: elStart,
-        vcEnd: elEnd,
+        start: transcriptStart,
+        end: transcriptEnd,
+        vcStart: paperCutStart,
+        vcEnd: paperCutEnd,
         words: [],
-        speaker: words[0].speaker,
-        transcriptId: words[0].transcriptId,
+        speaker: paperCutSpeaker,
+        transcriptId: paperCutTranscriptId,
         labelId: [],
       };
 
       // Recalcultates word timings to align with programme script playlist
-      words.map((word, i) => {
-        const newStart = (word.start - newElement.start) + prevResult.newDuration;
+      paragraph.map((word, index) => {
+        const newStart = (word.start - transcriptStart) + paperCutStart;
         const wordDuration = (word.end - word.start);
         const newEnd = newStart + wordDuration;
         const newWord = {
-          index: i,
+          index: index,
           start: newStart,
           end: newEnd,
-          speaker: newElement.speaker,
+          speaker: paperCutSpeaker,
           text: word.text,
-          transcriptId: word.transcriptId
+          transcriptId: paperCutTranscriptId
         };
-        newElement.words.push(newWord);
+        newPaperCut.words.push(newWord);
       });
 
-      prevResult.elements.push(newElement);
+      prevResult.elements.push(newPaperCut);
       prevResult.newDuration += paperCutDuration;
       prevResult.index += 1;
 
       return prevResult;
-    }, { elements: [], newDuration: prevDuration.startTime, index: elements.length - 1 });
+    }, { elements: [], newDuration: playlistStartTime.startTime, index: elements.length - 1 });
 
-    return elsToAdd;
+    return paperEditElements;
 
   };
 
@@ -336,15 +347,15 @@ const ProgrammeScriptContainer = (props) => {
 
     if (selection) {
       if (isOneParagraph(selection.words)) {
-        const newElement = addParagraphToProgrammeScript(selection, elementsClone, insertElementIndex);
-        elementsClone.splice(insertElementIndex, 0, newElement);
+        const newPaperCut = formatSingleParagaph(selection, elementsClone, insertElementIndex);
+        elementsClone.splice(insertElementIndex, 0, newPaperCut);
 
         // Adjusts word timings for paper-cuts that come after the new element
         updatedElements = updateWordTimingsAfterInsert(elementsClone, insertElementIndex);
 
       } else {
-        const elsToAdd = addParagraphsToProgrammeScript(selection, insertElementIndex);
-        elementsClone.splice(insertElementIndex, 0, ...elsToAdd.elements);
+        const newPaperCuts = formatMultipleParagraphs(selection, insertElementIndex);
+        elementsClone.splice(insertElementIndex, 0, ...newPaperCuts.elements);
 
         // Adjusts word timings for paper-cuts effected by the insert
         updatedElements = await updateWordTimings(elementsClone);
