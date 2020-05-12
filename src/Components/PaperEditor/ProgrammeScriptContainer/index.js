@@ -8,7 +8,7 @@ import arrayMove from 'array-move';
 import { SortableContainer } from 'react-sortable-hoc';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 import ProgrammeElements from '@bbc/digital-paper-edit-storybook/ProgrammeElements';
@@ -236,109 +236,122 @@ const ProgrammeScriptContainer = (props) => {
     return totalDuration;
   };
 
+  const addParagraphToProgrammeScript = (selection, insertElementIndex) => {
+    console.log('Adding one paragraph...');
+    const prevDuration = getTranscriptSelectionStartTime(insertElementIndex);
+
+    const newElement = {
+      id: cuid(),
+      index: insertElementIndex,
+      type: 'paper-cut',
+      start: selection.start,
+      end: selection.end,
+      vcStart: prevDuration.startTime,
+      vcEnd: prevDuration.startTime + (selection.end - selection.start),
+      words: [],
+      speaker: selection.speaker,
+      transcriptId: selection.transcriptId,
+      labelId: [],
+    };
+
+    const selectionWords = selection.words;
+
+    // Recalcultates word timings to align with programme script playlist
+    selectionWords.map((word, i) => {
+      const newStart = (word.start - selection.start) + prevDuration.startTime;
+      const wordDuration = (word.end - word.start);
+      const newEnd = newStart + wordDuration;
+      const newWord = {
+        index: i,
+        start: newStart,
+        end: newEnd,
+        speaker: selection.speaker,
+        text: word.text,
+        transcriptId: word.transcriptId
+      };
+      newElement.words.push(newWord);
+    });
+
+    return newElement;
+
+  };
+
+  const addParagraphsToProgrammeScript = (selection, insertElementIndex) => {
+    console.log('Adding multiple paragraphs...');
+    const prevDuration = getTranscriptSelectionStartTime(insertElementIndex);
+    const paragraphSelections = divideWordsSelectionsIntoParagraphs(selection.words);
+
+    const elsToAdd = paragraphSelections.reduce((prevResult, words) => {
+      const elStart = prevResult.newDuration;
+      const elEnd = elStart + (words[words.length - 1].end - words[0].start);
+      const paperCutDuration = elEnd - elStart;
+
+      const newElement = {
+        id: cuid(),
+        index: prevResult.index,
+        type: 'paper-cut',
+        start: parseFloat(words[0].start),
+        end: parseFloat(words[words.length - 1].end),
+        vcStart: elStart,
+        vcEnd: elEnd,
+        words: [],
+        speaker: words[0].speaker,
+        transcriptId: words[0].transcriptId,
+        labelId: [],
+      };
+
+      // Recalcultates word timings to align with programme script playlist
+      words.map((word, i) => {
+        const newStart = (word.start - newElement.start) + prevResult.newDuration;
+        const wordDuration = (word.end - word.start);
+        const newEnd = newStart + wordDuration;
+        const newWord = {
+          index: i,
+          start: newStart,
+          end: newEnd,
+          speaker: newElement.speaker,
+          text: word.text,
+          transcriptId: word.transcriptId
+        };
+        newElement.words.push(newWord);
+      });
+
+      prevResult.elements.push(newElement);
+      prevResult.newDuration += paperCutDuration;
+      prevResult.index += 1;
+
+      return prevResult;
+    }, { elements: [], newDuration: prevDuration.startTime, index: elements.length - 1 });
+
+    return elsToAdd;
+
+  };
+
   const handleAddTranscriptSelectionToProgrammeScript = async () => {
     console.log('Handling add transcript selection...');
-    const result = getDataFromUserWordsSelection();
-    if (result) {
-      // TODO: if there's just one speaker in selection do following
-      // if it's multiple split list of words into multiple groups
-      // and add a papercut for each to the programme script
-      const elementsClone = JSON.parse(JSON.stringify(elements));
+    const selection = getDataFromUserWordsSelection();
+    const elementsClone = JSON.parse(JSON.stringify(elements));
+    const insertElementIndex = getInsertElementIndex();
+    let updatedElements;
 
-      const insertElementIndex = getInsertElementIndex();
-
-      // Calcultates the starting time of the new element
-      const prevDuration = getTranscriptSelectionStartTime(insertElementIndex);
-      let newElement;
-      if (isOneParagraph(result.words)) {
-        newElement = {
-          id: cuid(),
-          index: elementsClone.length,
-          type: 'paper-cut',
-          start: result.start,
-          end: result.end,
-          vcStart: prevDuration.startTime,
-          vcEnd: prevDuration.startTime + (result.end - result.start),
-          words: [],
-          speaker: result.speaker,
-          transcriptId: result.transcriptId,
-          labelId: [],
-        };
-        const selectionWords = result.words;
-
-        // Recalculates the word start and end times for the programmeScript
-        selectionWords.map((word, i) => {
-          const newStart = (word.start - result.start) + prevDuration.startTime;
-          const wordDuration = (word.end - word.start);
-          const newEnd = newStart + wordDuration;
-          const newWord = {
-            index: i,
-            start: newStart,
-            end: newEnd,
-            speaker: result.speaker,
-            text: word.text,
-            transcriptId: word.transcriptId
-          };
-          newElement.words.push(newWord);
-        });
-
+    if (selection) {
+      if (isOneParagraph(selection.words)) {
+        const newElement = addParagraphToProgrammeScript(selection, elementsClone, insertElementIndex);
         elementsClone.splice(insertElementIndex, 0, newElement);
-        const updatedElements = updateWordTimingsAfterInsert(elementsClone, insertElementIndex);
-        setElements(updatedElements);
-        setResetPreview(true);
-        handleSaveProgrammeScript(updatedElements);
+
+        // Adjusts word timings for paper-cuts that come after the new element
+        updatedElements = updateWordTimingsAfterInsert(elementsClone, insertElementIndex);
 
       } else {
-        const wordsArray = divideWordsSelectionsIntoParagraphs(result.words);
-
-        const elsToAdd = wordsArray.reduce((prevResult, array) => {
-          const elStart = prevResult.newDuration;
-          const elEnd = elStart + (array[array.length - 1].end - array[0].start);
-          const paperCutDuration = elEnd - elStart;
-
-          newElement = {
-            id: cuid(),
-            index: prevResult.index,
-            type: 'paper-cut',
-            start: parseFloat(array[0].start),
-            end: parseFloat(array[array.length - 1].end),
-            vcStart: elStart,
-            vcEnd: elEnd,
-            words: [],
-            speaker: array[0].speaker,
-            transcriptId: array[0].transcriptId,
-            labelId: [],
-          };
-
-          const words = array;
-          words.map((word, i ) => {
-            const newStart = (word.start - newElement.start) + prevResult.newDuration;
-            const wordDuration = (word.end - word.start);
-            const newEnd = newStart + wordDuration;
-            const newWord = {
-              index: i,
-              start: newStart,
-              end: newEnd,
-              speaker: newElement.speaker,
-              text: word.text,
-              transcriptId: word.transcriptId
-            };
-            newElement.words.push(newWord);
-          });
-
-          prevResult.elements.push(newElement);
-          prevResult.newDuration += paperCutDuration;
-          prevResult.index += 1;
-
-          return prevResult;
-        }, { elements: [], newDuration: prevDuration.startTime, index: elements.length - 1 });
-
+        const elsToAdd = addParagraphsToProgrammeScript(selection, insertElementIndex);
         elementsClone.splice(insertElementIndex, 0, ...elsToAdd.elements);
-        const updatedElements = await updateWordTimings(elementsClone);
-        setElements(updatedElements);
-        setResetPreview(true);
-        handleSaveProgrammeScript(updatedElements);
+
+        // Adjusts word timings for paper-cuts effected by the insert
+        updatedElements = await updateWordTimings(elementsClone);
       }
+      setElements(updatedElements);
+      setResetPreview(true);
+      handleSaveProgrammeScript(updatedElements);
     } else {
       console.log('nothing selected');
       alert(
