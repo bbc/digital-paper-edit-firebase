@@ -267,7 +267,7 @@ const ProgrammeScriptContainer = (props) => {
         const selectionWords = result.words;
 
         // Recalculates the word start and end times for the programmeScript
-        selectionWords.map((word, i) => {
+        selectionWords.forEach((word, i) => {
           const newStart = (word.start - result.start) + prevDuration.startTime;
           const wordDuration = (word.end - word.start);
           const newEnd = newStart + wordDuration;
