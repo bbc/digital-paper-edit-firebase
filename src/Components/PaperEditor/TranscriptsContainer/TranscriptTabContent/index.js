@@ -588,8 +588,8 @@ TranscriptTabContent.propTypes = {
   projectId: PropTypes.any,
   title: PropTypes.any,
   transcript: PropTypes.shape({
-    paragraphs: PropTypes.any,
-    words: PropTypes.any,
+    paragraphs: PropTypes.array,
+    words: PropTypes.array
   }),
   transcriptId: PropTypes.any,
 };
