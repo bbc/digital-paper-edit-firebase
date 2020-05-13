@@ -1,5 +1,6 @@
 const fetch = require("node-fetch");
 const { secondsToDhms } = require("../utils");
+const zlib = require("zlib");
 
 const {
   getUsersAudioData,
@@ -138,13 +139,19 @@ const updateTranscriptsStatus = async (
           return;
         }
 
-        update.payload = response.transcript;
         update.status = response.status;
 
         if (response.status === "success") {
-          const { words, paragraphs } = psttAdapter(update.payload.items);
+          const { words, paragraphs } = psttAdapter(response.transcript.items);
           update.words = words;
           update.paragraphs = paragraphs;
+
+          /* After migrating to compressed, we should replace
+              wordsc to words, paragraphsc to paragraphs
+              as we will not need it.
+              */
+          update.wordsc = zlib.gzipSync(JSON.stringify(words));
+          update.paragraphsc = zlib.gzipSync(JSON.stringify(paragraphs));
           update.status = "done";
         }
       }

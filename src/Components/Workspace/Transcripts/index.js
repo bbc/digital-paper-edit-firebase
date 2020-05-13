@@ -3,6 +3,7 @@ import ItemsContainer from '../../lib/ItemsContainer';
 import PropTypes from 'prop-types';
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
+import gunzip from '../../../Util/gunzip';
 
 const Transcripts = ({ projectId, firebase }) => {
   const TYPE = 'Transcript';
@@ -28,7 +29,32 @@ const Transcripts = ({ projectId, firebase }) => {
       try {
         TranscriptsCollection.collectionRef.onSnapshot((snapshot) => {
           const transcripts = snapshot.docs.map((doc) => {
-            return { ...doc.data(), id: doc.id, display: true };
+            const {
+              wordsc,
+              paragraphsc,
+              words,
+              paragraphs,
+              ...rest
+            } = doc.data();
+
+            /* After migrating to compressed, we should remove the if/else,
+              and rename wordsdc to words, paragraphsdc to paragraphs
+              as we will not need it.
+              */
+            if (wordsc && paragraphsc) {
+              const wordsdc = gunzip(wordsc);
+              const paragraphsdc = gunzip(paragraphsc);
+
+              return {
+                words: wordsdc,
+                paragraphs: paragraphsdc,
+                ...rest,
+                id: doc.id,
+                display: true,
+              };
+            }
+
+            return { words, paragraphs, ...rest, id: doc.id, display: true };
           });
           setItems(transcripts);
         });
@@ -105,7 +131,9 @@ const Transcripts = ({ projectId, firebase }) => {
   };
 
   const handleUploadProgress = (id, snapshot) => {
-    const progress = Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+    const progress = Math.floor(
+      (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+    );
     updateUploadTasksProgress(id, progress);
   };
 
@@ -203,7 +231,7 @@ const Transcripts = ({ projectId, firebase }) => {
 
 Transcripts.propTypes = {
   projectId: PropTypes.any,
-  firebase: PropTypes.any
+  firebase: PropTypes.any,
 };
 
 const condition = (authUser) => !!authUser;
