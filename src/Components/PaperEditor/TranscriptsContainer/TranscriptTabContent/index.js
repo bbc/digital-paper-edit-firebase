@@ -19,6 +19,7 @@ const TranscriptTabContent = (props) => {
   const [ url, setUrl ] = useState();
   const [ currentTime, setCurrentTime ] = useState();
   const mediaType = media ? media.type : '';
+  const mediaRef = media ? media.ref : '';
 
   const [ labels, setLabels ] = useState();
   const [ annotations, setAnnotations ] = useState();
@@ -98,7 +99,7 @@ const TranscriptTabContent = (props) => {
   useEffect(() => {
     const getUrl = async () => {
       const dlUrl = await firebase.storage.storage
-        .ref(media.ref)
+        .ref(mediaRef)
         .getDownloadURL();
       setUrl(dlUrl);
     };
@@ -106,7 +107,7 @@ const TranscriptTabContent = (props) => {
     if (!url) {
       getUrl();
     }
-  }, [ projectId, transcriptId, firebase.storage, media.ref, url ]);
+  }, [ projectId, transcriptId, firebase.storage, mediaRef, url ]);
 
   useEffect(() => {
     const highlightWords = (words) => {
@@ -316,11 +317,27 @@ const TranscriptTabContent = (props) => {
     }
   };
 
-  const handleTimecodeClick = (e) => {
+  const wordTimingEvent = (e) => {
+    const wordEl = e.target;
+    videoRef.current.currentTime = wordEl.dataset.start;
+    videoRef.current.play();
+  };
+
+  const handleKeyDownTimecodes = (e) => {
     if (e.key === 'Enter' && e.target.classList.contains('timecode')) {
-      const wordEl = e.target;
-      videoRef.current.currentTime = wordEl.dataset.start;
-      videoRef.current.play();
+      wordTimingEvent(e);
+    }
+  };
+
+  const handleWordClick = (e) => {
+    if (e.target.className === 'words') {
+      wordTimingEvent(e);
+    }
+  };
+
+  const handleTimecodeClick = (e) => {
+    if (e.target.classList.contains('timecode')) {
+      wordTimingEvent(e);
     }
   };
 
@@ -483,7 +500,7 @@ const TranscriptTabContent = (props) => {
         labels={ labels }
         isSearchResult={ isSearchResult }
         handleKeyPress={ handleKeyPress }
-        handleKeyDownTimecodes={ handleTimecodeClick }
+        handleKeyDownTimecodes={ handleKeyDownTimecodes }
         handleDeleteAnnotation={ handleDeleteAnnotation }
         handleEditAnnotation={ handleEditAnnotation }
       />
@@ -544,8 +561,8 @@ const TranscriptTabContent = (props) => {
         />
 
         <Card.Body
-          // onDoubleClick={ handleWordClick }
-          // onClick={ handleTimecodeClick }
+          onDoubleClick={ handleWordClick }
+          onClick={ handleTimecodeClick }
           style={ { height: cardBodyHeight, overflow: 'scroll' } }
         >
           {highlights}
@@ -571,8 +588,8 @@ TranscriptTabContent.propTypes = {
   projectId: PropTypes.any,
   title: PropTypes.any,
   transcript: PropTypes.shape({
-    paragraphs: PropTypes.any,
-    words: PropTypes.any,
+    paragraphs: PropTypes.array,
+    words: PropTypes.array
   }),
   transcriptId: PropTypes.any,
 };
