@@ -27,12 +27,11 @@ const Transcripts = ({ projectId, firebase }) => {
     useEffect(() => {
       if (!uploading) return;
       window.onbeforeunload = () => {
-        return '';//alert message
+        return '';
       };
     }, [ uploading ]);
   };
   const CheckIfUploading = () => {
-    console.log('items', items);
     const stillUploading = items.find(item => item.status == 'uploading');
     usePreventWindowUnload(stillUploading);
   };
