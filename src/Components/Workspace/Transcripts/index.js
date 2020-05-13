@@ -23,6 +23,20 @@ const Transcripts = ({ projectId, firebase }) => {
     return `/projects/${ projectId }/transcripts/${ id }/correct`;
   };
 
+  const usePreventWindowUnload = (uploading) => {
+    useEffect(() => {
+      if (!uploading) return;
+      window.onbeforeunload = () => {
+        return '';//alert message
+      };
+    }, [ uploading ]);
+  };
+  const CheckIfUploading = () => {
+    console.log('items', items);
+    const stillUploading = items.find(item => item.status == 'uploading');
+    usePreventWindowUnload(stillUploading);
+  };
+  CheckIfUploading(items);
   useEffect(() => {
     const getTranscripts = async () => {
       try {
