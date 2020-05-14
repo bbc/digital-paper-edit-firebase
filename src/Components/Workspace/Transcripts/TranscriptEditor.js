@@ -91,8 +91,6 @@ const TranscriptEditor = ({ match, firebase }) => {
     await TranscriptsCollection.putItem(id, item);
   };
 
-  };
-
   const saveButtonHandler = async () => {
     // TODO: decide how to deal with transcript corrections
     // exporting digitalpaperedit in @bbc/react-transcript-editor@latest doesn't give you
