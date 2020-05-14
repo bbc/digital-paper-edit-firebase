@@ -103,7 +103,7 @@ const ExportDropdown = (props) => {
 
   const handleExportADL = () => {
     const edlSq = getSequenceJsonEDL();
-    if (edlSq.events.length == 0) {
+    if (edlSq.events.length === 0) {
       alert('Cannot export empty paper edit ADL');
 
       return;
@@ -255,27 +255,27 @@ const ExportDropdown = (props) => {
           onClick={ handleExportEDL }
           title="export EDL, edit decision list, to import the programme script as a sequence in video editing software - Avid, Premiere, Davinci Resolve, for FCPX choose FCPX XML"
         >
-                    EDL - Video <FontAwesomeIcon icon={ faInfoCircle } />
+          EDL - Video <FontAwesomeIcon icon={ faInfoCircle } />
         </Dropdown.Item>
         <Dropdown.Item
           onClick={ handleExportADL }
           title="export ADL, audio decision list, to import the programme script as a sequence in audio editing software such as SADiE"
         >
           <FontAwesomeIcon icon={ faFileExport } />
-                    ADL - Audio <FontAwesomeIcon icon={ faInfoCircle } />
+          ADL - Audio <FontAwesomeIcon icon={ faInfoCircle } />
         </Dropdown.Item>
         <Dropdown.Item
           onClick={ handleExportFCPX }
           title="export FCPX XML, to import the programme script as a sequence in Final Cut Pro X, video editing software"
         >
-                    FCPX <FontAwesomeIcon icon={ faInfoCircle } />
+          FCPX <FontAwesomeIcon icon={ faInfoCircle } />
         </Dropdown.Item>
         <Dropdown.Divider />
         <Dropdown.Item
           onClick={ handleExportTxt }
           title="export Text, export the programme script as a text version"
         >
-                    Text File <FontAwesomeIcon icon={ faInfoCircle } />
+          Text File <FontAwesomeIcon icon={ faInfoCircle } />
         </Dropdown.Item>
         <Dropdown.Item
           onClick={ () => {
@@ -283,14 +283,14 @@ const ExportDropdown = (props) => {
           } }
           title="export docx, export the programme script as a word document"
         >
-                    Word Document <FontAwesomeIcon icon={ faInfoCircle } />
+          Word Document <FontAwesomeIcon icon={ faInfoCircle } />
         </Dropdown.Item>
         <Dropdown.Divider />
         <Dropdown.Item
           onClick={ handleExportJson }
           title="export Json, export the programme script as a json file"
         >
-                    Json <FontAwesomeIcon icon={ faInfoCircle } />
+          Json <FontAwesomeIcon icon={ faInfoCircle } />
         </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
