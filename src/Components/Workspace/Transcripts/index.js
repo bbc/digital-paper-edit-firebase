@@ -3,7 +3,6 @@ import ItemsContainer from '../../lib/ItemsContainer';
 import PropTypes from 'prop-types';
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
-import { decompress } from '../../../Util/gzip';
 
 const Transcripts = ({ projectId, firebase }) => {
   const TYPE = 'Transcript';
@@ -29,32 +28,7 @@ const Transcripts = ({ projectId, firebase }) => {
       try {
         TranscriptsCollection.collectionRef.onSnapshot((snapshot) => {
           const transcripts = snapshot.docs.map((doc) => {
-            const {
-              wordsc,
-              paragraphsc,
-              words,
-              paragraphs,
-              ...rest
-            } = doc.data();
-
-            /* After migrating to compressed, we should remove the if/else,
-              and rename wordsdc to words, paragraphsdc to paragraphs
-              as we will not need it.
-              */
-            if (wordsc && paragraphsc) {
-              const wordsdc = decompress(wordsc);
-              const paragraphsdc = decompress(paragraphsc);
-
-              return {
-                words: wordsdc,
-                paragraphs: paragraphsdc,
-                ...rest,
-                id: doc.id,
-                display: true,
-              };
-            }
-
-            return { words, paragraphs, ...rest, id: doc.id, display: true };
+            return { ...doc.data(), id: doc.id, display: true };
           });
           setItems(transcripts);
         });

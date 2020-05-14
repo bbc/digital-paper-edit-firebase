@@ -94,14 +94,16 @@ const ItemsContainer = props => {
 
   const Cards = showingItems.map(item => {
     const key = 'card-' + cuid();
-    item.url = item.url ? item.url : '';
     if (type === 'Transcript') {
-      const progress = props.uploadTasks.get(item.id);
-
       return (
         <TranscriptCard
-          { ...item }
-          progress={ progress }
+          description={ item.description }
+          message={ item.message }
+          id={ item.id }
+          status={ item.status }
+          title={ item.title }
+          url={ item.url ? item.url : '' }
+          progress={ props.uploadTasks.get(item.id) }
           key={ key }
           handleEditItem={ handleEditItem }
           handleDeleteItem={ handleDeleteItem }
@@ -110,7 +112,10 @@ const ItemsContainer = props => {
     } else {
       return (
         <SimpleCard
-          { ...item }
+          id={ item.id }
+          title={ item.title }
+          url={ item.url }
+          description={ item.description }
           key={ key }
           handleEditItem={ handleEditItem }
           handleDeleteItem={ handleDeleteItem }
