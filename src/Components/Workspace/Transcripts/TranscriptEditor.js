@@ -8,7 +8,7 @@ import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 
 import Collection from '../../Firebase/Collection';
-import { compress } from '../../../Util/gzip';
+import { compress, decompress } from '../../../Util/gzip';
 
 import CustomAlert from '@bbc/digital-paper-edit-storybook/CustomAlert';
 import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
@@ -40,6 +40,8 @@ const TranscriptEditor = ({ match, firebase }) => {
           media,
           paragraphs,
           words,
+          wordsc,
+          paragraphsc,
           title,
         } = await TranscriptsCollection.getItem(transcriptId);
         const url = await firebase.storage.storage
@@ -49,10 +51,18 @@ const TranscriptEditor = ({ match, firebase }) => {
         setMediaUrl(url);
         setMediaType(media.type.split('/')[0]);
 
-        setTranscriptData({
-          paragraphs: paragraphs,
-          words: words,
-        });
+        /* Remove words, paragraphs once transitioned to compressed */
+        if (wordsc && paragraphsc) {
+          setTranscriptData({
+            paragraphs: decompress(paragraphsc),
+            words: decompress(wordsc)
+          });
+        } else {
+          setTranscriptData({
+            paragraphs: paragraphs,
+            words: words,
+          });
+        }
 
         setTranscriptTitle(title);
       } catch (error) {
