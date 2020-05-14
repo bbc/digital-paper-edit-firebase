@@ -34,7 +34,7 @@ const isValidJob = (execTimestamp, transcript) => {
   // TODO make sure objectKey exists in upload
 
   if (expired) {
-    console.debug(
+    console.log(
       `Last updated ${transcript.id} ${secondsToDhms(expiredByNano / 1000)} ago`
     );
     return false;
@@ -96,7 +96,7 @@ const updateTranscription = async (admin, transcriptId, projectId, update) => {
 const getUserfromJob = (usersAudioData, jobId) => {
   const usersAudioDataJob = usersAudioData[jobId];
   if (!usersAudioDataJob) {
-    console.log(`[ERROR] Job ID {jobId} not found`);
+    console.error(`[ERROR] Job ID ${jobId} not found`);
     return "";
   }
   return usersAudioDataJob.user;
@@ -111,7 +111,7 @@ const updateTranscriptsStatus = async (
 ) => {
   await filterInvalidJobs(projectTranscripts, execTimestamp).forEach(
     async (job) => {
-      console.debug(`Job ${job.id} expired, updating status to Error`);
+      console.log(`Job ${job.id} expired, updating status to Error`);
       const { projectId } = job.data();
       await updateTranscription(admin, job.id, projectId, {
         status: "error",
@@ -122,7 +122,7 @@ const updateTranscriptsStatus = async (
 
   let validJobs = filterValidJobs(projectTranscripts, execTimestamp);
 
-  console.debug(`${validJobs.length} valid jobs to process`);
+  console.log(`${validJobs.length} valid jobs to process`);
 
   await validJobs.forEach(async (job) => {
     const jobId = job.id;
@@ -156,7 +156,7 @@ const updateTranscriptsStatus = async (
         }
       }
       await updateTranscription(admin, job.id, projectId, update);
-      console.debug(`Updated ${job.id} with data`, update);
+      console.log(`Updated ${job.id} with data`, update);
     } catch (err) {
       console.error(
         `[ERROR] Failed to get STT jobs status for ${fileName}: ${err}`
