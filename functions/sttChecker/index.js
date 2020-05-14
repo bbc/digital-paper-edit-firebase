@@ -143,8 +143,6 @@ const updateTranscriptsStatus = async (
 
         if (response.status === "success") {
           const { words, paragraphs } = psttAdapter(response.transcript.items);
-          update.words = words;
-          update.paragraphs = paragraphs;
 
           /* After migrating to compressed, we should replace
               wordsc to words, paragraphsc to paragraphs
