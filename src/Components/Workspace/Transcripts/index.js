@@ -3,7 +3,7 @@ import ItemsContainer from '../../lib/ItemsContainer';
 import PropTypes from 'prop-types';
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
-import gunzip from '../../../Util/gunzip';
+import { decompress } from '../../../Util/gzip';
 
 const Transcripts = ({ projectId, firebase }) => {
   const TYPE = 'Transcript';
@@ -42,8 +42,8 @@ const Transcripts = ({ projectId, firebase }) => {
               as we will not need it.
               */
             if (wordsc && paragraphsc) {
-              const wordsdc = gunzip(wordsc);
-              const paragraphsdc = gunzip(paragraphsc);
+              const wordsdc = decompress(wordsc);
+              const paragraphsdc = decompress(paragraphsc);
 
               return {
                 words: wordsdc,

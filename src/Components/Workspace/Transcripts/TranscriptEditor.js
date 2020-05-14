@@ -8,6 +8,7 @@ import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 
 import Collection from '../../Firebase/Collection';
+import { compress } from '../../../Util/gzip';
 
 import CustomAlert from '@bbc/digital-paper-edit-storybook/CustomAlert';
 import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
@@ -35,7 +36,12 @@ const TranscriptEditor = ({ match, firebase }) => {
   useEffect(() => {
     const getTranscript = async () => {
       try {
-        const { media, paragraphs, words, title } = await TranscriptsCollection.getItem(transcriptId);
+        const {
+          media,
+          paragraphs,
+          words,
+          title,
+        } = await TranscriptsCollection.getItem(transcriptId);
         const url = await firebase.storage.storage
           .ref(media.ref)
           .getDownloadURL();
@@ -83,8 +89,8 @@ const TranscriptEditor = ({ match, firebase }) => {
 
   const updateTranscript = async (id, item) => {
     await TranscriptsCollection.putItem(id, item);
+  };
 
-    return item;
   };
 
   const saveButtonHandler = async () => {
@@ -101,6 +107,13 @@ const TranscriptEditor = ({ match, firebase }) => {
     const { data } = transcriptEditorRef.current.getEditorContent(
       'digitalpaperedit'
     );
+
+    const { words, paragraphs } = data;
+
+    data.wordsc = firebase.uint8ArrayBlob(compress(words));
+    data.paragraphsc = firebase.uint8ArrayBlob(compress(paragraphs));
+    delete data.words;
+    delete data.paragraphs;
 
     try {
       await updateTranscript(transcriptId, data);

@@ -12,7 +12,7 @@ import TranscriptsContainer from './TranscriptsContainer';
 import ProgrammeScriptContainer from './ProgrammeScriptContainer';
 import PropTypes from 'prop-types';
 import Collection from '../Firebase/Collection';
-import gunzip from '../../Util/gunzip';
+import { decompress } from '../../Util/gzip';
 
 const PaperEditor = (props) => {
   const projectId = props.match.params.projectId;
@@ -89,8 +89,8 @@ const PaperEditor = (props) => {
               as we will not need it.
               */
               if (wordsc && paragraphsc) {
-                const wordsdc = gunzip(wordsc);
-                const paragraphsdc = gunzip(paragraphsc);
+                const wordsdc = decompress(wordsc);
+                const paragraphsdc = decompress(paragraphsc);
 
                 return {
                   words: wordsdc,
