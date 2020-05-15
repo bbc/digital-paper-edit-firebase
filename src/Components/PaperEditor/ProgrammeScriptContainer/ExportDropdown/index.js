@@ -1,6 +1,12 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
+
+/* ExportFormModal is not a real library yet, we would need to
+publish ExportFormModal is on the branch in Storybook.
+What I've shown previously was using FormModal from the Storybook */
+
+// import ExportFormModal from '@bbc/digital-paper-edit-storybook/ExportFormModal';
 import EDL from 'edl_composer';
 import generateADL from '@bbc/aes31-adl-composer';
 import jsonToFCPX from '@bbc/fcpx-xml-composer';
@@ -24,6 +30,29 @@ const ExportDropdown = (props) => {
   const elements = props.elements;
   const transcripts = props.transcripts;
 
+  const initialFormState = {
+    fileName: '',
+    srcFolderPath: ''
+  };
+
+  const [ showModal, setShowModal ] = useState(false);
+  const [ formData, setFormData ] = useState(initialFormState);
+
+  const handleSaveForm = item => {
+    // props.handleSave(item);
+    console.log(item);
+    setShowModal(false);
+    setFormData(initialFormState);
+  };
+
+  const toggleShowModal = () => {
+    setShowModal(!showModal);
+  };
+
+  const handleOnHide = () => {
+    setShowModal(false);
+  };
+
   // /**
   //  * Helper function to create json EDL for other EDL/ADL/FPCX export
   //  */
@@ -31,6 +60,7 @@ const ExportDropdown = (props) => {
   const getCurrentTranscript = (element) => transcripts.find(tr => {
     return tr.id === element.transcriptId;
   });
+
   const getSequenceJsonEDL = () => {
     const edlSq = {
       title: title,
@@ -95,6 +125,7 @@ const ExportDropdown = (props) => {
   // https://www.npmjs.com/package/edl_composer
 
   const handleExportEDL = () => {
+    toggleShowModal();
     const edlSq = getSequenceJsonEDL();
     const edl = new EDL(edlSq);
     console.log(edl.compose());
@@ -246,54 +277,64 @@ const ExportDropdown = (props) => {
   };
 
   return (
-    <Dropdown>
-      <Dropdown.Toggle variant="outline-secondary">
-        <FontAwesomeIcon icon={ faShare } /> Export
-      </Dropdown.Toggle>
-      <Dropdown.Menu>
-        <Dropdown.Item
-          onClick={ handleExportEDL }
-          title="export EDL, edit decision list, to import the programme script as a sequence in video editing software - Avid, Premiere, Davinci Resolve, for FCPX choose FCPX XML"
-        >
-          EDL - Video <FontAwesomeIcon icon={ faInfoCircle } />
-        </Dropdown.Item>
-        <Dropdown.Item
-          onClick={ handleExportADL }
-          title="export ADL, audio decision list, to import the programme script as a sequence in audio editing software such as SADiE"
-        >
-          <FontAwesomeIcon icon={ faFileExport } />
-          ADL - Audio <FontAwesomeIcon icon={ faInfoCircle } />
-        </Dropdown.Item>
-        <Dropdown.Item
-          onClick={ handleExportFCPX }
-          title="export FCPX XML, to import the programme script as a sequence in Final Cut Pro X, video editing software"
-        >
-          FCPX <FontAwesomeIcon icon={ faInfoCircle } />
-        </Dropdown.Item>
-        <Dropdown.Divider />
-        <Dropdown.Item
-          onClick={ handleExportTxt }
-          title="export Text, export the programme script as a text version"
-        >
-          Text File <FontAwesomeIcon icon={ faInfoCircle } />
-        </Dropdown.Item>
-        <Dropdown.Item
-          onClick={ () => {
-            alert('export word doc not implemented yet');
-          } }
-          title="export docx, export the programme script as a word document"
-        >
-          Word Document <FontAwesomeIcon icon={ faInfoCircle } />
-        </Dropdown.Item>
-        <Dropdown.Divider />
-        <Dropdown.Item
-          onClick={ handleExportJson }
-          title="export Json, export the programme script as a json file"
-        >
-          Json <FontAwesomeIcon icon={ faInfoCircle } />
-        </Dropdown.Item>
-      </Dropdown.Menu>
-    </Dropdown>
+    <>
+      <Dropdown>
+        <Dropdown.Toggle variant="outline-secondary">
+          <FontAwesomeIcon icon={ faShare } /> Export
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          <Dropdown.Item
+            onClick={ handleExportEDL }
+            title="export EDL, edit decision list, to import the programme script as a sequence in video editing software - Avid, Premiere, Davinci Resolve, for FCPX choose FCPX XML"
+          >
+            EDL - Video <FontAwesomeIcon icon={ faInfoCircle } />
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={ handleExportADL }
+            title="export ADL, audio decision list, to import the programme script as a sequence in audio editing software such as SADiE"
+          >
+            <FontAwesomeIcon icon={ faFileExport } />
+            ADL - Audio <FontAwesomeIcon icon={ faInfoCircle } />
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={ handleExportFCPX }
+            title="export FCPX XML, to import the programme script as a sequence in Final Cut Pro X, video editing software"
+          >
+            FCPX <FontAwesomeIcon icon={ faInfoCircle } />
+          </Dropdown.Item>
+          <Dropdown.Divider />
+          <Dropdown.Item
+            onClick={ handleExportTxt }
+            title="export Text, export the programme script as a text version"
+          >
+            Text File <FontAwesomeIcon icon={ faInfoCircle } />
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={ () => {
+              alert('export word doc not implemented yet');
+            } }
+            title="export docx, export the programme script as a word document"
+          >
+            Word Document <FontAwesomeIcon icon={ faInfoCircle } />
+          </Dropdown.Item>
+          <Dropdown.Divider />
+          <Dropdown.Item
+            onClick={ handleExportJson }
+            title="export Json, export the programme script as a json file"
+          >
+            Json <FontAwesomeIcon icon={ faInfoCircle } />
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+
+      {/* <ExportFormModal
+        { ...formData }
+        modalTitle={ 'Export' }
+        showModal={ showModal }
+        handleOnHide={ handleOnHide }
+        handleSaveForm={ handleSaveForm }
+      /> */}
+    </>
   );
 
 };
