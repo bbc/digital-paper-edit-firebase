@@ -144,10 +144,6 @@ const updateTranscriptsStatus = async (
         if (response.status === "success") {
           const { words, paragraphs } = psttAdapter(response.transcript.items);
 
-          /* After migrating to compressed, we should replace
-              wordsc to words, paragraphsc to paragraphs
-              as we will not need it.
-              */
           update.wordsc = zlib.gzipSync(JSON.stringify(words));
           update.paragraphsc = zlib.gzipSync(JSON.stringify(paragraphs));
           update.status = "done";
