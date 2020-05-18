@@ -524,8 +524,8 @@ const TranscriptTabContent = (props) => {
       ) : (
         <style scoped>
           {/* This is to style of the Paragraph component programmatically */}
-          {"{ background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }"}
-          {"{ background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }"}
+          {`{ background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
+          {`{ background-color: ${ 'yellow' }; text-shadow: 0 0 0.01px black }`}
         </style>
       )}
 
@@ -588,8 +588,8 @@ TranscriptTabContent.propTypes = {
   projectId: PropTypes.any,
   title: PropTypes.any,
   transcript: PropTypes.shape({
-    paragraphs: PropTypes.any,
-    words: PropTypes.any,
+    paragraphs: PropTypes.array,
+    words: PropTypes.array
   }),
   transcriptId: PropTypes.any,
 };
