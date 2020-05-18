@@ -8,8 +8,8 @@ import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 
 import Collection from '../../Firebase/Collection';
+import Alert from 'react-bootstrap/Alert';
 
-import CustomAlert from '@bbc/digital-paper-edit-storybook/CustomAlert';
 import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 
 const TranscriptEditor = ({ match, firebase }) => {
@@ -20,6 +20,7 @@ const TranscriptEditor = ({ match, firebase }) => {
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ transcriptTitle, setTranscriptTitle ] = useState('');
   const [ savedNotification, setSavedNotification ] = useState();
+  const [ showNotification, setShowNotification ] = useState(false);
   const [ mediaType, setMediaType ] = useState('video');
   const [ mediaUrl, setMediaUrl ] = useState('');
 
@@ -35,7 +36,12 @@ const TranscriptEditor = ({ match, firebase }) => {
   useEffect(() => {
     const getTranscript = async () => {
       try {
-        const { media, paragraphs, words, title } = await TranscriptsCollection.getItem(transcriptId);
+        const {
+          media,
+          paragraphs,
+          words,
+          title,
+        } = await TranscriptsCollection.getItem(transcriptId);
         const url = await firebase.storage.storage
           .ref(media.ref)
           .getDownloadURL();
@@ -87,6 +93,10 @@ const TranscriptEditor = ({ match, firebase }) => {
     return item;
   };
 
+  const handleAlertClose = () => {
+    setShowNotification(false);
+  };
+
   const saveButtonHandler = async () => {
     // TODO: decide how to deal with transcript corrections
     // exporting digitalpaperedit in @bbc/react-transcript-editor@latest doesn't give you
@@ -104,32 +114,22 @@ const TranscriptEditor = ({ match, firebase }) => {
 
     try {
       await updateTranscript(transcriptId, data);
+      setShowNotification(true);
       setSavedNotification(
-        <CustomAlert
-          dismissable={ true }
-          variant="success"
-          heading="Transcript saved"
-          message={
-            <p>
-              Transcript: <b>{transcriptTitle}</b> has been saved
-            </p>
-          }
-        />
+        <Alert onClose={ handleAlertClose } dismissible variant="success">
+          <Alert.Heading>Transcript saved</Alert.Heading>
+          Transcript: <b>{transcriptTitle}</b> has been saved
+        </Alert>
       );
     } catch (error) {
       console.error('Error saving transcript::', error);
+      setShowNotification(true);
       setSavedNotification(
-        <CustomAlert
-          dismissable={ true }
-          variant="danger"
-          heading="Error saving transcript"
-          message={
-            <p>
-              There was an error trying to save this transcript:{' '}
-              <b>{transcriptTitle}</b>
-            </p>
-          }
-        />
+        <Alert onClose={ handleAlertClose } dismissible variant="danger">
+          <Alert.Heading>Error saving transcript</Alert.Heading>
+          There was an error trying to save this transcript:{' '}
+          <b>{transcriptTitle}</b>
+        </Alert>
       );
     }
   };
@@ -172,7 +172,7 @@ const TranscriptEditor = ({ match, firebase }) => {
             <br />
           </Col>
         </Row>
-        {savedNotification}
+        {showNotification ? savedNotification : null}
         {transcriptData && (
           <ReactTranscriptEditor
             transcriptData={ transcriptData } // Transcript json
