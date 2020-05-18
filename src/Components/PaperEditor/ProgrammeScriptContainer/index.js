@@ -20,6 +20,7 @@ import ExportDropdown from './ExportDropdown/index';
 import ElementsDropdown from './ElementsDropdown/index';
 import getDataFromUserWordsSelection from './get-data-from-user-selection';
 import {
+  divideWordsSelectionsIntoParagraphs,
   isOneParagraph,
 } from './divide-words-selections-into-paragraphs';
 
