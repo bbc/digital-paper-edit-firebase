@@ -38,6 +38,7 @@ class Collection {
       return docRef;
     } catch (error) {
       console.error('Error adding document: ', error);
+      throw (error);
     }
   };
 
@@ -49,6 +50,7 @@ class Collection {
       console.log('Document written with ID: ', id);
     } catch (error) {
       console.error('Error adding document: ', error);
+      throw (error);
     }
   };
 
@@ -61,6 +63,7 @@ class Collection {
     } catch (error) {
       console.error('Error adding document: ', error);
       alert('Error saving document');
+      throw (error);
     }
   };
 

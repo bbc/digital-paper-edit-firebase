@@ -96,7 +96,6 @@ const updateWordTimingsAfterInsert = (elements, insertIndex) => {
   const newElement = elements[insertIndex]; // Insert index is where the new element was added
   const newPaperEditDuration = newElement.end - newElement.start;
   const reindexedList = reindexList(elements);
-
   // Only looks for paper-cuts in the programme script after the insertion point
   reindexedList
     .slice(insertIndex + 1, elements.length)

@@ -1,19 +1,20 @@
+import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import 'bootstrap-css-only/css/bootstrap.css';
-import CustomAlert from '@bbc/digital-paper-edit-storybook/CustomAlert';
 import Container from 'react-bootstrap/Container';
 import Routes from './Routes';
 import SignOutButton from './Components/SignOut';
 import { withAuthentication } from './Components/Session';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Alert from 'react-bootstrap/Alert';
 
-const App = props => {
+const App = (props) => {
   let offlineWarning = null;
   const [ authUser, setAuthUser ] = useState();
 
   useEffect(() => {
-    const authListener = props.firebase.auth.onAuthStateChanged(user =>
+    const authListener = props.firebase.auth.onAuthStateChanged((user) =>
       setAuthUser(user)
     );
 
@@ -27,11 +28,10 @@ const App = props => {
       <>
         <br />
         <Container>
-          <CustomAlert
-            variant={ 'warning' }
-            heading={ 'Offline warning' }
-            message={ "You don't seem to be connected to the internet " }
-          />
+          <Alert variant={ 'warning' }>
+            <Alert.heading>Offline warning</Alert.heading>
+            You don`&apos;`t seem to be connected to the internet
+          </Alert>
         </Container>
       </>
     );
@@ -64,18 +64,24 @@ const App = props => {
       <>
         <Container style={ { marginBottom: '2em', marginTop: '1em' } }>
           <h1> Digital Paper Edit </h1>
-          <p>Please <a href="/">sign in</a> - please request a user and password</p>
+          <p>
+            Please <a href="/">sign in</a> - please request a user and password
+          </p>
         </Container>
         <Routes />
       </>
     );
   }
 
-  return (
-    <>
-      {AppContainer}
-    </>
-  );
+  return <>{AppContainer}</>;
+};
+
+App.propTypes = {
+  firebase: PropTypes.shape({
+    auth: PropTypes.shape({
+      onAuthStateChanged: PropTypes.func,
+    }),
+  }),
 };
 
 export default withAuthentication(App);
