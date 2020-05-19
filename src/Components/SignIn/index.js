@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'recompose';
@@ -63,11 +64,20 @@ const SignInFormBase = props => {
       <Button
         disabled={ isInvalid }
         variant="primary" type="submit">
-          Sign in
+        Sign in
       </Button>
       {error && <p>{error.message}</p>}
     </Form>
   );
+};
+
+SignInFormBase.propTypes = {
+  firebase: PropTypes.shape({
+    doSignInWithEmailAndPassword: PropTypes.func
+  }),
+  history: PropTypes.shape({
+    push: PropTypes.func
+  })
 };
 
 // HOC with router and firebase
