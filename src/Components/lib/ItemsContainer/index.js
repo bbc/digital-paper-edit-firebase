@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 
 import { anyInText } from '../../../Util/in-text';
-import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
+import ItemFormModal from '@bbc/digital-paper-edit-storybook/ItemFormModal';
 import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
 
 import SimpleCard from '@bbc/digital-paper-edit-storybook/SimpleCard';
@@ -145,7 +145,7 @@ const ItemsContainer = props => {
         )}
       </section>
 
-      <FormModal
+      <ItemFormModal
         { ...formData }
         modalTitle={ formData.id ? `Edit ${ type }` : `New ${ type }` }
         showModal={ showModal }

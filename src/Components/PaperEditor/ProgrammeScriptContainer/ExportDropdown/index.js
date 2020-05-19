@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 
 /* ExportFormModal is not a real library yet, we would need to
@@ -18,6 +18,7 @@ import {
   faFileExport
 } from '@fortawesome/free-solid-svg-icons';
 import timecodes from 'node-timecodes';
+import ExportFormModal from '../ExportFormModal';
 
 const ExportDropdown = (props) => {
 
@@ -30,15 +31,16 @@ const ExportDropdown = (props) => {
   const elements = props.elements;
   const transcripts = props.transcripts;
 
-  const initialFormState = {
+  const initialFormState = [ {
     fileName: '',
     srcFolderPath: ''
-  };
+  } ];
 
   const [ showModal, setShowModal ] = useState(false);
   const [ formData, setFormData ] = useState(initialFormState);
 
   const handleSaveForm = item => {
+    console.log('handle save item: ', item);
     // props.handleSave(item);
     console.log(item);
     setShowModal(false);
@@ -60,6 +62,29 @@ const ExportDropdown = (props) => {
   const getCurrentTranscript = (element) => transcripts.find(tr => {
     return tr.id === element.transcriptId;
   });
+
+  const updateFormData = () => {
+    const exportOptions = elements.reduce(
+      (elementsTracker, element) => {
+        if (element.type === 'paper-cut' && !(elementsTracker.transcriptIds.includes(element.transcriptId))) {
+          const currentTranscript = getCurrentTranscript(element);
+          const mediaTitle = currentTranscript.title;
+
+          const exportOption = {
+            fileName: mediaTitle,
+            srcFolderPath: ''
+          };
+
+          elementsTracker.elements.push(exportOption);
+          elementsTracker.transcriptIds.push(element.transcriptId);
+        }
+
+        return elementsTracker;
+      }, { elements: [], transcriptIds: [] } );
+
+    console.log('EOE', exportOptions.elements);
+    setFormData(exportOptions.elements);
+  };
 
   const getSequenceJsonEDL = () => {
     const edlSq = {
@@ -124,41 +149,44 @@ const ExportDropdown = (props) => {
   // https://www.npmjs.com/package/downloadjs
   // https://www.npmjs.com/package/edl_composer
 
-  const handleExportEDL = () => {
+  const handleExportEDL = async () => {
+    await updateFormData();
     toggleShowModal();
-    const edlSq = getSequenceJsonEDL();
-    const edl = new EDL(edlSq);
-    console.log(edl.compose());
-    downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
+    // const edlSq = getSequenceJsonEDL();
+    // const edl = new EDL(edlSq);
+    // console.log(edl.compose());
+    // downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
   };
 
   const handleExportADL = () => {
-    const edlSq = getSequenceJsonEDL();
-    if (edlSq.events.length === 0) {
-      alert('Cannot export empty paper edit ADL');
+    updateFormData();
+    toggleShowModal();
+    // const edlSq = getSequenceJsonEDL();
+    // if (edlSq.events.length === 0) {
+    //   alert('Cannot export empty paper edit ADL');
 
-      return;
-    }
-    const firstElement = edlSq.events[0];
-    const result = generateADL({
-      projectOriginator: 'Digital Paper Edit',
-      // TODO: it be good to change sequence for the ADL to be same schema
-      // as the one for EDL and FCPX - for now just adjusting
-      edits: edlSq.events.map(event => {
-        return {
-          start: event.startTime,
-          end: event.endTime,
-          clipName: event.clipName,
-          // TODO: could add a label if present
-          label: ''
-        };
-      }),
-      sampleRate: firstElement.sampleRate,
-      frameRate: firstElement.fps,
-      projectName: edlSq.title
-    });
-    console.log('ADL Result', result);
-    downloadjs(result, `${ title }.adl`, 'text/plain');
+    //   return;
+    // }
+    // const firstElement = edlSq.events[0];
+    // const result = generateADL({
+    //   projectOriginator: 'Digital Paper Edit',
+    //   // TODO: it be good to change sequence for the ADL to be same schema
+    //   // as the one for EDL and FCPX - for now just adjusting
+    //   edits: edlSq.events.map(event => {
+    //     return {
+    //       start: event.startTime,
+    //       end: event.endTime,
+    //       clipName: event.clipName,
+    //       // TODO: could add a label if present
+    //       label: ''
+    //     };
+    //   }),
+    //   sampleRate: firstElement.sampleRate,
+    //   frameRate: firstElement.fps,
+    //   projectName: edlSq.title
+    // });
+    // console.log('ADL Result', result);
+    // downloadjs(result, `${ title }.adl`, 'text/plain');
   };
 
   const handleExportFCPX = () => {
@@ -255,6 +283,16 @@ const ExportDropdown = (props) => {
     return `${ edlTitle }${ body.join('\n\n') }`;
   };
 
+  // const ExportModal = () => {
+  //   return (
+  //     <ExportFormModal
+  //       handleSaveForm={ console.log('handling save...') }
+  //       handleHideForm={ console.log('handling hide...') }
+  //       showModal={ true }
+  //     />
+  //   );
+  // };
+
   const handleExportJson = () => {
     const programmeScriptJson = getProgrammeScriptJson();
     const programmeScriptText = JSON.stringify(programmeScriptJson, null, 2);
@@ -327,13 +365,13 @@ const ExportDropdown = (props) => {
         </Dropdown.Menu>
       </Dropdown>
 
-      {/* <ExportFormModal
-        { ...formData }
+      <ExportFormModal
+        items={ formData }
         modalTitle={ 'Export' }
         showModal={ showModal }
         handleOnHide={ handleOnHide }
         handleSaveForm={ handleSaveForm }
-      /> */}
+      />
     </>
   );
 
