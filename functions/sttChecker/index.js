@@ -21,10 +21,19 @@ const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
   };
 };
 
-const isValidJob = (execTimestamp, transcript) => {
-  const transcriptData = transcript.data();
+const getRuntime = (execTimestamp, createdTime) => {
   const sttCheckerExecTime = Date.parse(execTimestamp);
-  const lastUpdatedTime = transcriptData.updated.toDate().getTime();
+  const timeDifference = sttCheckerExecTime - createdTime;
+  return {
+    humanReadable: secondsToDhms(timeDifference / 1000),
+    runtimeByNano: timeDifference,
+  };
+};
+
+const isValidJob = (execTimestamp, transcript) => {
+  const { updated } = transcript.data();
+  const sttCheckerExecTime = Date.parse(execTimestamp);
+  const lastUpdatedTime = updated.toDate().getTime();
 
   const { expired, expiredByNano } = isExpired(
     sttCheckerExecTime,
@@ -127,7 +136,7 @@ const updateTranscriptsStatus = async (
   await validJobs.forEach(async (job) => {
     const jobId = job.id;
     const userId = getUserfromJob(usersAudioData, jobId);
-    const { projectId, message } = job.data();
+    const { projectId, message, created } = job.data();
     const fileName = `users/${userId}/audio/${jobId}.wav`;
 
     try {
@@ -147,6 +156,10 @@ const updateTranscriptsStatus = async (
           update.wordsc = zlib.gzipSync(JSON.stringify(words));
           update.paragraphsc = zlib.gzipSync(JSON.stringify(paragraphs));
           update.status = "done";
+          update.runtime = getRuntime(execTimestamp, created);
+          console.log(
+            `Finished job ${transcript.id} in ${update.runtime.humanReadable}`
+          );
         }
       }
       await updateTranscription(admin, job.id, projectId, update);
