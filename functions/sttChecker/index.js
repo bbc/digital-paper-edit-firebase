@@ -11,7 +11,9 @@ const {
 
 const psttAdapter = require("./psttAdapter");
 
-const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
+const isExpired = (execTimestamp, updated) => {
+  const sttCheckerExecTime = Date.parse(execTimestamp);
+  const lastUpdatedTime = updated.toDate().getTime();
   const NUMBER_OF_HOURS = 6;
   const ONE_DAY_IN_NANOSECONDS = 3600 * NUMBER_OF_HOURS * 1000;
   const timeDifference = sttCheckerExecTime - lastUpdatedTime;
@@ -21,9 +23,11 @@ const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
   };
 };
 
-const getRuntime = (execTimestamp, createdTime) => {
+const getRuntime = (execTimestamp, created) => {
+  const createdTime = created.toDate().getTime();
   const sttCheckerExecTime = Date.parse(execTimestamp);
   const timeDifference = sttCheckerExecTime - createdTime;
+  console.log("timeDifference", timeDifference);
   return {
     humanReadable: secondsToDhms(timeDifference / 1000),
     runtimeByNano: timeDifference,
@@ -32,12 +36,10 @@ const getRuntime = (execTimestamp, createdTime) => {
 
 const isValidJob = (execTimestamp, transcript) => {
   const { updated } = transcript.data();
-  const sttCheckerExecTime = Date.parse(execTimestamp);
-  const lastUpdatedTime = updated.toDate().getTime();
 
   const { expired, expiredByNano } = isExpired(
-    sttCheckerExecTime,
-    lastUpdatedTime
+    execTimestamp,
+    updated
   );
 
   // TODO make sure objectKey exists in upload
@@ -158,7 +160,7 @@ const updateTranscriptsStatus = async (
           update.status = "done";
           update.runtime = getRuntime(execTimestamp, created);
           console.log(
-            `Finished job ${transcript.id} in ${update.runtime.humanReadable}`
+            `Finished job ${jobId} in ${update.runtime.humanReadable}`
           );
         }
       }
