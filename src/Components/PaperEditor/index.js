@@ -12,6 +12,7 @@ import TranscriptsContainer from './TranscriptsContainer';
 import ProgrammeScriptContainer from './ProgrammeScriptContainer';
 import PropTypes from 'prop-types';
 import Collection from '../Firebase/Collection';
+import { decompress } from '../../Util/gzip';
 
 const PaperEditor = (props) => {
   const projectId = props.match.params.projectId;
@@ -49,7 +50,7 @@ const PaperEditor = (props) => {
       getProject();
     }
 
-    return () => { };
+    return () => {};
   }, [ Projects, papereditId, projectId, transcripts ]);
 
   useEffect(() => {
@@ -66,7 +67,7 @@ const PaperEditor = (props) => {
       getPaperEdit();
     }
 
-    return () => { };
+    return () => {};
   }, [ PaperEdits, papereditId, transcripts ]);
 
   useEffect(() => {
@@ -75,7 +76,32 @@ const PaperEditor = (props) => {
         Transcriptions.collectionRef.onSnapshot((snapshot) => {
           setTranscripts(
             snapshot.docs.map((doc) => {
-              return { ...doc.data(), id: doc.id, display: true };
+              const {
+                wordsc,
+                paragraphsc,
+                words,
+                paragraphs,
+                ...rest
+              } = doc.data();
+
+              /* After migrating to compressed, we should remove the if/else,
+              and rename wordsdc to words, paragraphsdc to paragraphs
+              as we will not need it.
+              */
+              if (wordsc && paragraphsc) {
+                const wordsdc = decompress(wordsc);
+                const paragraphsdc = decompress(paragraphsc);
+
+                return {
+                  words: wordsdc,
+                  paragraphs: paragraphsdc,
+                  ...rest,
+                  id: doc.id,
+                  display: true,
+                };
+              }
+
+              return { words, paragraphs, ...rest, id: doc.id, display: true };
             })
           );
         });
@@ -87,7 +113,7 @@ const PaperEditor = (props) => {
       getTranscripts();
     }
 
-    return () => { };
+    return () => {};
   }, [ Transcriptions.collectionRef, transcripts ]);
 
   const toggleTranscripts = () => {

@@ -69,6 +69,9 @@ class Firebase {
   doSignOut = () => this.auth.signOut();
   doPasswordReset = email => this.auth.sendPasswordResetEmail(email);
   doPasswordUpdate = password => this.auth.currentUser.updatePassword(password);
+
+  uint8ArrayBlob = (data) => this.firestore.Blob.fromUint8Array(data);
+  base64StringBlob = (data) => this.firestore.Blob.fromBase64String(data);
 }
 
 export default Firebase;

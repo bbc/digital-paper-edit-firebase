@@ -105,7 +105,9 @@ const Transcripts = ({ projectId, firebase }) => {
   };
 
   const handleUploadProgress = (id, snapshot) => {
-    const progress = Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+    const progress = Math.floor(
+      (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+    );
     updateUploadTasksProgress(id, progress);
   };
 
@@ -203,7 +205,7 @@ const Transcripts = ({ projectId, firebase }) => {
 
 Transcripts.propTypes = {
   projectId: PropTypes.any,
-  firebase: PropTypes.any
+  firebase: PropTypes.any,
 };
 
 const condition = (authUser) => !!authUser;
