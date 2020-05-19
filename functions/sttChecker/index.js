@@ -11,7 +11,9 @@ const {
 
 const psttAdapter = require("./psttAdapter");
 
-const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
+const isExpired = (execTimestamp, updated) => {
+  const sttCheckerExecTime = Date.parse(execTimestamp);
+  const lastUpdatedTime = updated.toDate().getTime();
   const NUMBER_OF_HOURS = 6;
   const ONE_DAY_IN_NANOSECONDS = 3600 * NUMBER_OF_HOURS * 1000;
   const timeDifference = sttCheckerExecTime - lastUpdatedTime;
@@ -21,14 +23,23 @@ const isExpired = (sttCheckerExecTime, lastUpdatedTime) => {
   };
 };
 
-const isValidJob = (execTimestamp, transcript) => {
-  const transcriptData = transcript.data();
+const getRuntime = (execTimestamp, created) => {
+  const createdTime = created.toDate().getTime();
   const sttCheckerExecTime = Date.parse(execTimestamp);
-  const lastUpdatedTime = transcriptData.updated.toDate().getTime();
+  const timeDifference = sttCheckerExecTime - createdTime;
+  console.log("timeDifference", timeDifference);
+  return {
+    humanReadable: secondsToDhms(timeDifference / 1000),
+    runtimeByNano: timeDifference,
+  };
+};
+
+const isValidJob = (execTimestamp, transcript) => {
+  const { updated } = transcript.data();
 
   const { expired, expiredByNano } = isExpired(
-    sttCheckerExecTime,
-    lastUpdatedTime
+    execTimestamp,
+    updated
   );
 
   // TODO make sure objectKey exists in upload
@@ -127,7 +138,7 @@ const updateTranscriptsStatus = async (
   await validJobs.forEach(async (job) => {
     const jobId = job.id;
     const userId = getUserfromJob(usersAudioData, jobId);
-    const { projectId, message } = job.data();
+    const { projectId, message, created } = job.data();
     const fileName = `users/${userId}/audio/${jobId}.wav`;
 
     try {
@@ -147,6 +158,10 @@ const updateTranscriptsStatus = async (
           update.wordsc = zlib.gzipSync(JSON.stringify(words));
           update.paragraphsc = zlib.gzipSync(JSON.stringify(paragraphs));
           update.status = "done";
+          update.runtime = getRuntime(execTimestamp, created);
+          console.log(
+            `Finished job ${jobId} in ${update.runtime.humanReadable}`
+          );
         }
       }
       await updateTranscription(admin, job.id, projectId, update);
