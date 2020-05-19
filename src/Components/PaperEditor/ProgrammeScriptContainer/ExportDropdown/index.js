@@ -19,6 +19,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import timecodes from 'node-timecodes';
 import ExportFormModal from '../ExportFormModal';
+import { createEventHandler } from 'recompose';
 
 const ExportDropdown = (props) => {
 
@@ -38,11 +39,87 @@ const ExportDropdown = (props) => {
 
   const [ showModal, setShowModal ] = useState(false);
   const [ formData, setFormData ] = useState(initialFormState);
+  const [ exportPath, setExportPath ] = useState('');
+  const [ exportFormat, setExportFormat ] = useState('');
+
+  // /**
+  //  * Helper function to create json EDL for other EDL/ADL/FPCX export
+  //  */
+
+  const getCurrentTranscript = (element) => transcripts.find(tr => {
+    return tr.id === element.transcriptId;
+  });
+
+  const getSequenceJsonEDL = (inputExportPath) => {
+    console.log('get seq json edl clip name: ', exportPath);
+    const edlSq = {
+      title: title,
+      events: []
+    };
+
+    const programmeScriptPaperCuts = elements
+      .map(element => {
+        if (element.type === 'paper-cut') {
+          // Get clipName for current transcript
+
+          const currentTranscript = getCurrentTranscript(element);
+
+          const result = {
+            startTime: element.start,
+            endTime: element.end,
+            reelName: currentTranscript.metadata
+              ? currentTranscript.metadata.reelName
+              : defaultReelName,
+            clipName: `${ inputExportPath }/${ currentTranscript.title }`,
+            // TODO: frameRate should be pulled from the clips in the sequence
+            // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
+            // but again frameRate should not be hard coded
+            fps: currentTranscript.metadata
+              ? currentTranscript.metadata.fps
+              : defaultFps,
+            // TODO: if there is an offset this should added here, for now hard coding 0
+            offset: currentTranscript.metadata
+              ? currentTranscript.metadata.timecode
+              : defaultTimecodeOffset,
+            sampleRate: currentTranscript.metadata
+              ? currentTranscript.metadata.sampleRate
+              : defaultSampleRate
+          };
+
+          return result;
+        }
+
+        return null;
+      })
+      .filter(el => {
+        return el !== null;
+      });
+    // adding ids to EDL
+    const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
+      (el, index) => {
+        el.id = index + 1;
+
+        return el;
+      }
+    );
+    edlSq.events.push(...programmeScriptPaperCutsWithId);
+
+    return edlSq;
+  };
 
   const handleSaveForm = item => {
-    console.log('handle save item: ', item);
-    // props.handleSave(item);
-    console.log(item);
+    const inputExportPath = item.exportPath;
+    setExportPath(exportPath);
+
+    if (exportFormat === 'EDL') {
+      const edlSq = getSequenceJsonEDL(inputExportPath);
+      const edl = new EDL(edlSq);
+      console.log(edl.compose());
+      downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
+    } else if (exportFormat === 'ADL') {
+      console.log('ADL');
+    }
+
     setShowModal(false);
     setFormData(initialFormState);
   };
@@ -54,14 +131,6 @@ const ExportDropdown = (props) => {
   const handleOnHide = () => {
     setShowModal(false);
   };
-
-  // /**
-  //  * Helper function to create json EDL for other EDL/ADL/FPCX export
-  //  */
-
-  const getCurrentTranscript = (element) => transcripts.find(tr => {
-    return tr.id === element.transcriptId;
-  });
 
   const updateFormData = () => {
     const exportOptions = elements.reduce(
@@ -82,111 +151,107 @@ const ExportDropdown = (props) => {
         return elementsTracker;
       }, { elements: [], transcriptIds: [] } );
 
-    console.log('EOE', exportOptions.elements);
     setFormData(exportOptions.elements);
   };
 
-  const getSequenceJsonEDL = () => {
-    const edlSq = {
-      title: title,
-      events: []
-    };
+  // const getSequenceJsonEDL = () => {
+  //   const edlSq = {
+  //     title: title,
+  //     events: []
+  //   };
 
-    const programmeScriptPaperCuts = elements
-      .map(element => {
-        if (element.type === 'paper-cut') {
-          // Get clipName for current transcript
+  //   const programmeScriptPaperCuts = elements
+  //     .map(element => {
+  //       if (element.type === 'paper-cut') {
+  //         // Get clipName for current transcript
 
-          const currentTranscript = getCurrentTranscript(element);
+  //         const currentTranscript = getCurrentTranscript(element);
 
-          const result = {
-            startTime: element.start,
-            endTime: element.end,
-            reelName: currentTranscript.metadata
-              ? currentTranscript.metadata.reelName
-              : defaultReelName,
-            clipName: `${ currentTranscript.clipName }`,
-            // TODO: frameRate should be pulled from the clips in the sequence
-            // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
-            // but again frameRate should not be hard coded
-            fps: currentTranscript.metadata
-              ? currentTranscript.metadata.fps
-              : defaultFps,
-            // TODO: if there is an offset this should added here, for now hard coding 0
-            offset: currentTranscript.metadata
-              ? currentTranscript.metadata.timecode
-              : defaultTimecodeOffset,
-            sampleRate: currentTranscript.metadata
-              ? currentTranscript.metadata.sampleRate
-              : defaultSampleRate
-          };
+  //         const result = {
+  //           startTime: element.start,
+  //           endTime: element.end,
+  //           reelName: currentTranscript.metadata
+  //             ? currentTranscript.metadata.reelName
+  //             : defaultReelName,
+  //           clipName: `${ exportPath }/${ currentTranscript.title }`,
+  //           // TODO: frameRate should be pulled from the clips in the sequence
+  //           // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
+  //           // but again frameRate should not be hard coded
+  //           fps: currentTranscript.metadata
+  //             ? currentTranscript.metadata.fps
+  //             : defaultFps,
+  //           // TODO: if there is an offset this should added here, for now hard coding 0
+  //           offset: currentTranscript.metadata
+  //             ? currentTranscript.metadata.timecode
+  //             : defaultTimecodeOffset,
+  //           sampleRate: currentTranscript.metadata
+  //             ? currentTranscript.metadata.sampleRate
+  //             : defaultSampleRate
+  //         };
 
-          console.log('EDL - result 1', result);
+  //         console.log('EDL - result 1', result);
 
-          return result;
-        }
+  //         return result;
+  //       }
 
-        return null;
-      })
-      .filter(el => {
-        return el !== null;
-      });
-    // adding ids to EDL
-    const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
-      (el, index) => {
-        el.id = index + 1;
+  //       return null;
+  //     })
+  //     .filter(el => {
+  //       return el !== null;
+  //     });
+  //   // adding ids to EDL
+  //   const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
+  //     (el, index) => {
+  //       el.id = index + 1;
 
-        return el;
-      }
-    );
-    edlSq.events.push(...programmeScriptPaperCutsWithId);
+  //       return el;
+  //     }
+  //   );
+  //   edlSq.events.push(...programmeScriptPaperCutsWithId);
 
-    console.log('EDL Seq', edlSq);
+  //   console.log('EDL Seq', edlSq);
 
-    return edlSq;
-  };
+  //   return edlSq;
+  // };
 
   // https://www.npmjs.com/package/downloadjs
   // https://www.npmjs.com/package/edl_composer
 
   const handleExportEDL = async () => {
-    await updateFormData();
+    updateFormData();
     toggleShowModal();
-    // const edlSq = getSequenceJsonEDL();
-    // const edl = new EDL(edlSq);
-    // console.log(edl.compose());
-    // downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
+    setExportFormat('EDL');
   };
 
   const handleExportADL = () => {
     updateFormData();
     toggleShowModal();
-    // const edlSq = getSequenceJsonEDL();
-    // if (edlSq.events.length === 0) {
-    //   alert('Cannot export empty paper edit ADL');
+    const edlSq = getSequenceJsonEDL();
+    if (edlSq.events.length === 0) {
+      alert('Cannot export empty paper edit ADL');
 
-    //   return;
-    // }
-    // const firstElement = edlSq.events[0];
-    // const result = generateADL({
-    //   projectOriginator: 'Digital Paper Edit',
-    //   // TODO: it be good to change sequence for the ADL to be same schema
-    //   // as the one for EDL and FCPX - for now just adjusting
-    //   edits: edlSq.events.map(event => {
-    //     return {
-    //       start: event.startTime,
-    //       end: event.endTime,
-    //       clipName: event.clipName,
-    //       // TODO: could add a label if present
-    //       label: ''
-    //     };
-    //   }),
-    //   sampleRate: firstElement.sampleRate,
-    //   frameRate: firstElement.fps,
-    //   projectName: edlSq.title
-    // });
-    // console.log('ADL Result', result);
-    // downloadjs(result, `${ title }.adl`, 'text/plain');
+      return;
+    }
+    const firstElement = edlSq.events[0];
+    const result = generateADL({
+      projectOriginator: 'Digital Paper Edit',
+      // TODO: it be good to change sequence for the ADL to be same schema
+      // as the one for EDL and FCPX - for now just adjusting
+      edits: edlSq.events.map(event => {
+        return {
+          start: event.startTime,
+          end: event.endTime,
+          clipName: event.clipName,
+          // TODO: could add a label if present
+          label: ''
+        };
+      }),
+      sampleRate: firstElement.sampleRate,
+      frameRate: firstElement.fps,
+      projectName: edlSq.title
+    });
+    console.log('ADL Result', result);
+    downloadjs(result, `${ title }.adl`, 'text/plain');
   };
 
   const handleExportFCPX = () => {
@@ -282,16 +347,6 @@ const ExportDropdown = (props) => {
 
     return `${ edlTitle }${ body.join('\n\n') }`;
   };
-
-  // const ExportModal = () => {
-  //   return (
-  //     <ExportFormModal
-  //       handleSaveForm={ console.log('handling save...') }
-  //       handleHideForm={ console.log('handling hide...') }
-  //       showModal={ true }
-  //     />
-  //   );
-  // };
 
   const handleExportJson = () => {
     const programmeScriptJson = getProgrammeScriptJson();
