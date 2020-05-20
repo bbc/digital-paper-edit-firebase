@@ -1,17 +1,21 @@
 import zlib from 'zlib';
 
 const decompress = (compressed) => {
-  console.log('decompressed');
+  console.time('decompressed');
   const buff = Buffer.from(compressed.toBase64(), 'base64');
   const decompBuff = zlib.gunzipSync(buff);
+  const decompressed = JSON.parse(decompBuff.toString());
+  console.timeEnd('decompressed');
 
-  return JSON.parse(decompBuff.toString());
+  return decompressed;
 };
 
 const compress = (decompressed) => {
-  console.log('compressed');
+  console.time('compressed');
+  const compressed = zlib.gzipSync(JSON.stringify(decompressed));
+  console.timeEnd('compressed');
 
-  return zlib.gzipSync(JSON.stringify(decompressed));
+  return compressed;
 };
 
 export { decompress, compress };
