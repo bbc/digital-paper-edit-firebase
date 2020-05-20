@@ -11,8 +11,6 @@ import groupWordsInParagraphsBySpeakers from '../Paragraphs/group-words-by-speak
 import removePunctuation from '../../../../Util/remove-punctuation';
 
 const Paragraph = React.lazy(() => import('../Paragraphs/Paragraph'));
-// import InfiniteLoader from 'react-window-infinite-loader';
-// import { FixedSizeList as List } from 'react-window';
 
 const TranscriptTabContent = (props) => {
   const { transcriptId, projectId, title, firebase, media, transcript } = props;
