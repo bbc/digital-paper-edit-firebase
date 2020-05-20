@@ -18,12 +18,20 @@ const TranscriptEditor = ({ match, firebase }) => {
   const transcriptId = match.params.transcriptId;
 
   const [ transcriptData, setTranscriptData ] = useState();
-  const [ projectTitle, setProjectTitle ] = useState('');
   const [ transcriptTitle, setTranscriptTitle ] = useState('');
+  const [ fetchTranscript, setFetchTranscript ] = useState(false);
+
+  const [ fetchProject, setFetchProject ] = useState(false);
+  const [ projectTitle, setProjectTitle ] = useState('');
+
   const [ savedNotification, setSavedNotification ] = useState();
   const [ showNotification, setShowNotification ] = useState(false);
+
   const [ mediaType, setMediaType ] = useState('video');
   const [ mediaUrl, setMediaUrl ] = useState('');
+
+  const [ compressedWords, setCompressedWords ] = useState();
+  const [ compressedParas, setCompressedParas ] = useState();
 
   const transcriptEditorRef = useRef();
 
@@ -36,6 +44,7 @@ const TranscriptEditor = ({ match, firebase }) => {
 
   useEffect(() => {
     const getTranscript = async () => {
+      setFetchTranscript(true);
       try {
         const {
           media,
@@ -45,6 +54,7 @@ const TranscriptEditor = ({ match, firebase }) => {
           paragraphsc,
           title,
         } = await TranscriptsCollection.getItem(transcriptId);
+
         const url = await firebase.storage.storage
           .ref(media.ref)
           .getDownloadURL();
@@ -54,24 +64,36 @@ const TranscriptEditor = ({ match, firebase }) => {
 
         /* Remove words, paragraphs once transitioned to compressed */
         if (wordsc && paragraphsc) {
-          setTranscriptData({
-            paragraphs: decompress(paragraphsc),
-            words: decompress(wordsc)
-          });
+          setCompressedWords(wordsc);
+          setCompressedParas(paragraphsc);
         } else {
           setTranscriptData({
             paragraphs: paragraphs,
             words: words,
           });
         }
-
         setTranscriptTitle(title);
       } catch (error) {
         console.error('Error getting documents: ', error);
       }
     };
 
+    if (!transcriptData && !fetchTranscript) {
+      getTranscript();
+    }
+
+    return () => {};
+  }, [
+    TranscriptsCollection,
+    transcriptData,
+    transcriptId,
+    firebase.storage,
+    fetchTranscript
+  ]);
+
+  useEffect(() => {
     const getProject = async () => {
+      setFetchProject(true);
       try {
         const data = await ProjectsCollection.getItem(projectId);
         setProjectTitle(data.title);
@@ -79,24 +101,30 @@ const TranscriptEditor = ({ match, firebase }) => {
         console.error('Error getting documents: ', error);
       }
     };
-
-    if (!transcriptData) {
-      getTranscript();
-    }
-    if (!projectTitle) {
+    if (!projectTitle && !fetchProject) {
       getProject();
     }
 
     return () => {};
   }, [
     ProjectsCollection,
-    TranscriptsCollection,
     projectId,
     projectTitle,
-    transcriptData,
-    transcriptId,
-    firebase.storage,
+    fetchProject
   ]);
+
+  useEffect(() => {
+    if (compressedParas && compressedWords) {
+      setTranscriptData({
+        paragraphs: decompress(compressedParas),
+        words: decompress(compressedWords)
+      });
+    }
+
+    return () => {
+      setTranscriptData(null);
+    };
+  }, [ compressedParas, compressedWords ]);
 
   const updateTranscript = async (id, item) => {
     await TranscriptsCollection.putItem(id, item);

@@ -21,6 +21,11 @@ const PaperEditor = (props) => {
 
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
+
+  const [ fetchTranscripts, setFetchTranscripts ] = useState(false);
+  const [ fetchProject, setFetchProject ] = useState(false);
+  const [ fetchPaperEdit, setFetchPaperEdit ] = useState(false);
+
   const [ transcripts, setTranscripts ] = useState();
 
   const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
@@ -38,23 +43,25 @@ const PaperEditor = (props) => {
 
   useEffect(() => {
     const getProject = async () => {
+      setFetchProject(true);
       try {
         const project = await Projects.getItem(projectId);
         setProjectTitle(project.title);
       } catch (e) {
-        console.error('Could not get Project Id: ', papereditId, e);
+        console.error('Could not get Project Id: ', projectId, e);
       }
     };
 
-    if (!transcripts) {
+    if (!projectTitle && !fetchProject) {
       getProject();
     }
 
     return () => {};
-  }, [ Projects, papereditId, projectId, transcripts ]);
+  }, [ Projects, projectTitle, projectId, fetchProject ]);
 
   useEffect(() => {
     const getPaperEdit = async () => {
+      setFetchPaperEdit(true);
       try {
         const paperEdit = await PaperEdits.getItem(papereditId);
         setPaperEditTitle(paperEdit.title);
@@ -63,15 +70,16 @@ const PaperEditor = (props) => {
       }
     };
 
-    if (!transcripts) {
+    if (!paperEditTitle && !fetchPaperEdit) {
       getPaperEdit();
     }
 
     return () => {};
-  }, [ PaperEdits, papereditId, transcripts ]);
+  }, [ PaperEdits, papereditId, fetchPaperEdit, paperEditTitle ]);
 
   useEffect(() => {
     const getTranscripts = async () => {
+      setFetchTranscripts(true);
       try {
         Transcriptions.collectionRef.onSnapshot((snapshot) => {
           setTranscripts(
@@ -109,12 +117,13 @@ const PaperEditor = (props) => {
         console.error('Error getting documents: ', error);
       }
     };
-    if (!transcripts) {
+
+    if (!transcripts && !fetchTranscripts) {
       getTranscripts();
     }
 
     return () => {};
-  }, [ Transcriptions.collectionRef, transcripts ]);
+  }, [ Transcriptions.collectionRef, transcripts, fetchTranscripts ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
