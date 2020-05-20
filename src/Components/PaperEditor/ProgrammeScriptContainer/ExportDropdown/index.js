@@ -114,10 +114,37 @@ const ExportDropdown = (props) => {
     if (exportFormat === 'EDL') {
       const edlSq = getSequenceJsonEDL(inputExportPath);
       const edl = new EDL(edlSq);
-      console.log(edl.compose());
       downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
     } else if (exportFormat === 'ADL') {
-      console.log('ADL');
+      const edlSq = getSequenceJsonEDL(inputExportPath);
+      console.log('edlSeq: : ', edlSq );
+      if (edlSq.events.length === 0) {
+        alert('Cannot export empty paper edit ADL');
+
+        return;
+      }
+      const firstElement = edlSq.events[0];
+      const result = generateADL({
+        projectOriginator: 'Digital Paper Edit',
+        // TODO: it be good to change sequence for the ADL to be same schema
+        // as the one for EDL and FCPX - for now just adjusting
+        edits: edlSq.events.map(event => {
+          console.log('ADL event: : ', event);
+
+          return {
+            start: event.startTime,
+            end: event.endTime,
+            clipName: event.clipName,
+            // TODO: could add a label if present
+            label: ''
+          };
+        }),
+        sampleRate: firstElement.sampleRate,
+        frameRate: firstElement.fps,
+        projectName: edlSq.title
+      });
+      console.log('ADL Result', result);
+      downloadjs(result, `${ title }.adl`, 'text/plain');
     }
 
     setShowModal(false);
@@ -154,69 +181,6 @@ const ExportDropdown = (props) => {
     setFormData(exportOptions.elements);
   };
 
-  // const getSequenceJsonEDL = () => {
-  //   const edlSq = {
-  //     title: title,
-  //     events: []
-  //   };
-
-  //   const programmeScriptPaperCuts = elements
-  //     .map(element => {
-  //       if (element.type === 'paper-cut') {
-  //         // Get clipName for current transcript
-
-  //         const currentTranscript = getCurrentTranscript(element);
-
-  //         const result = {
-  //           startTime: element.start,
-  //           endTime: element.end,
-  //           reelName: currentTranscript.metadata
-  //             ? currentTranscript.metadata.reelName
-  //             : defaultReelName,
-  //           clipName: `${ exportPath }/${ currentTranscript.title }`,
-  //           // TODO: frameRate should be pulled from the clips in the sequence
-  //           // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
-  //           // but again frameRate should not be hard coded
-  //           fps: currentTranscript.metadata
-  //             ? currentTranscript.metadata.fps
-  //             : defaultFps,
-  //           // TODO: if there is an offset this should added here, for now hard coding 0
-  //           offset: currentTranscript.metadata
-  //             ? currentTranscript.metadata.timecode
-  //             : defaultTimecodeOffset,
-  //           sampleRate: currentTranscript.metadata
-  //             ? currentTranscript.metadata.sampleRate
-  //             : defaultSampleRate
-  //         };
-
-  //         console.log('EDL - result 1', result);
-
-  //         return result;
-  //       }
-
-  //       return null;
-  //     })
-  //     .filter(el => {
-  //       return el !== null;
-  //     });
-  //   // adding ids to EDL
-  //   const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
-  //     (el, index) => {
-  //       el.id = index + 1;
-
-  //       return el;
-  //     }
-  //   );
-  //   edlSq.events.push(...programmeScriptPaperCutsWithId);
-
-  //   console.log('EDL Seq', edlSq);
-
-  //   return edlSq;
-  // };
-
-  // https://www.npmjs.com/package/downloadjs
-  // https://www.npmjs.com/package/edl_composer
-
   const handleExportEDL = async () => {
     updateFormData();
     toggleShowModal();
@@ -226,32 +190,7 @@ const ExportDropdown = (props) => {
   const handleExportADL = () => {
     updateFormData();
     toggleShowModal();
-    const edlSq = getSequenceJsonEDL();
-    if (edlSq.events.length === 0) {
-      alert('Cannot export empty paper edit ADL');
-
-      return;
-    }
-    const firstElement = edlSq.events[0];
-    const result = generateADL({
-      projectOriginator: 'Digital Paper Edit',
-      // TODO: it be good to change sequence for the ADL to be same schema
-      // as the one for EDL and FCPX - for now just adjusting
-      edits: edlSq.events.map(event => {
-        return {
-          start: event.startTime,
-          end: event.endTime,
-          clipName: event.clipName,
-          // TODO: could add a label if present
-          label: ''
-        };
-      }),
-      sampleRate: firstElement.sampleRate,
-      frameRate: firstElement.fps,
-      projectName: edlSq.title
-    });
-    console.log('ADL Result', result);
-    downloadjs(result, `${ title }.adl`, 'text/plain');
+    setExportFormat('ADL');
   };
 
   const handleExportFCPX = () => {
