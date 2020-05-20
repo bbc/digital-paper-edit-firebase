@@ -176,7 +176,7 @@ const ExportDropdown = (props) => {
 
           const exportOption = {
             fileName: mediaTitle,
-            srcFolderPath: ''
+            srcFolderPath: null
           };
 
           elementsTracker.elements.push(exportOption);

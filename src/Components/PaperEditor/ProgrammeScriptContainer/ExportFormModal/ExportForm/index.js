@@ -57,7 +57,7 @@ const ExportForm = (props) => {
 
     const filesClone = filesExportPath;
     filesClone.forEach((file) => {
-      if (file.scrFolderPath === '') {
+      if (!file.srcFolderPath) {
         file.srcFolderPath = `${ scriptExportPath }${ props.pathJoin }${ file.fileName }`;
       }
       setFilesExportPath(filesClone);
