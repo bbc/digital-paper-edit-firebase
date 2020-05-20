@@ -21,16 +21,17 @@ exports.onDeleteBucketObjUpdateFirestore = bucketTrigger.onDelete((obj) =>
   inventoryChecker.deleteHandler(admin, obj)
 );
 
-exports.onCreateAudioFirestoreUploadToAWS = functions.firestore
-  .document("apps/digital-paper-edit/users/{userId}/audio/{itemId}")
-  .onCreate((snap, context) =>
-    awsUploader.createHandler(snap, bucket, config.aws, context)
-  );
-
 const maxRuntimeOpts = {
   timeoutSeconds: 540, // 9 minutes
   memory: "2GB",
 };
+
+exports.onCreateAudioFirestoreUploadToAWS = functions
+  .runWith(maxRuntimeOpts)
+  .firestore.document("apps/digital-paper-edit/users/{userId}/audio/{itemId}")
+  .onCreate((snap, context) =>
+    awsUploader.createHandler(snap, bucket, config.aws, context)
+  );
 
 exports.onCreateFirestoreUploadStripAndUploadAudio = functions
   .runWith(maxRuntimeOpts)
@@ -41,6 +42,9 @@ exports.onCreateFirestoreUploadStripAndUploadAudio = functions
 
 const runSchedule = config.aws.api.transcriber.schedule || "every 60 minutes";
 
-exports.cronSTTJobChecker = functions.pubsub
-  .schedule(runSchedule)
-  .onRun((context) => sttChecker.createHandler(admin, config.aws.api.transcriber, context));
+exports.cronSTTJobChecker = functions
+  .runWith(maxRuntimeOpts)
+  .pubsub.schedule(runSchedule)
+  .onRun((context) =>
+    sttChecker.createHandler(admin, config.aws.api.transcriber, context)
+  );
