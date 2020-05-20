@@ -1,8 +1,7 @@
 /* eslint-disable no-undef */
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
-import Paragraph from '../Paragraphs/Paragraph';
 import SearchBar from '../SearchBar'; // move to same folder + rename to SearchTool
 import Collection from '../../../Firebase/Collection';
 import TranscriptMenu from './TranscriptMenu';
@@ -10,6 +9,8 @@ import getTimeFromUserWordsSelection from '../get-user-selection.js';
 import paragraphWithAnnotations from '../Paragraphs/add-annotations-to-words-in-paragraphs.js';
 import groupWordsInParagraphsBySpeakers from '../Paragraphs/group-words-by-speakers.js';
 import removePunctuation from '../../../../Util/remove-punctuation';
+
+const Paragraph = React.lazy(() => import('../Paragraphs/Paragraph'));
 
 const TranscriptTabContent = (props) => {
   const { transcriptId, projectId, title, firebase, media, transcript } = props;
@@ -156,7 +157,7 @@ const TranscriptTabContent = (props) => {
   }, [ isHighlighting, searchString ]);
 
   useEffect(() => {
-    const getParagraphs = () => {
+    const getAnnotatedParagraphs = () => {
       const groupedParagraphs = groupWordsInParagraphsBySpeakers(
         transcript.words,
         transcript.paragraphs
@@ -171,7 +172,7 @@ const TranscriptTabContent = (props) => {
       transcript.words &&
       annotations
     ) {
-      setParagraphs(getParagraphs(transcript));
+      setParagraphs(getAnnotatedParagraphs(transcript));
     }
 
     return () => {};
@@ -566,7 +567,12 @@ const TranscriptTabContent = (props) => {
           style={ { height: cardBodyHeight, overflow: 'scroll' } }
         >
           {highlights}
-          {paragraphs ? Paragraphs : null}
+          <Suspense fallback={
+            <div>Loading...</div>
+          }>
+            {paragraphs ? Paragraphs : null}
+          </Suspense>
+
         </Card.Body>
       </Card>
     </>

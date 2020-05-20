@@ -1,17 +1,15 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, Suspense } from 'react';
 import cuid from 'cuid';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import arrayMove from 'array-move';
-import { SortableContainer } from 'react-sortable-hoc';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
-import ProgrammeElements from '@bbc/digital-paper-edit-storybook/ProgrammeElements';
 
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
@@ -27,10 +25,12 @@ import {
 import {
   updateWordTimings,
   updateWordTimingsAfterInsert,
-  updateWordTimingsAfterDelete
+  updateWordTimingsAfterDelete,
 } from './reset-word-timings';
 
 import PropTypes from 'prop-types';
+
+const Article = React.lazy(() => import('./Article'));
 
 const ProgrammeScriptContainer = (props) => {
   const transcripts = props.transcripts;
@@ -42,10 +42,6 @@ const ProgrammeScriptContainer = (props) => {
   const [ title, setTitle ] = useState('');
   const [ resetPreview, setResetPreview ] = useState(false);
   const [ currentTime, setCurrentTime ] = useState();
-
-  const SortableList = SortableContainer(({ children }) => (
-    <ul style={ { listStyle: 'none', padding: '0px' } }>{children}</ul>
-  ));
 
   // Video Context Preview
   const [ width, setWidth ] = useState(150);
@@ -116,9 +112,7 @@ const ProgrammeScriptContainer = (props) => {
     });
 
     const getMediaUrl = async (item) => {
-      return await firebase.storage.storage
-        .ref(item.ref)
-        .getDownloadURL();
+      return await firebase.storage.storage.ref(item.ref).getDownloadURL();
     };
 
     const getPlaylist = async (els) => {
@@ -223,15 +217,18 @@ const ProgrammeScriptContainer = (props) => {
   const getTranscriptSelectionStartTime = (insertIndex) => {
     const prevElements = elements.slice(0, insertIndex);
 
-    const paperEdits = prevElements.filter((element) => element.type === 'paper-cut');
+    const paperEdits = prevElements.filter(
+      (element) => element.type === 'paper-cut'
+    );
 
-    const totalDuration = paperEdits.reduce((prevResult, paperEdit) => {
-      const paperEditDuration = paperEdit.end - paperEdit.start;
-      prevResult.startTime += paperEditDuration;
+    const totalDuration = paperEdits.reduce(
+      (prevResult, paperEdit) => {
+        const paperEditDuration = paperEdit.end - paperEdit.start;
+        prevResult.startTime += paperEditDuration;
 
-      return prevResult;
-    },
-    { startTime: 0 }
+        return prevResult;
+      },
+      { startTime: 0 }
     );
 
     return totalDuration;
@@ -240,7 +237,9 @@ const ProgrammeScriptContainer = (props) => {
   const formatSingleParagaph = (selection) => {
     console.log('Adding one paragraph...');
     const insertElementIndex = getInsertElementIndex();
-    const playlistStartTime = getTranscriptSelectionStartTime(insertElementIndex);
+    const playlistStartTime = getTranscriptSelectionStartTime(
+      insertElementIndex
+    );
     const paperCutDuration = selection.end - selection.start;
 
     const newElement = {
@@ -261,8 +260,9 @@ const ProgrammeScriptContainer = (props) => {
 
     // Recalcultates word timings to align with programme script playlist
     selectedWords.map((word, i) => {
-      const wordStartTime = (word.start - selection.start) + playlistStartTime.startTime;
-      const wordDuration = (word.end - word.start);
+      const wordStartTime =
+        word.start - selection.start + playlistStartTime.startTime;
+      const wordDuration = word.end - word.start;
       const wordEndTime = wordStartTime + wordDuration;
       const newWord = {
         index: i,
@@ -270,72 +270,82 @@ const ProgrammeScriptContainer = (props) => {
         end: wordEndTime,
         speaker: selection.speaker,
         text: word.text,
-        transcriptId: word.transcriptId
+        transcriptId: word.transcriptId,
       };
       newElement.words.push(newWord);
     });
 
     return newElement;
-
   };
 
   const formatMultipleParagraphs = (selection, insertElementIndex) => {
     console.log('Adding multiple paragraphs...');
-    const playlistStartTime = getTranscriptSelectionStartTime(insertElementIndex);
-    const paragraphSelections = divideWordsSelectionsIntoParagraphs(selection.words);
+    const playlistStartTime = getTranscriptSelectionStartTime(
+      insertElementIndex
+    );
+    const paragraphSelections = divideWordsSelectionsIntoParagraphs(
+      selection.words
+    );
 
-    const paperEditElements = paragraphSelections.reduce((prevResult, paragraph) => {
-      // Calculates start and end times in the programme script playlist
-      const paperCutStart = prevResult.newDuration;
-      const paperCutDuration = paragraph[paragraph.length - 1].end - paragraph[0].start;
-      const paperCutEnd = paperCutStart + paperCutDuration;
+    const paperEditElements = paragraphSelections.reduce(
+      (prevResult, paragraph) => {
+        // Calculates start and end times in the programme script playlist
+        const paperCutStart = prevResult.newDuration;
+        const paperCutDuration =
+          paragraph[paragraph.length - 1].end - paragraph[0].start;
+        const paperCutEnd = paperCutStart + paperCutDuration;
 
-      // Stores start and end times corresponding to the original media file and transcription
-      const transcriptStart = parseFloat(paragraph[0].start);
-      const transcriptEnd = parseFloat(paragraph[paragraph.length - 1].end);
+        // Stores start and end times corresponding to the original media file and transcription
+        const transcriptStart = parseFloat(paragraph[0].start);
+        const transcriptEnd = parseFloat(paragraph[paragraph.length - 1].end);
 
-      const paperCutSpeaker = paragraph[0].speaker;
-      const paperCutTranscriptId = paragraph[0].transcriptId;
+        const paperCutSpeaker = paragraph[0].speaker;
+        const paperCutTranscriptId = paragraph[0].transcriptId;
 
-      const newPaperCut = {
-        id: cuid(),
-        index: prevResult.index,
-        type: 'paper-cut',
-        start: transcriptStart,
-        end: transcriptEnd,
-        vcStart: paperCutStart,
-        vcEnd: paperCutEnd,
-        words: [],
-        speaker: paperCutSpeaker,
-        transcriptId: paperCutTranscriptId,
-        labelId: [],
-      };
-
-      // Recalcultates word timings to align with programme script playlist
-      paragraph.map((word, index) => {
-        const newStart = (word.start - transcriptStart) + paperCutStart;
-        const wordDuration = (word.end - word.start);
-        const newEnd = newStart + wordDuration;
-        const newWord = {
-          index: index,
-          start: newStart,
-          end: newEnd,
+        const newPaperCut = {
+          id: cuid(),
+          index: prevResult.index,
+          type: 'paper-cut',
+          start: transcriptStart,
+          end: transcriptEnd,
+          vcStart: paperCutStart,
+          vcEnd: paperCutEnd,
+          words: [],
           speaker: paperCutSpeaker,
-          text: word.text,
-          transcriptId: paperCutTranscriptId
+          transcriptId: paperCutTranscriptId,
+          labelId: [],
         };
-        newPaperCut.words.push(newWord);
-      });
 
-      prevResult.elements.push(newPaperCut);
-      prevResult.newDuration += paperCutDuration;
-      prevResult.index += 1;
+        // Recalcultates word timings to align with programme script playlist
+        paragraph.map((word, index) => {
+          const newStart = word.start - transcriptStart + paperCutStart;
+          const wordDuration = word.end - word.start;
+          const newEnd = newStart + wordDuration;
+          const newWord = {
+            index: index,
+            start: newStart,
+            end: newEnd,
+            speaker: paperCutSpeaker,
+            text: word.text,
+            transcriptId: paperCutTranscriptId,
+          };
+          newPaperCut.words.push(newWord);
+        });
 
-      return prevResult;
-    }, { elements: [], newDuration: playlistStartTime.startTime, index: elements.length - 1 });
+        prevResult.elements.push(newPaperCut);
+        prevResult.newDuration += paperCutDuration;
+        prevResult.index += 1;
+
+        return prevResult;
+      },
+      {
+        elements: [],
+        newDuration: playlistStartTime.startTime,
+        index: elements.length - 1,
+      }
+    );
 
     return paperEditElements;
-
   };
 
   const handleAddTranscriptSelectionToProgrammeScript = async () => {
@@ -347,14 +357,23 @@ const ProgrammeScriptContainer = (props) => {
 
     if (selection) {
       if (isOneParagraph(selection.words)) {
-        const newPaperCut = formatSingleParagaph(selection, elementsClone, insertElementIndex);
+        const newPaperCut = formatSingleParagaph(
+          selection,
+          elementsClone,
+          insertElementIndex
+        );
         elementsClone.splice(insertElementIndex, 0, newPaperCut);
 
         // Adjusts word timings for paper-cuts that come after the new element
-        updatedElements = updateWordTimingsAfterInsert(elementsClone, insertElementIndex);
-
+        updatedElements = updateWordTimingsAfterInsert(
+          elementsClone,
+          insertElementIndex
+        );
       } else {
-        const newPaperCuts = formatMultipleParagraphs(selection, insertElementIndex);
+        const newPaperCuts = formatMultipleParagraphs(
+          selection,
+          insertElementIndex
+        );
         elementsClone.splice(insertElementIndex, 0, ...newPaperCuts.elements);
 
         // Adjusts word timings for paper-cuts effected by the insert
@@ -371,7 +390,7 @@ const ProgrammeScriptContainer = (props) => {
     }
   };
 
-  const handleDoubleClickOnProgrammeScript = (e) => {
+  const handleDblClick = (e) => {
     console.log('Handling double click...');
     if (e.target.className === 'words') {
       const wordCurrentTime = e.target.dataset.start;
@@ -423,7 +442,11 @@ const ProgrammeScriptContainer = (props) => {
       <Card>
         <Card.Header ref={ previewCardRef }>
           {playlist ? (
-            <PreviewCanvas width={ width } playlist={ playlist } currentTime={ currentTime }/>
+            <PreviewCanvas
+              width={ width }
+              playlist={ playlist }
+              currentTime={ currentTime }
+            />
           ) : null}
         </Card.Header>
         <Card.Header>
@@ -452,16 +475,18 @@ const ProgrammeScriptContainer = (props) => {
           </Row>
         </Card.Header>
         <Card.Body>
-          <article
-            style={ { height: '60vh', overflow: 'scroll' } }
-            onDoubleClick={ handleDoubleClickOnProgrammeScript }
-          >
+          <Suspense fallback={
+            <div>Loading...</div>
+          }>
             {elements ? (
-              <SortableList useDragHandle onSortEnd={ onSortEnd }>
-                {ProgrammeElements(elements, handleEdit, handleDelete)}
-              </SortableList>
-            ) : null}
-          </article>
+              <Article
+                elements={ elements }
+                handleDblClick={ handleDblClick }
+                onSortEnd={ onSortEnd }
+                handleEdit={ handleEdit }
+                handleDelete={ handleDelete } />) : null
+            }
+          </Suspense>
         </Card.Body>
       </Card>
     </>
