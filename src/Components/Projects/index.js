@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -9,7 +10,7 @@ import Collection from '../Firebase/Collection';
 import { withAuthorization } from '../Session';
 import { PROJECTS } from '../../constants/routes';
 
-const Projects = props => {
+const Projects = (props) => {
   const [ uid, setUid ] = useState();
   const [ loading, setIsLoading ] = useState(false);
   const [ items, setItems ] = useState([]);
@@ -26,48 +27,45 @@ const Projects = props => {
       label: 'Default',
       color: 'yellow',
       value: 'yellow',
-      description: ''
+      description: '',
     };
 
     const labelDocRef = await LabelsCollection.postItem(defaultLabel);
 
     labelDocRef.update({
-      id: labelDocRef.id
+      id: labelDocRef.id,
     });
   };
 
-  const createProject = async item => {
-    item.users = [ uid ];
+  const createProject = async (item) => {
     const docRef = await collection.postItem(item);
-
-    item.url = `/projects/${ docRef.id }`;
     docRef.update({
-      url: item.url
+      url: `/projects/${ docRef.id }`,
     });
-
-    item.display = true;
-
     createDefaultLabel(docRef.id);
 
     return item;
   };
 
-  const updateProject = async (id, item) => {
-    await collection.putItem(id, item);
-    item.display = true;
-
-    return item;
+  const updateProject = (id, item) => {
+    collection.putItem(id, item);
   };
 
-  const handleSave = async item => {
+  const handleSave = async (item) => {
+    item.display = true;
+
     if (item.id) {
-      return await updateProject(item.id, item);
+      updateProject(item.id, item);
     } else {
-      return await createProject(item);
+      item.users = [ uid ];
+      item.url = '';
+
+      createProject(item);
+      setItems(() => [ ...items, item ]);
     }
   };
 
-  const deleteProject = async id => {
+  const deleteProject = async (id) => {
     try {
       await collection.deleteItem(id);
     } catch (e) {
@@ -75,15 +73,16 @@ const Projects = props => {
     }
   };
 
-  const handleDelete = id => {
+  const handleDelete = (id) => {
     deleteProject(id);
   };
 
   useEffect(() => {
     const getUserProjects = async () => {
+      setIsLoading(true);
       try {
-        collection.userRef(uid).onSnapshot(snapshot => {
-          const projects = snapshot.docs.map(doc => {
+        collection.userRef(uid).onSnapshot((snapshot) => {
+          const projects = snapshot.docs.map((doc) => {
             return { ...doc.data(), id: doc.id, display: true };
           });
           setItems(projects);
@@ -94,7 +93,7 @@ const Projects = props => {
     };
 
     const authListener = props.firebase.onAuthUserListener(
-      authUser => {
+      (authUser) => {
         if (authUser) {
           setUid(authUser.uid);
         }
@@ -104,7 +103,6 @@ const Projects = props => {
 
     if (uid && !loading) {
       getUserProjects(uid);
-      setIsLoading(true);
     }
 
     return () => {
@@ -115,8 +113,8 @@ const Projects = props => {
   const breadcrumbItems = [
     {
       name: `${ type }s`,
-      link: `/${ type }s`
-    }
+      link: `/${ type }s`,
+    },
   ];
 
   return (
@@ -148,5 +146,11 @@ const Projects = props => {
   );
 };
 
-const condition = authUser => !!authUser;
+Projects.propTypes = {
+  firebase: PropTypes.shape({
+    onAuthUserListener: PropTypes.func
+  })
+};
+
+const condition = (authUser) => !!authUser;
 export default withAuthorization(condition)(Projects);

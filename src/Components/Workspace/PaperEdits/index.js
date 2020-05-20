@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 
-const PaperEdits = props => {
+const PaperEdits = (props) => {
   const TYPE = 'Paper Edit';
 
   const PaperEditsCollection = new Collection(
@@ -15,15 +15,11 @@ const PaperEdits = props => {
   const [ items, setItems ] = useState([]);
   const [ loading, setIsLoading ] = useState(false);
 
-  const genUrl = id => {
-    return `/projects/${ props.projectId }/paperedits/${ id }`;
-  };
-
   useEffect(() => {
     const getPaperEdits = async () => {
       try {
-        PaperEditsCollection.collectionRef.onSnapshot(snapshot => {
-          const paperEdits = snapshot.docs.map(doc => {
+        PaperEditsCollection.collectionRef.onSnapshot((snapshot) => {
+          const paperEdits = snapshot.docs.map((doc) => {
             return { ...doc.data(), id: doc.id, display: true };
           });
           setItems(paperEdits);
@@ -41,34 +37,36 @@ const PaperEdits = props => {
     return () => {};
   }, [ PaperEditsCollection, loading, items, props.projectId ]);
 
-  const createPaperEdit = async item => {
-    const paperEdit = { ...item, projectId: props.projectId };
-    const docRef = await PaperEditsCollection.postItem(paperEdit);
+  const createPaperEdit = async (item) => {
+    const docRef = await PaperEditsCollection.postItem(item);
 
     docRef.update({
       id: docRef.id,
-      url: genUrl(docRef.id)
+      url: `/projects/${ props.projectId }/paperedits/${ docRef.id }`,
     });
-
-    item.display = true;
 
     return item;
   };
 
-  const updatePaperEdit = async (id, item) => {
-    await PaperEditsCollection.putItem(id, item);
-    item.display = true;
+  const updatePaperEdit = (id, item) => {
+    PaperEditsCollection.putItem(id, item);
   };
 
-  const handleSave = async item => {
+  const handleSave = async (item) => {
+    item.display = true;
+
     if (item.id) {
-      return await updatePaperEdit(item.id, item);
+      updatePaperEdit(item.id, item);
     } else {
-      return await createPaperEdit(item);
+      item.url = '';
+      item.projectId = props.projectId;
+      createPaperEdit(item);
+
+      setItems(() => [ ...items, item ]);
     }
   };
 
-  const deletePaperEdit = async id => {
+  const deletePaperEdit = async (id) => {
     try {
       await PaperEditsCollection.deleteItem(id);
     } catch (e) {
@@ -76,7 +74,7 @@ const PaperEdits = props => {
     }
   };
 
-  const handleDelete = id => {
+  const handleDelete = (id) => {
     deletePaperEdit(id);
   };
 
@@ -91,8 +89,9 @@ const PaperEdits = props => {
 };
 
 PaperEdits.propTypes = {
+  firebase: PropTypes.any,
   projectId: PropTypes.any
 };
 
-const condition = authUser => !!authUser;
+const condition = (authUser) => !!authUser;
 export default withAuthorization(condition)(PaperEdits);
