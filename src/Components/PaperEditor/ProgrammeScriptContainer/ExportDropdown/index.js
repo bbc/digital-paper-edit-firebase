@@ -40,6 +40,7 @@ const ExportDropdown = (props) => {
   const [ showModal, setShowModal ] = useState(false);
   const [ formData, setFormData ] = useState(initialFormState);
   const [ exportPath, setExportPath ] = useState('');
+  const [ filePaths, setFilePaths ] = useState(null);
   const [ exportFormat, setExportFormat ] = useState('');
 
   // /**
@@ -50,8 +51,7 @@ const ExportDropdown = (props) => {
     return tr.id === element.transcriptId;
   });
 
-  const getSequenceJsonEDL = (inputExportPath) => {
-    console.log('get seq json edl clip name: ', exportPath);
+  const getSequenceJsonEDL = (filesExport) => {
     const edlSq = {
       title: title,
       events: []
@@ -64,13 +64,19 @@ const ExportDropdown = (props) => {
 
           const currentTranscript = getCurrentTranscript(element);
 
+          const currentFile = filesExport.find((file) => {
+            return file.fileName === currentTranscript.title;
+          });
+
+          const currentFileExportPath = currentFile.srcFolderPath;
+
           const result = {
             startTime: element.start,
             endTime: element.end,
             reelName: currentTranscript.metadata
               ? currentTranscript.metadata.reelName
               : defaultReelName,
-            clipName: `${ inputExportPath }/${ currentTranscript.title }`,
+            clipName: currentFileExportPath,
             // TODO: frameRate should be pulled from the clips in the sequence
             // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
             // but again frameRate should not be hard coded
@@ -108,15 +114,17 @@ const ExportDropdown = (props) => {
   };
 
   const handleSaveForm = item => {
-    const inputExportPath = item.exportPath;
-    setExportPath(exportPath);
+    const scriptExport = item.exportPath;
+    const filesExport = item.files;
+    setExportPath(scriptExport);
+    setFilePaths(filesExport);
 
     if (exportFormat === 'EDL') {
-      const edlSq = getSequenceJsonEDL(inputExportPath);
+      const edlSq = getSequenceJsonEDL(filesExport);
       const edl = new EDL(edlSq);
       downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
     } else if (exportFormat === 'ADL') {
-      const edlSq = getSequenceJsonEDL(inputExportPath);
+      const edlSq = getSequenceJsonEDL(filesExport);
       console.log('edlSeq: : ', edlSq );
       if (edlSq.events.length === 0) {
         alert('Cannot export empty paper edit ADL');
@@ -211,7 +219,6 @@ const ExportDropdown = (props) => {
     const programmeScriptPaperCuts = elements
       .map(element => {
         if (element.type === 'paper-cut') {
-          console.log('paper-cut::', element);
           // Get clipName for current transcript
           const currentTranscript = getCurrentTranscript(element);
 
@@ -254,7 +261,6 @@ const ExportDropdown = (props) => {
       }
     );
     edlSq.events.push(...programmeScriptPaperCutsWithId);
-    console.log(edlSq);
 
     return edlSq;
   };
@@ -262,7 +268,6 @@ const ExportDropdown = (props) => {
   const programmeScriptJsonToText = edlsqJson => {
     const edlTitle = `# ${ edlsqJson.title }\n\n`;
     const body = edlsqJson.events.map(event => {
-      console.log('EDL events', event);
       if (event.type === 'title') {
         return `## ${ event.text }`;
       } else if (event.type === 'voice-over') {
