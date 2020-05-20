@@ -113,46 +113,53 @@ const ExportDropdown = (props) => {
     return edlSq;
   };
 
+  const getEDL = (edlSq) => {
+    const edl = new EDL(edlSq);
+    downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
+  };
+
+  const getADL = (edlSq) => {
+    console.log('edlSeq: : ', edlSq);
+    if (edlSq.events.length === 0) {
+      alert('Cannot export empty paper edit ADL');
+
+      return;
+    }
+    const firstElement = edlSq.events[0];
+    const result = generateADL({
+      projectOriginator: 'Digital Paper Edit',
+      // TODO: it be good to change sequence for the ADL to be same schema
+      // as the one for EDL and FCPX - for now just adjusting
+      edits: edlSq.events.map(event => {
+        console.log('ADL event: : ', event);
+
+        return {
+          start: event.startTime,
+          end: event.endTime,
+          clipName: event.clipName,
+          // TODO: could add a label if present
+          label: ''
+        };
+      }),
+      sampleRate: firstElement.sampleRate,
+      frameRate: firstElement.fps,
+      projectName: edlSq.title
+    });
+    console.log('ADL Result', result);
+    downloadjs(result, `${ title }.adl`, 'text/plain');
+  };
+
   const handleSaveForm = item => {
     const scriptExport = item.exportPath;
     const filesExport = item.files;
     setExportPath(scriptExport);
     setFilePaths(filesExport);
+    const edlSq = getSequenceJsonEDL(filesExport);
 
     if (exportFormat === 'EDL') {
-      const edlSq = getSequenceJsonEDL(filesExport);
-      const edl = new EDL(edlSq);
-      downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
+      getEDL(edlSq);
     } else if (exportFormat === 'ADL') {
-      const edlSq = getSequenceJsonEDL(filesExport);
-      console.log('edlSeq: : ', edlSq );
-      if (edlSq.events.length === 0) {
-        alert('Cannot export empty paper edit ADL');
-
-        return;
-      }
-      const firstElement = edlSq.events[0];
-      const result = generateADL({
-        projectOriginator: 'Digital Paper Edit',
-        // TODO: it be good to change sequence for the ADL to be same schema
-        // as the one for EDL and FCPX - for now just adjusting
-        edits: edlSq.events.map(event => {
-          console.log('ADL event: : ', event);
-
-          return {
-            start: event.startTime,
-            end: event.endTime,
-            clipName: event.clipName,
-            // TODO: could add a label if present
-            label: ''
-          };
-        }),
-        sampleRate: firstElement.sampleRate,
-        frameRate: firstElement.fps,
-        projectName: edlSq.title
-      });
-      console.log('ADL Result', result);
-      downloadjs(result, `${ title }.adl`, 'text/plain');
+      getADL(edlSq);
     }
 
     setShowModal(false);
