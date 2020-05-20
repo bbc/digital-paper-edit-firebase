@@ -9,7 +9,6 @@ import Col from 'react-bootstrap/Col';
 import Modal from 'react-bootstrap/Modal';
 
 const ExportForm = (props) => {
-  console.log('Export form props: : : ', props);
   const [ scriptExportPath, setScriptExportPath ] = useState(null); // Where ADL / EDL gets saved
   const [ isValidated, setIsValidated ] = useState(false);
   const [ filesExportPath, setFilesExportPath ] = useState(null); // Where paths for files get saved
@@ -53,8 +52,6 @@ const ExportForm = (props) => {
     event.preventDefault();
     event.stopPropagation();
 
-    console.log('form: : : ', form);
-
     const formIsValid = form.checkValidity();
     setIsValidated(true);
 
@@ -79,9 +76,7 @@ const ExportForm = (props) => {
   };
 
   const updateFilesExportPath = (e, fileName) => {
-    console.log(e);
     const exportPathClone = filesExportPath;
-    console.log('ep clone: ', exportPathClone);
     const itemToChange = exportPathClone.find((obj) => {
       return obj.fileName === fileName;
     });
@@ -112,7 +107,6 @@ const ExportForm = (props) => {
 
   const EditableFilesInputs =
     props.items.map((item) => {
-      console.log('item: : : ', item);
       const itemPath = `${ scriptExportPath }${ props.pathJoin }${ item.fileName }`;
 
       return <>
