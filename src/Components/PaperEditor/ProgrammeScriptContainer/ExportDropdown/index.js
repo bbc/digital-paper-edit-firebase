@@ -37,9 +37,12 @@ const ExportDropdown = (props) => {
 
   const [ showModal, setShowModal ] = useState(false);
   const [ formData, setFormData ] = useState(initialFormState);
+  const [ exportFormat, setExportFormat ] = useState('');
+
+  // These aren't updating in enough time for their values to be used in the functions they're
+  // needed in, which is weird!
   const [ exportPath, setExportPath ] = useState('');
   const [ filePaths, setFilePaths ] = useState(null);
-  const [ exportFormat, setExportFormat ] = useState('');
 
   // /**
   //  * Helper function to create json EDL for other EDL/ADL/FPCX export
