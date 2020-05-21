@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 
 /* ExportFormModal is not a real library yet, we would need to
@@ -18,8 +18,6 @@ import {
   faFileExport
 } from '@fortawesome/free-solid-svg-icons';
 import timecodes from 'node-timecodes';
-import ExportFormModal from '../ExportFormModal';
-import { createEventHandler } from 'recompose';
 
 const ExportDropdown = (props) => {
 
