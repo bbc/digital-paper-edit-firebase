@@ -475,18 +475,17 @@ const ProgrammeScriptContainer = (props) => {
           </Row>
         </Card.Header>
         <Card.Body>
-          <Suspense fallback={
-            <div>Loading...</div>
-          }>
-            {elements ? (
+          {elements ? (
+            <Suspense fallback={ <div>Loading...</div> }>
               <Article
                 elements={ elements }
                 handleDblClick={ handleDblClick }
                 onSortEnd={ onSortEnd }
                 handleEdit={ handleEdit }
-                handleDelete={ handleDelete } />) : null
-            }
-          </Suspense>
+                handleDelete={ handleDelete }
+              />
+            </Suspense>
+          ) : null}
         </Card.Body>
       </Card>
     </>

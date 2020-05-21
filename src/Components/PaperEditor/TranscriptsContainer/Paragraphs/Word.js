@@ -3,30 +3,13 @@ import React from 'react';
 import removePunctuation from '../../../../Util/remove-punctuation';
 
 const Word = (props) => {
-  const generatePreviousTimes = (start) => {
-    let prevTimes = '';
-
-    for (let i = 0; i < start; i++) {
-      prevTimes += `${ i } `;
-    }
-
-    if (start % 1 > 0) {
-      // Find the closest quarter-second to the current time, for more dynamic results
-      const dec = Math.floor((start % 1) * 4.0) / 4.0;
-      prevTimes += ` ${ Math.floor(start) + dec }`;
-    }
-
-    return prevTimes;
-  };
   const { transcriptId, speaker, word, handleKeyPress } = props;
 
   return (
     <span
       title={ `start:${ word.start } - end:${ word.end }` }
-      data-prev-times={ generatePreviousTimes(word.start) }
       className={ [
         'words',
-        // , styles.highlightedWord
       ].join(' ') }
       data-start={ word.start }
       data-text={ removePunctuation(word.text) }

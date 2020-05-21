@@ -1,5 +1,5 @@
 import zlib from 'zlib';
-
+import util from 'util';
 const decompress = (compressed) => {
   console.time('decompressed');
   const buff = Buffer.from(compressed.toBase64(), 'base64');
@@ -10,6 +10,18 @@ const decompress = (compressed) => {
   return decompressed;
 };
 
+const gunzip = util.promisify(zlib.gunzip);
+
+const decompressAsync = async (compressed) => {
+  console.time('decompressed');
+  const buff = Buffer.from(compressed.toBase64(), 'base64');
+  const dbuff = await gunzip(buff);
+  const decomp = JSON.parse(dbuff.toString());
+  console.timeEnd('decompressed');
+
+  return decomp;
+};
+
 const compress = (decompressed) => {
   console.time('compressed');
   const compressed = zlib.gzipSync(JSON.stringify(decompressed));
@@ -18,4 +30,4 @@ const compress = (decompressed) => {
   return compressed;
 };
 
-export { decompress, compress };
+export { decompress, compress, decompressAsync };

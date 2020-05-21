@@ -4,21 +4,21 @@ import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import SearchBar from '../SearchBar'; // move to same folder + rename to SearchTool
 import Collection from '../../../Firebase/Collection';
-import TranscriptMenu from './TranscriptMenu';
+import TranscriptMenu from '../TranscriptMenu';
 import getTimeFromUserWordsSelection from '../get-user-selection.js';
 import paragraphWithAnnotations from '../Paragraphs/add-annotations-to-words-in-paragraphs.js';
 import groupWordsInParagraphsBySpeakers from '../Paragraphs/group-words-by-speakers.js';
 import removePunctuation from '../../../../Util/remove-punctuation';
+import { decompressAsync } from '../../../../Util/gzip';
 
-const Paragraph = React.lazy(() => import('../Paragraphs/Paragraph'));
+const Paragraphs = React.lazy(() => import('../Paragraphs'));
 
 const TranscriptTabContent = (props) => {
-  const { transcriptId, projectId, title, firebase, media, transcript } = props;
+  const { transcriptId, projectId, title, firebase, media } = props;
 
   // media
   const videoRef = useRef();
   const [ url, setUrl ] = useState();
-  const [ currentTime, setCurrentTime ] = useState();
   const mediaType = media ? media.type : '';
   const mediaRef = media ? media.ref : '';
 
@@ -34,14 +34,19 @@ const TranscriptTabContent = (props) => {
 
   // search display
   const [ paragraphOnly, setParagraphOnly ] = useState(true);
-  const [ paragraphs, setParagraphs ] = useState([]);
+  const [ paragraphs, setParagraphs ] = useState();
   const [ displayParagraphs, setDisplayParagraphs ] = useState([]);
   const [ isSearchResults, setIsSearchResults ] = useState([]);
+
+  const [ annotatedParagraphs, setAnnotatedParagraphs ] = useState();
+  const [ processingParagraphs, setProcessingParagraphs ] = useState(false);
 
   // highlight
   const [ paragraphCSS, setParagraphsCSS ] = useState('');
   const [ searchHighlightCSS, setSearchHighlightCSS ] = useState('');
   const [ isHighlighting, setIsHighlighting ] = useState(false);
+
+  const [ words, setWords ] = useState();
 
   const LabelsCollection = new Collection(
     firebase,
@@ -76,6 +81,27 @@ const TranscriptTabContent = (props) => {
   }, [ LabelsCollection.collectionRef, labels ]);
 
   useEffect(() => {
+    const getDecompressedWordsParas = async (wordsc, paragraphsc) => {
+      const wordsdc = await decompressAsync(wordsc);
+      const paragraphsdc = await decompressAsync(paragraphsc);
+      setWords(wordsdc);
+      setParagraphs(paragraphsdc);
+    };
+    /* After migrating to compressed, we should remove the if/else,
+              and rename wordsdc to words, paragraphsdc to paragraphs
+              as we will not need it.
+              */
+    if (props.wordsc && props.paragraphsc) {
+      getDecompressedWordsParas(props.wordsc, props.paragraphsc);
+    } else {
+      setWords(props.words);
+      setParagraphs(props.paragraphs);
+    }
+
+    return () => {};
+  }, [ props.paragraphs, props.words, props.wordsc, props.paragraphsc ]);
+
+  useEffect(() => {
     const getAnnotations = async () => {
       try {
         AnnotationsCollection.collectionRef.onSnapshot((snapshot) => {
@@ -98,6 +124,23 @@ const TranscriptTabContent = (props) => {
   }, [ AnnotationsCollection.collectionRef, annotations ]);
 
   useEffect(() => {
+    const getAnnotatedParagraphs = () => {
+      setProcessingParagraphs(true);
+      const groupedParagraphs = groupWordsInParagraphsBySpeakers(
+        words,
+        paragraphs
+      );
+      setAnnotatedParagraphs(paragraphWithAnnotations(groupedParagraphs, annotations));
+    };
+
+    if (paragraphs && words && annotations && !processingParagraphs) {
+      getAnnotatedParagraphs();
+    }
+
+    return () => {};
+  }, [ annotations, paragraphs, words, processingParagraphs ]);
+
+  useEffect(() => {
     const getUrl = async () => {
       const dlUrl = await firebase.storage.storage
         .ref(mediaRef)
@@ -111,10 +154,10 @@ const TranscriptTabContent = (props) => {
   }, [ projectId, transcriptId, firebase.storage, mediaRef, url ]);
 
   useEffect(() => {
-    const highlightWords = (words) => {
-      const dataParagraphText = words.join(' ');
+    const highlightWords = (wordsToHighlight) => {
+      const dataParagraphText = wordsToHighlight.join(' ');
 
-      const css = words.reduce(
+      const css = wordsToHighlight.reduce(
         (res, word) => {
           res.paragraphs.push(
             `.paragraph[data-paragraph-text*="${ dataParagraphText }"] > div > span.words[data-text="${ word }"]`
@@ -138,12 +181,12 @@ const TranscriptTabContent = (props) => {
     if (searchString) {
       if (!isHighlighting) {
         setIsHighlighting(true);
-        const words = searchString
+        const wordsToHighlight = searchString
           .toLowerCase()
           .trim()
           .split(' ')
           .map((w) => w.trim());
-        const css = highlightWords(words);
+        const css = highlightWords(wordsToHighlight);
         setParagraphsCSS(css.paragraphs);
         setSearchHighlightCSS(css.search);
         setIsHighlighting(false);
@@ -157,30 +200,8 @@ const TranscriptTabContent = (props) => {
   }, [ isHighlighting, searchString ]);
 
   useEffect(() => {
-    const getAnnotatedParagraphs = () => {
-      const groupedParagraphs = groupWordsInParagraphsBySpeakers(
-        transcript.words,
-        transcript.paragraphs
-      );
-
-      return paragraphWithAnnotations(groupedParagraphs, annotations);
-    };
-
-    if (
-      transcript &&
-      transcript.paragraphs &&
-      transcript.words &&
-      annotations
-    ) {
-      setParagraphs(getAnnotatedParagraphs(transcript));
-    }
-
-    return () => {};
-  }, [ annotations, transcript ]);
-
-  useEffect(() => {
     const getSpeakerLabels = () => {
-      const speakerSet = transcript.paragraphs.reduce((uniqueSpeakers, p) => {
+      const speakerSet = annotatedParagraphs.reduce((uniqueSpeakers, p) => {
         uniqueSpeakers.add(p.speaker);
 
         return uniqueSpeakers;
@@ -192,12 +213,12 @@ const TranscriptTabContent = (props) => {
       }));
     };
 
-    if (transcript && transcript.paragraphs) {
-      setSpeakers(getSpeakerLabels(transcript.paragraphs));
+    if (annotatedParagraphs) {
+      setSpeakers(getSpeakerLabels(annotatedParagraphs));
     }
 
     return () => {};
-  }, [ transcript ]);
+  }, [ annotatedParagraphs ]);
 
   useEffect(() => {
     if (
@@ -244,16 +265,12 @@ const TranscriptTabContent = (props) => {
     };
 
     const isParagraphSearchResult = (paragraph) => {
-      const wordsAnnotation = paragraph.words.find(w => w.hasOwnProperty('annotation'));
+      const wordsAnnotation = paragraph.words.find((w) =>
+        w.hasOwnProperty('annotation')
+      );
       const labelId = wordsAnnotation ? wordsAnnotation.annotation.labelId : '';
 
-      if (
-        isSearchResult(
-          paragraph.text,
-          paragraph.speaker,
-          labelId
-        )
-      ) {
+      if (isSearchResult(paragraph.text, paragraph.speaker, labelId)) {
         return true;
       }
 
@@ -261,20 +278,21 @@ const TranscriptTabContent = (props) => {
     };
 
     const setAllDisplays = (display) => {
-      const displayAllParagraphs = paragraphs.map((p) => display);
+      const displayAllParagraphs = annotatedParagraphs.map((p) => display);
       setDisplayParagraphs(displayAllParagraphs);
     };
+
     const setAllSearchResults = (searchResult) => {
-      const searchResults = paragraphs.map((p) => searchResult);
+      const searchResults = annotatedParagraphs.map((p) => searchResult);
       setIsSearchResults(searchResults);
     };
 
-    if (paragraphs) {
+    if (annotatedParagraphs) {
       if (paragraphOnly) {
         // don't style borders
         setAllSearchResults(false);
         if (hasSearch) {
-          const foundParagraphs = paragraphs.map((p) =>
+          const foundParagraphs = annotatedParagraphs.map((p) =>
             isParagraphSearchResult(p)
           );
           setDisplayParagraphs(foundParagraphs);
@@ -285,7 +303,7 @@ const TranscriptTabContent = (props) => {
         // display all with styled borders for found paragraphs
         setAllDisplays(true);
         if (hasSearch) {
-          const foundParagraphs = paragraphs.map((p) =>
+          const foundParagraphs = annotatedParagraphs.map((p) =>
             isParagraphSearchResult(p)
           );
           setIsSearchResults(foundParagraphs);
@@ -293,15 +311,13 @@ const TranscriptTabContent = (props) => {
           setAllSearchResults(false);
         }
       }
-    } else {
-      setAllDisplays(true);
     }
 
     return () => {};
   }, [
     hasSearch,
     paragraphOnly,
-    paragraphs,
+    annotatedParagraphs,
     searchString,
     selectedLabels,
     selectedSpeakers,
@@ -442,20 +458,6 @@ const TranscriptTabContent = (props) => {
     setLabels(tempLabels);
   };
 
-  const unplayedColor = 'grey';
-
-  // Time to the nearest half second
-  const time = Math.round(currentTime * 4.0) / 4.0;
-  const highlights = (
-    <style scoped>
-      {`span.words[data-prev-times~="${ Math.floor(
-        time
-      ) }"][data-transcript-id="${
-        TranscriptTabContent.transcriptId
-      }"] { color: ${ unplayedColor } }`}
-    </style>
-  );
-
   const cardBodyHeight = mediaType.startsWith('audio') ? '100vh' : '60vh';
 
   let mediaElement;
@@ -466,7 +468,6 @@ const TranscriptTabContent = (props) => {
         src={ url }
         type={ mediaType }
         ref={ videoRef }
-        onTimeUpdate={ (e) => setCurrentTime(e.target.currentTime) }
         style={ {
           width: '100%',
           backgroundColor: 'black',
@@ -480,7 +481,6 @@ const TranscriptTabContent = (props) => {
         src={ url }
         type={ mediaType }
         ref={ videoRef }
-        onTimeUpdate={ (e) => setCurrentTime(e.target.currentTime) }
         style={ {
           width: '100%',
           backgroundColor: 'black',
@@ -489,30 +489,6 @@ const TranscriptTabContent = (props) => {
       />
     );
   }
-
-  const getParagraphEl = (paragraph, isSearchResult) => {
-    /**
-     * Create a Paragraph containing words, with or without annotation (overlay)
-     */
-    return (
-      <Paragraph
-        transcriptId={ transcriptId }
-        paragraph={ paragraph }
-        labels={ labels }
-        isSearchResult={ isSearchResult }
-        handleKeyPress={ handleKeyPress }
-        handleKeyDownTimecodes={ handleKeyDownTimecodes }
-        handleDeleteAnnotation={ handleDeleteAnnotation }
-        handleEditAnnotation={ handleEditAnnotation }
-      />
-    );
-  };
-
-  const Paragraphs = paragraphs
-    .filter((paragraph, displayIndex) => displayParagraphs[displayIndex])
-    .map((paragraph, searchResultIndex) =>
-      getParagraphEl(paragraph, isSearchResults[searchResultIndex])
-    );
 
   return (
     <>
@@ -566,13 +542,19 @@ const TranscriptTabContent = (props) => {
           onClick={ handleTimecodeClick }
           style={ { height: cardBodyHeight, overflow: 'scroll' } }
         >
-          {highlights}
-          <Suspense fallback={
-            <div>Loading...</div>
-          }>
-            {paragraphs ? Paragraphs : null}
+          <Suspense fallback={ <div>Loading...</div> }>
+            {annotatedParagraphs ? <Paragraphs
+              transcriptId={ transcriptId }
+              paragraphs={ annotatedParagraphs }
+              labels={ labels }
+              isSearchResults={ isSearchResults }
+              handleKeyPress={ handleKeyPress }
+              displayParagraphs={ displayParagraphs }
+              handleKeyDownTimecodes={ handleKeyDownTimecodes }
+              handleDeleteAnnotation={ handleDeleteAnnotation }
+              handleEditAnnotation={ handleEditAnnotation }
+            /> : null}
           </Suspense>
-
         </Card.Body>
       </Card>
     </>
@@ -588,16 +570,16 @@ TranscriptTabContent.propTypes = {
     }),
   }),
   media: PropTypes.shape({
-    ref: PropTypes.string,
-    type: PropTypes.string,
+    ref: PropTypes.any,
+    type: PropTypes.any,
   }),
+  paragraphs: PropTypes.any,
+  paragraphsc: PropTypes.any,
   projectId: PropTypes.any,
   title: PropTypes.any,
-  transcript: PropTypes.shape({
-    paragraphs: PropTypes.array,
-    words: PropTypes.array
-  }),
   transcriptId: PropTypes.any,
+  words: PropTypes.any,
+  wordsc: PropTypes.any,
 };
 
-export default TranscriptTabContent;
+export default React.memo(TranscriptTabContent);

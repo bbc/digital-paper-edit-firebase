@@ -84,20 +84,42 @@ const findWordsInParagraph = (paragraph, words) =>
     (word) => word.start >= paragraph.start && word.end <= paragraph.end
   );
 
+const findWordsOutsideOfParagraphs = (paragraph, words) =>
+  words.filter(
+    (word) => word.start < paragraph.start || word.end > paragraph.end
+  );
+
+const genParagraph = (speaker, wordsInParagraph) => ({
+  speaker: speaker,
+  text: wordsInParagraph.map((w) => w.text).join(' '),
+  words: wordsInParagraph,
+});
+
 const groupWordsInParagraphsBySpeakers = (words, paragraphs) => {
-  return paragraphs.reduce((newParagraphs, paragraph) => {
-    const newParagraph = { speaker: '', text: '', words: [] };
-    const wordsInParagraph = findWordsInParagraph(paragraph, words);
+  const { newParagraphs } = paragraphs.reduce(
+    (results, paragraph) => {
+      const wordsInParagraph = findWordsInParagraph(
+        paragraph,
+        results.newWords
+      );
 
-    if (wordsInParagraph && wordsInParagraph.length > 0) {
-      newParagraph.speaker = paragraph.speaker;
-      newParagraph.text = wordsInParagraph.map((w) => w.text).join(' ');
-      newParagraph.words = wordsInParagraph;
-      newParagraphs.push(newParagraph);
-    }
+      // optimisation to reduce array size to traverse
+      results.newWords = findWordsOutsideOfParagraphs(
+        paragraph,
+        results.newWords
+      );
 
-    return newParagraphs;
-  }, []);
+      if (wordsInParagraph && wordsInParagraph.length > 0) {
+        const newParagraph = genParagraph(paragraph.speaker, wordsInParagraph);
+        results.newParagraphs.push(newParagraph);
+      }
+
+      return results;
+    },
+    { newParagraphs: [], newWords: words }
+  );
+
+  return newParagraphs;
 };
 
 export default groupWordsInParagraphsBySpeakers;

@@ -3,65 +3,36 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Nav from 'react-bootstrap/Nav';
 import Tab from 'react-bootstrap/Tab';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faClock,
-  faExclamationTriangle,
-} from '@fortawesome/free-solid-svg-icons';
-import PropTypes from 'prop-types';
-import cuid from 'cuid';
 
-import TranscriptTabContent from './TranscriptTabContent';
+import PropTypes from 'prop-types';
+
 import { withAuthorization } from '../../Session';
+import TranscriptNavItem from './TranscriptNavItem';
+import TranscriptTabPane from './TranscriptTabPane';
 
 const TranscriptsContainer = ({ transcripts, projectId, firebase }) => {
-  const getStatusIcon = (status) => {
-    if (status === 'in-progress') {
-      return <FontAwesomeIcon icon={ faClock } />;
-    } else if (status === 'error') {
-      return <FontAwesomeIcon icon={ faExclamationTriangle } />;
-    } else {
-      return '';
-    }
-  };
-
-  const getTranscriptNav = (transcript) => {
-    return (
-      <Nav.Item key={ cuid() }>
-        <Nav.Link
-          disabled={ transcript.status !== 'done' ? true : false }
-          eventKey={ transcript.id }
-        >
-          {getStatusIcon(transcript.status)}
-          {`  ${ transcript.title }`}
-        </Nav.Link>
-      </Nav.Item>
-    );
-  };
-
-  const getTranscriptTabContents = (transcript) => {
-    const { id, paragraphs, words, media, title } = transcript;
-
-    return (
-      <Tab.Pane key={ cuid() } eventKey={ id }>
-        <TranscriptTabContent
-          projectId={ projectId }
-          transcriptId={ id }
-          title={ title }
-          transcript={ { words: words, paragraphs: paragraphs } } // Words and Paragraphs are the fields we want to get from Firestore
-          media={ media }
-          firebase={ firebase }
-        />
-      </Tab.Pane>
-    );
-  };
-
-  const transcriptsElNav = transcripts.map((transcript) =>
-    getTranscriptNav(transcript)
-  );
-  const transcriptsElTab = transcripts.map((transcript) =>
-    getTranscriptTabContents(transcript)
-  );
+  const transcriptsElNav = transcripts.map((transcript) => (
+    <TranscriptNavItem
+      key={ transcript.id }
+      title={ transcript.title }
+      id={ transcript.id }
+      status={ transcript.status }
+    />
+  ));
+  const transcriptsElTab = transcripts.map((transcript) => (
+    <TranscriptTabPane
+      key={ transcript.id }
+      transcriptId={ transcript.id }
+      paragraphs={ transcript.paragraphs }
+      paragraphsc={ transcript.paragraphsc }
+      words={ transcript.words }
+      wordsc={ transcript.wordsc }
+      media={ transcript.media }
+      title={ transcript.title }
+      projectId={ projectId }
+      firebase={ firebase }
+    />
+  ));
 
   return (
     <>
@@ -77,12 +48,15 @@ const TranscriptsContainer = ({ transcripts, projectId, firebase }) => {
               Transcripts
             </h2>
             <hr />
+
             <Nav variant="pills" className="flex-column">
               {transcriptsElNav}
             </Nav>
           </Col>
           <Col sm={ 9 }>
-            <Tab.Content>{transcriptsElTab}</Tab.Content>
+            <Tab.Content>
+              {transcriptsElTab}
+            </Tab.Content>
           </Col>
         </Row>
       </Tab.Container>

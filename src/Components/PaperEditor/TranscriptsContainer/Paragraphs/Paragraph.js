@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { shortTimecode } from '@bbc/react-transcript-editor/timecodeConverter';
@@ -15,16 +15,25 @@ import removePunctuation from '../../../../Util/remove-punctuation';
 const Paragraph = (props) => {
   const {
     transcriptId,
-    paragraph,
     isSearchResult,
     handleWordClick,
     labels,
     handleDeleteAnnotation,
     handleEditAnnotation,
+    speaker,
+    words,
+    text
   } = props;
 
-  const { speaker, words, text } = paragraph;
-  const textWithoutPunctuation = removePunctuation(text);
+  const [ textWithoutPunctuation, setTextWithoutPunct ] = useState('');
+
+  useEffect(() => {
+    setTextWithoutPunct(removePunctuation(text));
+
+    return () => {
+      setTextWithoutPunct('');
+    };
+  }, [ text ]);
 
   const getWordWithAnnotations = (word) => {
     const wordEl = (
@@ -108,15 +117,21 @@ const Paragraph = (props) => {
 };
 
 Paragraph.propTypes = {
-  display: PropTypes.any,
   handleDeleteAnnotation: PropTypes.any,
   handleEditAnnotation: PropTypes.any,
   handleWordClick: PropTypes.any,
-  labels: PropTypes.any,
-  paragraph: PropTypes.any,
-  paragraphOnly: PropTypes.any,
   isSearchResult: PropTypes.any,
+  labels: PropTypes.any,
+  speaker: PropTypes.string,
+  text: PropTypes.any,
   transcriptId: PropTypes.any,
+  words: PropTypes.array
+};
+
+Paragraph.defaultProps = {
+  words: [],
+  text: '',
+  speaker: ''
 };
 
 export default React.memo(Paragraph);
