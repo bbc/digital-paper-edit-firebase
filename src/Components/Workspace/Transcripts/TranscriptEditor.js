@@ -12,7 +12,9 @@ import Alert from 'react-bootstrap/Alert';
 
 import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 
-const ReactTranscriptEditor = React.lazy(() => import('@bbc/react-transcript-editor'));
+const ReactTranscriptEditor = React.lazy(() =>
+  import('@bbc/react-transcript-editor')
+);
 
 const TranscriptEditor = ({ match, firebase }) => {
   const projectId = match.params.projectId;
@@ -30,6 +32,7 @@ const TranscriptEditor = ({ match, firebase }) => {
 
   const [ mediaType, setMediaType ] = useState('video');
   const [ mediaUrl, setMediaUrl ] = useState('');
+  const [ mediaRef, setMediaRef ] = useState();
 
   const [ compressedWords, setCompressedWords ] = useState();
   const [ compressedParas, setCompressedParas ] = useState();
@@ -56,11 +59,7 @@ const TranscriptEditor = ({ match, firebase }) => {
           title,
         } = await TranscriptsCollection.getItem(transcriptId);
 
-        const url = await firebase.storage.storage
-          .ref(media.ref)
-          .getDownloadURL();
-
-        setMediaUrl(url);
+        setMediaRef(media.ref);
         setMediaType(media.type.split('/')[0]);
 
         /* Remove words, paragraphs once transitioned to compressed */
@@ -89,8 +88,24 @@ const TranscriptEditor = ({ match, firebase }) => {
     transcriptData,
     transcriptId,
     firebase.storage,
-    fetchTranscript
+    fetchTranscript,
   ]);
+
+  useEffect(() => {
+    const getDownloadURL = async () => {
+      const url = await firebase.storage.storage.ref(mediaRef).getDownloadURL();
+
+      setMediaUrl(url);
+    };
+
+    if (mediaRef) {
+      getDownloadURL();
+    }
+
+    return () => {
+      setMediaUrl('');
+    };
+  }, [ firebase.storage.storage, mediaRef ]);
 
   useEffect(() => {
     const getProject = async () => {
@@ -107,24 +122,17 @@ const TranscriptEditor = ({ match, firebase }) => {
     }
 
     return () => {};
-  }, [
-    ProjectsCollection,
-    projectId,
-    projectTitle,
-    fetchProject
-  ]);
+  }, [ ProjectsCollection, projectId, projectTitle, fetchProject ]);
 
   useEffect(() => {
     if (compressedParas && compressedWords) {
       setTranscriptData({
         paragraphs: decompress(compressedParas),
-        words: decompress(compressedWords)
+        words: decompress(compressedWords),
       });
     }
 
-    return () => {
-      setTranscriptData(null);
-    };
+    return () => {};
   }, [ compressedParas, compressedWords ]);
 
   const updateTranscript = async (id, item) => {
@@ -240,8 +248,20 @@ const TranscriptEditor = ({ match, firebase }) => {
 };
 
 TranscriptEditor.propTypes = {
-  firebase: PropTypes.any,
-  match: PropTypes.any,
+  firebase: PropTypes.shape({
+    storage: PropTypes.shape({
+      storage: PropTypes.shape({
+        ref: PropTypes.func
+      })
+    }),
+    uint8ArrayBlob: PropTypes.func
+  }),
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      projectId: PropTypes.any,
+      transcriptId: PropTypes.any
+    })
+  })
 };
 
 const condition = (authUser) => !!authUser;
