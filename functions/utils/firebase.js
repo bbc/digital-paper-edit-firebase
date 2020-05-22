@@ -18,12 +18,16 @@ const getTranscriptsCollection = (admin, projectId) => {
     .collection(`apps/digital-paper-edit/projects/${projectId}/transcripts`);
 };
 
-const getTranscriptsInProgress = (admin, projectId) => {
-  return getTranscriptsCollection(admin, projectId).where(
+const getTranscriptsWithStatus = (admin, projectId, status) => {
+    return getTranscriptsCollection(admin, projectId).where(
     "status",
     "==",
-    "in-progress"
+    status
   );
+}
+
+const getTranscriptsInProgress = (admin, projectId) => {
+  return getTranscriptsWithStatus(admin, projectId, 'in-progress')
 };
 
 const getAudioCollection = (admin, userId) => {
@@ -71,5 +75,6 @@ exports.getUsersAudioData = getUsersAudioData;
 exports.getUserCollection = getUserCollection;
 exports.getProjectsCollection = getProjectsCollection;
 exports.getTranscriptsInProgress = getTranscriptsInProgress;
+exports.getTranscriptsWithStatus = getTranscriptsWithStatus;
 exports.getTranscriptsCollection = getTranscriptsCollection;
 exports.getStorageSignedUrl = getStorageSignedUrl;

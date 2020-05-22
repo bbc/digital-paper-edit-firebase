@@ -52,6 +52,7 @@ const generateParagraph = (items, index) => {
     end: parseFloat(lastWord.end),
     speaker: `TBC - ${index}`,
     words: words,
+    text: words.map((w) => w.text).join(' '),
   };
 };
 
@@ -80,13 +81,15 @@ const psttTranscriptAdapter = (psttTranscript) => {
   const sentences = getSentences(psttTranscript);
   return sentences.reduce(
     (transcript, sentence, i) => {
-      const { words, ...paragraph } = generateParagraph(sentence, i);
+      const grouped = generateParagraph(sentence, i)
+      transcript.grouped.push(grouped)
+      const { words, ...paragraph } = grouped
       words.forEach((w, i) => (w.id = i + transcript.words.length));
       transcript.words = transcript.words.concat(words);
       transcript.paragraphs.push(paragraph);
       return transcript;
     },
-    { paragraphs: [], words: [] }
+    { paragraphs: [], words: [], grouped: [] }
   );
 };
 

@@ -153,10 +153,8 @@ const updateTranscriptsStatus = async (
         update.status = response.status;
 
         if (response.status === "success") {
-          const { words, paragraphs } = psttAdapter(response.transcript.items);
-
-          update.wordsc = zlib.gzipSync(JSON.stringify(words));
-          update.paragraphsc = zlib.gzipSync(JSON.stringify(paragraphs));
+          const { grouped } = psttAdapter(response.transcript.items);
+          update.groupedc = zlib.gzipSync(JSON.stringify(grouped));
           update.status = "done";
           update.runtime = getRuntime(execTimestamp, created);
           console.log(

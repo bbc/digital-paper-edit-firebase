@@ -1,9 +1,10 @@
 const assert = require("assert");
 const psttAdapter = require("../sttChecker/psttAdapter");
+
 const { items, transcript } = require("../examples/output/psttBBCShort.json");
 
 describe("psttAdapter", () => {
-  const { words, paragraphs } = psttAdapter(items);
+  const { words, paragraphs, grouped } = psttAdapter(items);
   it("should have generated the same text as source STT", () => {
     const text = words.map((w) => w.text).join(" ");
     assert.equal(text, transcript);
@@ -161,5 +162,13 @@ describe("psttAdapter", () => {
       assert.equal(expectedWord.start, actualWord.start);
       assert.equal(expectedWord.text, actualWord.text);
     });
+  });
+
+  it("should have generated grouped words in paragraphs for transcription", () => {
+    const expectedSpeaker = "TBC - 0";
+    const expectedText =
+      "The Royal British Legion will host 750 veterans, descendants, evacuees and those who served on the home front.";
+    assert.equal(expectedText, grouped[0].text);
+    assert.equal(expectedSpeaker, grouped[0].speaker);
   });
 });

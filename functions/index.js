@@ -6,6 +6,7 @@ const inventoryChecker = require("./inventoryChecker");
 const audioStripper = require("./audioStripper");
 const awsUploader = require("./awsUploader");
 const sttChecker = require("./sttChecker");
+const compressData = require("./compressData")
 
 const config = functions.config();
 
@@ -47,4 +48,11 @@ exports.cronSTTJobChecker = functions
   .pubsub.schedule(runSchedule)
   .onRun((context) =>
     sttChecker.createHandler(admin, config.aws.api.transcriber, context)
+  );
+
+  exports.compressToGrouped = functions
+  .runWith(maxRuntimeOpts)
+  .pubsub.schedule("every 24 hours")
+  .onRun(() =>
+    compressData.createHandler(admin)
   );
