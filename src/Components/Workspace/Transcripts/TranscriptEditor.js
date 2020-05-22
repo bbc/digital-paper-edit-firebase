@@ -130,31 +130,13 @@ const TranscriptEditor = ({ match, firebase }) => {
         return transcript;
       }, { paragraphs: [], words: [] });
 
-      console.log(result);
       setParagraphs(result.paragraphs);
       setWords(result.words);
     };
-    //   const paras = grouped.map((data, i) => {
-    //     data.id = i;
-
-    //     if (!data.start || !data.end) {
-    //       const firstWord = data.words[0];
-    //       const lastWord = data.words[data.words.length - 1];
-    //       data.start = parseFloat(firstWord.start);
-    //       data.end = parseFloat(lastWord.end);
-    //     }
-
-    //     return data;
-    //   });
-
-    //   setParagraphs(paras);
-    // };
 
     if (compressedGrouped) {
       const grouped = decompress(compressedGrouped);
       getTranscriptData(grouped);
-      // setParagraphs(() => getParagraphs(grouped));
-      // setWords(grouped.map((p) => p.words).flat());
     }
 
     return () => {};
@@ -187,6 +169,7 @@ const TranscriptEditor = ({ match, firebase }) => {
       data.words,
       data.paragraphs
     );
+
     data.groupedc = firebase.uint8ArrayBlob(compress(groupedc));
 
     try {

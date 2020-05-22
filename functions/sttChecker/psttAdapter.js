@@ -1,17 +1,3 @@
-const concatPunctuation = (words, punct) => {
-  const punctuatedWords = JSON.parse(JSON.stringify(words));
-  const punctIndex = words.indexOf(punct);
-  const previousWordIndex = punctIndex - 1;
-
-  // take out previousWord and punct from words
-  const previousWord = punctuatedWords.splice(previousWordIndex, 2)[0];
-  previousWord.alternatives[0].content += punct.alternatives[0].content;
-
-  // reinsert previousWord
-  punctuatedWords.splice(previousWordIndex, 0, previousWord);
-  return punctuatedWords;
-};
-
 const punctuateWords = (items) => {
   const words = JSON.parse(JSON.stringify(items));
 
