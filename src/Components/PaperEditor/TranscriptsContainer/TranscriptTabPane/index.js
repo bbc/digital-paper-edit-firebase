@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Tab from 'react-bootstrap/Tab';
-import TranscriptTabContent from '../TranscriptTabContent';
+import TranscriptTabContent from './TranscriptTabContent';
 const TranscriptTabPane = (props) => {
   const { transcriptId, paragraphs, words, wordsc, paragraphsc, media, title, projectId, firebase } = props;
 

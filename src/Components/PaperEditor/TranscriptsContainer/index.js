@@ -33,11 +33,19 @@ const TranscriptsContainer = ({ transcripts, projectId, firebase }) => {
       firebase={ firebase }
     />
   ));
+  const getDefaultActiveKey = () => {
+    const doneItem = transcripts.find(transcript => transcript.status === 'done');
+    if (doneItem) {
+      return doneItem.id;
+    } else {
+      return 'first';
+    }
+  };
 
   return (
     <>
       <Tab.Container
-        defaultActiveKey={ transcripts[0] ? transcripts[0].id : 'first' }
+        defaultActiveKey={ getDefaultActiveKey() }
       >
         <Row>
           <Col sm={ 3 }>

@@ -2,16 +2,16 @@
 import React, { useRef, useEffect, useState, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
-import SearchBar from '../SearchBar'; // move to same folder + rename to SearchTool
-import Collection from '../../../Firebase/Collection';
-import TranscriptMenu from '../TranscriptMenu';
-import getTimeFromUserWordsSelection from '../get-user-selection.js';
-import paragraphWithAnnotations from '../Paragraphs/add-annotations-to-words-in-paragraphs.js';
-import groupWordsInParagraphsBySpeakers from '../Paragraphs/group-words-by-speakers.js';
-import removePunctuation from '../../../../Util/remove-punctuation';
-import { decompressAsync } from '../../../../Util/gzip';
+import SearchBar from '../../SearchBar'; // move to same folder + rename to SearchTool
+import Collection from '../../../../Firebase/Collection';
+import TranscriptMenu from '../../TranscriptMenu';
+import getTimeFromUserWordsSelection from '../../get-user-selection.js';
+import paragraphWithAnnotations from '../../Paragraphs/add-annotations-to-words-in-paragraphs.js';
+import groupWordsInParagraphsBySpeakers from '../../Paragraphs/group-words-by-speakers.js';
+import removePunctuation from '../../../../../Util/remove-punctuation';
+import { decompressAsync } from '../../../../../Util/gzip';
 
-const Paragraphs = React.lazy(() => import('../Paragraphs'));
+const Paragraphs = React.lazy(() => import('../../Paragraphs'));
 
 const TranscriptTabContent = (props) => {
   const { transcriptId, projectId, title, firebase, media } = props;
@@ -90,7 +90,7 @@ const TranscriptTabContent = (props) => {
     /* After migrating to compressed, we should remove the if/else,
               and rename wordsdc to words, paragraphsdc to paragraphs
               as we will not need it.
-              */
+    */
     if (props.wordsc && props.paragraphsc) {
       getDecompressedWordsParas(props.wordsc, props.paragraphsc);
     } else {
