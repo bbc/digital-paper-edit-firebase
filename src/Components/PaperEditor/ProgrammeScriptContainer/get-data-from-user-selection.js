@@ -26,8 +26,6 @@ function parseWordElDataset(wordEl) {
    * @returns - an object with start and end time - eg {stat: "23.03", end: "39.61"}
    */
 function getDataFromUserWordsSelection(e) {
-  // https://stackoverflow.com/questions/11300590/how-to-captured-selected-text-range-in-ios-after-text-selection-expansion
-  // https://jsfiddle.net/JasonMore/gWZfb/
   if (!window.getSelection().isCollapsed) {
     const selection = window.getSelection();
     const countSelectedRanges = selection.rangeCount;
@@ -36,7 +34,7 @@ function getDataFromUserWordsSelection(e) {
     if (countSelectedRanges === 1) {
       // Handles IE, Opera, Chrome, Firefox before 3: only one range object in a selection
 
-      const selectedRange = window.getSelection().getRangeAt(0).cloneContents();
+      const selectedRange = selection.getRangeAt(0).cloneContents();
 
       words = selectedRange.querySelectorAll('.words');
     } else if (countSelectedRanges > 1) {
