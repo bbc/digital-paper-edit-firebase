@@ -73,6 +73,50 @@ const decompress = (compressed) => {
   return decompressed;
 };
 
+const migrationToCompressionFailed = async (admin, transcriptId, projectId) => {
+  // You've messed up...
+  const update = {
+    status: "error",
+    message: "Malformed transcription data, please reupload!",
+  };
+  await updateTranscription(admin, transcriptId, projectId, update);
+};
+
+const validateCompressedGroupC = async (
+  groupedc,
+  admin,
+  transcriptId,
+  projectId
+) => {
+  try {
+    decompress(groupedc);
+  } catch (e) {
+    console.error(e);
+    const update = { groupedc: admin.firestore.FieldValue.delete() };
+    await updateTranscription(admin, transcriptId, projectId, update);
+  }
+};
+
+const createGroupedC = (words, paragraphs, wordsc, paragraphsc) => {
+  let wordsToCompress;
+  let paragraphsToCompress;
+
+  if (words && paragraphs) {
+    wordsToCompress = words;
+    paragraphsToCompress = paragraphs;
+  } else if (wordsc && paragraphsc) {
+    wordsToCompress = decompress(wordsc);
+    paragraphsToCompress = decompress(paragraphsc);
+  }
+
+  const grouped = groupWordsInParagraphsBySpeakers(
+    wordsToCompress,
+    paragraphsToCompress
+  );
+
+  return zlib.gzipSync(JSON.stringify(grouped));
+};
+
 const updateTranscriptsWordsParagraphs = async (admin, transcripts) => {
   console.log(`${transcripts.length} transcripts to process`);
   await transcripts.forEach(async (transcript) => {
@@ -87,52 +131,23 @@ const updateTranscriptsWordsParagraphs = async (admin, transcripts) => {
     } = transcript.data();
 
     if (!groupedc && !words && !paragraphs && !paragraphsc && !wordsc) {
-      // You've messed up...
-      const update = {
-        status: "error",
-        message: "Malformed transcription data, please reupload!",
-      };
-      await updateTranscription(admin, transcriptId, projectId, update);
+      await migrationToCompressionFailed(admin, transcriptId, projectId);
       return;
     }
 
     if (groupedc) {
-      // make sure it's a valid compressed groupedc
-      try {
-        decompress(groupedc);
-      } catch (e) {
-        console.error(e);
-        const update = { groupedc: admin.firestore.FieldValue.delete() };
-        await updateTranscription(admin, transcriptId, projectId, update);
-      }
-
+      await validateCompressedGroupC(groupedc, admin, transcriptId, projectId);
       return;
     }
 
-    let wordsToCompress;
-    let paragraphsToCompress;
-    const update = {};
-
     try {
-      if (words && paragraphs) {
-        wordsToCompress = words;
-        paragraphsToCompress = paragraphs;
-      } else if (wordsc && paragraphsc) {
-        wordsToCompress = decompress(wordsc);
-        paragraphsToCompress = decompress(paragraphsc);
-      }
-
-      const grouped = groupWordsInParagraphsBySpeakers(
-        wordsToCompress,
-        paragraphsToCompress
-      );
-      update.groupedc = zlib.gzipSync(JSON.stringify(grouped));
-
-      // Remove previous formats of transcription
-      update.word = admin.firestore.FieldValue.delete();
-      update.paragraph = admin.firestore.FieldValue.delete();
-      update.wordsc = admin.firestore.FieldValue.delete();
-      update.paragraphsc = admin.firestore.FieldValue.delete();
+      const update = {
+        groupedc: createGroupedC(words, paragraphs, wordsc, paragraphsc),
+        word: admin.firestore.FieldValue.delete(),
+        paragraph: admin.firestore.FieldValue.delete(),
+        wordsc: admin.firestore.FieldValue.delete(),
+        paragraphsc: admin.firestore.FieldValue.delete(),
+      };
 
       await updateTranscription(admin, transcriptId, projectId, update);
 

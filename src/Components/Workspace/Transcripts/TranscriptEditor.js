@@ -6,7 +6,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 
-import groupWordsInParagraphsBySpeakers from '../../PaperEditor/TranscriptsContainer/Paragraphs/group-words-by-speakers';
+import groupWordsInParagraphsBySpeakers from './group-words-by-speakers';
 
 import Collection from '../../Firebase/Collection';
 import { compress, decompress } from '../../../Util/gzip';
@@ -113,22 +113,25 @@ const TranscriptEditor = ({ match, firebase }) => {
 
   useEffect(() => {
     const getTranscriptData = (grouped) => {
-      const result = grouped.reduce((transcript, data) => {
-        const w = [ ... data.words ];
+      const result = grouped.reduce(
+        (transcript, data) => {
+          const w = [ ...data.words ];
 
-        if (!data.start || !data.end) {
-          const firstWord = w[0];
-          const lastWord = w[w.length - 1];
-          data.start = parseFloat(firstWord.start);
-          data.end = parseFloat(lastWord.end);
-        }
+          if (!data.start || !data.end) {
+            const firstWord = w[0];
+            const lastWord = w[w.length - 1];
+            data.start = parseFloat(firstWord.start);
+            data.end = parseFloat(lastWord.end);
+          }
 
-        delete(data.words);
-        transcript.paragraphs.push(data);
-        transcript.words = transcript.words.concat(w);
+          delete data.words;
+          transcript.paragraphs.push(data);
+          transcript.words = transcript.words.concat(w);
 
-        return transcript;
-      }, { paragraphs: [], words: [] });
+          return transcript;
+        },
+        { paragraphs: [], words: [] }
+      );
 
       setParagraphs(result.paragraphs);
       setWords(result.words);

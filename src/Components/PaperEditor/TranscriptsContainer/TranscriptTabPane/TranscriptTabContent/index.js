@@ -100,10 +100,6 @@ const TranscriptTabContent = (props) => {
   }, [ AnnotationsCollection.collectionRef, annotations ]);
 
   useEffect(() => {
-    /*
-    words paragraphs can be merged at functions level,
-    which will really help with the speed of processing.
-    */
     const decompressGroupedWords = async (groupedc) => {
       const groupeddc = await decompressAsync(groupedc);
       setGroupedParagraphs(groupeddc);
@@ -561,14 +557,14 @@ TranscriptTabContent.propTypes = {
   firebase: PropTypes.shape({
     storage: PropTypes.shape({
       storage: PropTypes.shape({
-        ref: PropTypes.func
-      })
-    })
+        ref: PropTypes.func,
+      }),
+    }),
   }),
   groupedc: PropTypes.any,
   media: PropTypes.shape({
     ref: PropTypes.any,
-    type: PropTypes.any
+    type: PropTypes.any,
   }),
   projectId: PropTypes.any,
   title: PropTypes.any,
