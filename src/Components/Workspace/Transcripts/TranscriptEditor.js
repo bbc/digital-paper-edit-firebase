@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, Suspense } from 'react';
 import { withAuthorization } from '../../Session';
-import { TranscriptEditor as ReactTranscriptEditor } from '@bbc/react-transcript-editor';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -12,6 +11,8 @@ import { compress, decompress } from '../../../Util/gzip';
 import Alert from 'react-bootstrap/Alert';
 
 import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
+
+const ReactTranscriptEditor = React.lazy(() => import('@bbc/react-transcript-editor'));
 
 const TranscriptEditor = ({ match, firebase }) => {
   const projectId = match.params.projectId;
@@ -217,20 +218,22 @@ const TranscriptEditor = ({ match, firebase }) => {
           </Col>
         </Row>
         {showNotification ? savedNotification : null}
-        {transcriptData && (
-          <ReactTranscriptEditor
-            transcriptData={ transcriptData } // Transcript json
-            // TODO: move url server side
-            mediaUrl={ mediaUrl } // string url to media file - audio or video
-            isEditable={ true } // se to true if you want to be able to edit the text
-            sttJsonType={ 'digitalpaperedit' } // the type of STT Json transcript supported.
-            //  TODO: check if name has changed in latest version
-            title={ transcriptTitle }
-            // fileName={ this.state.projectTitle }// optional*
-            ref={ transcriptEditorRef }
-            mediaType={ mediaType }
-          />
-        )}
+        <Suspense fallback={ <div>Loading...</div> }>
+          {transcriptData && (
+            <ReactTranscriptEditor
+              transcriptData={ transcriptData } // Transcript json
+              // TODO: move url server side
+              mediaUrl={ mediaUrl } // string url to media file - audio or video
+              isEditable={ true } // se to true if you want to be able to edit the text
+              sttJsonType={ 'digitalpaperedit' } // the type of STT Json transcript supported.
+              //  TODO: check if name has changed in latest version
+              title={ transcriptTitle }
+              // fileName={ this.state.projectTitle }// optional*
+              ref={ transcriptEditorRef }
+              mediaType={ mediaType }
+            />
+          )}
+        </Suspense>
       </Container>
     </>
   );
