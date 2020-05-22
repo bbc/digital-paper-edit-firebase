@@ -80,7 +80,6 @@ function getDataFromUserWordsSelection(e) {
       return false;
     }
   }
-  // const selectedRange = window.getSelection().getRangeAt(0).cloneContents();
 
   return false;
 }
