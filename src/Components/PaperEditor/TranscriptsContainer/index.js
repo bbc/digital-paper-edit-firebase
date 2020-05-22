@@ -23,10 +23,7 @@ const TranscriptsContainer = ({ transcripts, projectId, firebase }) => {
     <TranscriptTabPane
       key={ transcript.id }
       transcriptId={ transcript.id }
-      paragraphs={ transcript.paragraphs }
-      paragraphsc={ transcript.paragraphsc }
-      words={ transcript.words }
-      wordsc={ transcript.wordsc }
+      groupedc={ transcript.groupedc }
       media={ transcript.media }
       title={ transcript.title }
       projectId={ projectId }

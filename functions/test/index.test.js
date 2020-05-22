@@ -30,7 +30,7 @@ const mockConfig = {
 
 test.mockConfig(mockConfig);
 fetchMock.mock("https://123456.execute-api.eu-west-1.amazonaws.com/test", 200);
-const myFunctions = require("../index.js");
+// const myFunctions = require("../index.js");
 
-const wrapped = test.wrap(myFunctions.cronSTTJobChecker);
+// const wrapped = test.wrap(myFunctions.cronSTTJobChecker);
 // TODO call wrapped

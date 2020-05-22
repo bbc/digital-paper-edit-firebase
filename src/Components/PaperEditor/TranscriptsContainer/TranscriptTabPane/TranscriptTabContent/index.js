@@ -7,7 +7,6 @@ import Collection from '../../../../Firebase/Collection';
 import TranscriptMenu from '../../TranscriptMenu';
 import getTimeFromUserWordsSelection from '../../get-user-selection.js';
 import paragraphWithAnnotations from '../../Paragraphs/add-annotations-to-words-in-paragraphs.js';
-import groupWordsInParagraphsBySpeakers from '../../Paragraphs/group-words-by-speakers.js';
 import removePunctuation from '../../../../../Util/remove-punctuation';
 import { decompressAsync } from '../../../../../Util/gzip';
 
@@ -34,10 +33,10 @@ const TranscriptTabContent = (props) => {
 
   // search display
   const [ paragraphOnly, setParagraphOnly ] = useState(true);
-  const [ paragraphs, setParagraphs ] = useState();
   const [ displayParagraphs, setDisplayParagraphs ] = useState([]);
   const [ isSearchResults, setIsSearchResults ] = useState([]);
 
+  const [ groupedParagraphs, setGroupedParagraphs ] = useState();
   const [ annotatedParagraphs, setAnnotatedParagraphs ] = useState();
   const [ processingParagraphs, setProcessingParagraphs ] = useState(false);
 
@@ -45,8 +44,6 @@ const TranscriptTabContent = (props) => {
   const [ paragraphCSS, setParagraphsCSS ] = useState('');
   const [ searchHighlightCSS, setSearchHighlightCSS ] = useState('');
   const [ isHighlighting, setIsHighlighting ] = useState(false);
-
-  const [ words, setWords ] = useState();
 
   const LabelsCollection = new Collection(
     firebase,
@@ -81,27 +78,6 @@ const TranscriptTabContent = (props) => {
   }, [ LabelsCollection.collectionRef, labels ]);
 
   useEffect(() => {
-    const getDecompressedWordsParas = async (wordsc, paragraphsc) => {
-      const wordsdc = await decompressAsync(wordsc);
-      const paragraphsdc = await decompressAsync(paragraphsc);
-      setWords(wordsdc);
-      setParagraphs(paragraphsdc);
-    };
-    /* After migrating to compressed, we should remove the if/else,
-              and rename wordsdc to words, paragraphsdc to paragraphs
-              as we will not need it.
-    */
-    if (props.wordsc && props.paragraphsc) {
-      getDecompressedWordsParas(props.wordsc, props.paragraphsc);
-    } else {
-      setWords(props.words);
-      setParagraphs(props.paragraphs);
-    }
-
-    return () => {};
-  }, [ props.paragraphs, props.words, props.wordsc, props.paragraphsc ]);
-
-  useEffect(() => {
     const getAnnotations = async () => {
       try {
         AnnotationsCollection.collectionRef.onSnapshot((snapshot) => {
@@ -124,23 +100,33 @@ const TranscriptTabContent = (props) => {
   }, [ AnnotationsCollection.collectionRef, annotations ]);
 
   useEffect(() => {
+    const decompressGroupedWords = async (groupedc) => {
+      const groupeddc = await decompressAsync(groupedc);
+      setGroupedParagraphs(groupeddc);
+    };
+
+    if (props.groupedc) {
+      decompressGroupedWords(props.groupedc);
+    }
+
+    return () => {};
+  }, [ props.groupedc ]);
+
+  useEffect(() => {
     const getAnnotatedParagraphs = () => {
       setProcessingParagraphs(true);
-      const groupedParagraphs = groupWordsInParagraphsBySpeakers(
-        words,
-        paragraphs
-      );
+
       setAnnotatedParagraphs(
         paragraphWithAnnotations(groupedParagraphs, annotations)
       );
     };
 
-    if (paragraphs && words && annotations && !processingParagraphs) {
+    if (groupedParagraphs && annotations && !processingParagraphs) {
       getAnnotatedParagraphs();
     }
 
     return () => {};
-  }, [ annotations, paragraphs, words, processingParagraphs ]);
+  }, [ annotations, groupedParagraphs, processingParagraphs ]);
 
   useEffect(() => {
     const getUrl = async () => {
@@ -575,17 +561,14 @@ TranscriptTabContent.propTypes = {
       }),
     }),
   }),
+  groupedc: PropTypes.any,
   media: PropTypes.shape({
     ref: PropTypes.any,
     type: PropTypes.any,
   }),
-  paragraphs: PropTypes.any,
-  paragraphsc: PropTypes.any,
   projectId: PropTypes.any,
   title: PropTypes.any,
   transcriptId: PropTypes.any,
-  words: PropTypes.any,
-  wordsc: PropTypes.any,
 };
 
 export default React.memo(TranscriptTabContent);
