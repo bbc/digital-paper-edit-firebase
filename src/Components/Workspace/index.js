@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import Container from 'react-bootstrap/Container';
 import Tabs from 'react-bootstrap/Tabs';
@@ -73,6 +74,15 @@ const WorkspaceView = props => {
       <CustomFooter />
     </>
   );
+};
+
+WorkspaceView.propTypes = {
+  firebase: PropTypes.any,
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      projectId: PropTypes.any
+    })
+  })
 };
 const condition = authUser => !!authUser;
 export default withAuthorization(condition)(WorkspaceView);

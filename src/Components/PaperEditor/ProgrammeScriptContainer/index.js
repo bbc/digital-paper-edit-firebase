@@ -170,11 +170,11 @@ const ProgrammeScriptContainer = (props) => {
     const confirmDelete = window.confirm('Are you sure you want to delete?');
     if (confirmDelete) {
       const reorderedList = JSON.parse(JSON.stringify(elements));
-      const updatedWords = await updateWordTimingsAfterDelete(reorderedList, i);
+      const updatedWords = updateWordTimingsAfterDelete(reorderedList, i);
       updatedWords.splice(i, 1);
       setElements(updatedWords);
       setResetPreview(true);
-      handleSaveProgrammeScript(updatedWords);
+      await handleSaveProgrammeScript(updatedWords);
       console.log('Deleted');
     } else {
       console.log('Not deleting');

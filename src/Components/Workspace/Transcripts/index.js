@@ -117,7 +117,7 @@ const Transcripts = ({ projectId, firebase }) => {
     updateTranscript(id, { status: 'error' });
   };
 
-  const handleUploadComplete = async (id) => {
+  const handleUploadComplete = (id) => {
     console.log('File upload completed');
     const newTasks = new Map(uploadTasks); // shallow clone
     newTasks.delete(id);
@@ -157,11 +157,11 @@ const Transcripts = ({ projectId, firebase }) => {
         (snapshot) => {
           handleUploadProgress(id, snapshot);
         },
-        async (error) => {
-          await handleUploadError(id, error);
+        (error) => {
+          handleUploadError(id, error);
         },
-        async () => {
-          await handleUploadComplete(id);
+        () => {
+          handleUploadComplete(id);
         }
       );
     };

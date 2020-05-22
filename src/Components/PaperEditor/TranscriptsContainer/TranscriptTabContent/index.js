@@ -376,7 +376,7 @@ const TranscriptTabContent = (props) => {
     });
   };
 
-  const handleCreateAnnotation = async (e) => {
+  const handleCreateAnnotation = (e) => {
     const selection = getTimeFromUserWordsSelection();
     if (selection) {
       const activeLabel = labels.find((label) => label.active);
@@ -395,7 +395,7 @@ const TranscriptTabContent = (props) => {
     }
   };
 
-  const handleDeleteAnnotation = async (annotationId) => {
+  const handleDeleteAnnotation = (annotationId) => {
     const tempAnnotations = annotations;
     tempAnnotations.splice(annotationId, 1);
     setAnnotations(tempAnnotations);
