@@ -66,9 +66,6 @@ const Transcripts = ({ projectId, firebase }) => {
 
   const updateTranscript = async (id, item) => {
     await TranscriptsCollection.putItem(id, item);
-    item.display = true;
-
-    return item;
   };
 
   const createTranscript = async (item) => {
@@ -111,13 +108,13 @@ const Transcripts = ({ projectId, firebase }) => {
     updateUploadTasksProgress(id, progress);
   };
 
-  const handleUploadError = async (id, error) => {
+  const handleUploadError = (id, error) => {
     console.error('Failed to upload file: ', error);
     const newTasks = new Map(uploadTasks); // shallow clone
     newTasks.delete(id);
     setUploadTasks(newTasks);
 
-    await updateTranscript(id, { status: 'error' });
+    updateTranscript(id, { status: 'error' });
   };
 
   const handleUploadComplete = async (id) => {
@@ -126,7 +123,7 @@ const Transcripts = ({ projectId, firebase }) => {
     newTasks.delete(id);
     setUploadTasks(newTasks);
 
-    await updateTranscript(id, { status: 'in-progress' });
+    updateTranscript(id, { status: 'in-progress' });
   };
 
   const getUploadPath = (id) => {
@@ -175,7 +172,7 @@ const Transcripts = ({ projectId, firebase }) => {
 
   const handleSave = async (item) => {
     if (item.id) {
-      return await updateTranscript(item.id, item);
+      updateTranscript(item.id, item);
     } else {
       const newTranscript = await createTranscript({
         title: item.title,
