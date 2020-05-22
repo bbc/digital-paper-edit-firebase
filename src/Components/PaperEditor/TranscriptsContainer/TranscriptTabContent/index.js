@@ -130,7 +130,9 @@ const TranscriptTabContent = (props) => {
         words,
         paragraphs
       );
-      setAnnotatedParagraphs(paragraphWithAnnotations(groupedParagraphs, annotations));
+      setAnnotatedParagraphs(
+        paragraphWithAnnotations(groupedParagraphs, annotations)
+      );
     };
 
     if (paragraphs && words && annotations && !processingParagraphs) {
@@ -366,6 +368,14 @@ const TranscriptTabContent = (props) => {
     }
   };
 
+  const createAnnotation = async (newAnnotation) => {
+    const docRef = await AnnotationsCollection.postItem(newAnnotation);
+    newAnnotation.id = docRef.id;
+    docRef.update({
+      id: docRef.id,
+    });
+  };
+
   const handleCreateAnnotation = async (e) => {
     const selection = getTimeFromUserWordsSelection();
     if (selection) {
@@ -377,17 +387,9 @@ const TranscriptTabContent = (props) => {
       }
       selection.note = '';
       const newAnnotation = selection;
-
-      const docRef = await AnnotationsCollection.postItem(newAnnotation);
-      newAnnotation.id = docRef.id;
-
-      docRef.update({
-        id: docRef.id,
-      });
-
-      const tempAnnotations = annotations;
-      tempAnnotations.push(newAnnotation);
-      setAnnotations(tempAnnotations);
+      createAnnotation(newAnnotation);
+      setAnnotations(() => [ ...annotations, newAnnotation ]);
+      setProcessingParagraphs(false);
     } else {
       alert('Select some text in the transcript to highlight ');
     }
@@ -397,7 +399,9 @@ const TranscriptTabContent = (props) => {
     const tempAnnotations = annotations;
     tempAnnotations.splice(annotationId, 1);
     setAnnotations(tempAnnotations);
-    await AnnotationsCollection.deleteItem(annotationId);
+
+    AnnotationsCollection.deleteItem(annotationId);
+    setProcessingParagraphs(false);
   };
 
   const handleEditAnnotation = (annotationId) => {
@@ -412,39 +416,39 @@ const TranscriptTabContent = (props) => {
     if (newNote) {
       newAnnotationToEdit.note = newNote;
       AnnotationsCollection.putItem(annotationId, newAnnotationToEdit);
-      const tempAnnotations = annotations;
-      tempAnnotations.push(newAnnotationToEdit);
-      setAnnotations(tempAnnotations);
+      setAnnotations(() => [ ...annotations, newAnnotationToEdit ]);
+      setProcessingParagraphs(false);
     } else {
       alert('all good nothing changed');
     }
   };
 
-  const onLabelCreate = async (newLabel) => {
+  const createLabel = async (newLabel) => {
     const docRef = await LabelsCollection.postItem(newLabel);
     newLabel.id = docRef.id;
 
     docRef.update({
       id: docRef.id,
     });
+  };
 
+  const onLabelCreate = (newLabel) => {
+    createLabel(newLabel);
     const tempLabels = labels;
     tempLabels.push(newLabel);
     setLabels(tempLabels);
   };
 
-  const onLabelUpdate = async (labelId, updatedLabel) => {
-    const tempLabels = labels;
-    tempLabels.push(updatedLabel);
-    setLabels(tempLabels);
+  const onLabelUpdate = (labelId, updatedLabel) => {
+    setLabels(() => [ ...tempLabels, updatedLabel ]);
     LabelsCollection.putItem(labelId, updatedLabel);
   };
 
-  const onLabelDelete = async (labelId) => {
+  const onLabelDelete = (labelId) => {
     const tempLabels = labels;
     tempLabels.splice(labelId, 1);
     setLabels(tempLabels);
-    await LabelsCollection.deleteItem(labelId);
+    LabelsCollection.deleteItem(labelId);
   };
 
   const updateLabelSelection = (e, labelId) => {
@@ -543,17 +547,19 @@ const TranscriptTabContent = (props) => {
           style={ { height: cardBodyHeight, overflow: 'scroll' } }
         >
           <Suspense fallback={ <div>Loading...</div> }>
-            {annotatedParagraphs ? <Paragraphs
-              transcriptId={ transcriptId }
-              paragraphs={ annotatedParagraphs }
-              labels={ labels }
-              isSearchResults={ isSearchResults }
-              handleKeyPress={ handleKeyPress }
-              displayParagraphs={ displayParagraphs }
-              handleKeyDownTimecodes={ handleKeyDownTimecodes }
-              handleDeleteAnnotation={ handleDeleteAnnotation }
-              handleEditAnnotation={ handleEditAnnotation }
-            /> : null}
+            {annotatedParagraphs ? (
+              <Paragraphs
+                transcriptId={ transcriptId }
+                paragraphs={ annotatedParagraphs }
+                labels={ labels }
+                isSearchResults={ isSearchResults }
+                handleKeyPress={ handleKeyPress }
+                displayParagraphs={ displayParagraphs }
+                handleKeyDownTimecodes={ handleKeyDownTimecodes }
+                handleDeleteAnnotation={ handleDeleteAnnotation }
+                handleEditAnnotation={ handleEditAnnotation }
+              />
+            ) : null}
           </Suspense>
         </Card.Body>
       </Card>
