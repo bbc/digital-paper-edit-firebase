@@ -53,7 +53,16 @@ const ProgrammeScriptContainer = (props) => {
     `/projects/${ projectId }/paperedits`
   );
 
-  const handleSaveProgrammeScript = async (els) => {
+  const createPaperEdits = async (paperEdit) => {
+    try {
+      await PaperEditsCollection.putItem(papereditsId, paperEdit);
+      console.log('Successfully saved');
+    } catch (error) {
+      console.error('Error saving document', error);
+    }
+  };
+
+  const handleSaveProgrammeScript = (els) => {
     if (els) {
       const newElements = JSON.parse(JSON.stringify(els));
       const insertPointElement = newElements.find((el) => el.type === 'insert');
@@ -63,17 +72,12 @@ const ProgrammeScriptContainer = (props) => {
         newElements.splice(insertElementIndex, 1);
       }
 
-      const paperEditDocument = {
+      const paperEdit = {
         title: title,
         elements: newElements,
       };
 
-      try {
-        await PaperEditsCollection.putItem(papereditsId, paperEditDocument);
-        console.log('Successfully saved');
-      } catch (error) {
-        console.error('Error saving document', error);
-      }
+      createPaperEdits(paperEdit);
     }
   };
 
@@ -155,9 +159,7 @@ const ProgrammeScriptContainer = (props) => {
     const updateVideoContextWidth = () => {
       setWidth(previewCardRef.current.offsetWidth - 10);
     };
-
     updateVideoContextWidth();
-
     window.addEventListener('resize', updateVideoContextWidth);
 
     return () => {
@@ -165,7 +167,7 @@ const ProgrammeScriptContainer = (props) => {
     };
   });
 
-  const handleDelete = async (i) => {
+  const handleDelete = (i) => {
     console.log('Handling delete...');
     const confirmDelete = window.confirm('Are you sure you want to delete?');
     if (confirmDelete) {
@@ -174,10 +176,7 @@ const ProgrammeScriptContainer = (props) => {
       updatedWords.splice(i, 1);
       setElements(updatedWords);
       setResetPreview(true);
-      await handleSaveProgrammeScript(updatedWords);
-      console.log('Deleted');
-    } else {
-      console.log('Not deleting');
+      handleSaveProgrammeScript(updatedWords);
     }
   };
 
@@ -192,14 +191,13 @@ const ProgrammeScriptContainer = (props) => {
       setElements(newElements);
       setResetPreview(true);
       handleSaveProgrammeScript(newElements);
-    } else {
     }
   };
 
-  const onSortEnd = async ({ oldIndex, newIndex }) => {
+  const onSortEnd = ({ oldIndex, newIndex }) => {
     const newElements = arrayMove(elements, oldIndex, newIndex);
     console.log('handling reorder...');
-    const updatedWords = await updateWordTimings(newElements);
+    const updatedWords = updateWordTimings(newElements);
     setElements(updatedWords);
     setResetPreview(true);
     handleSaveProgrammeScript(updatedWords);
@@ -348,7 +346,7 @@ const ProgrammeScriptContainer = (props) => {
     return paperEditElements;
   };
 
-  const handleAddTranscriptSelectionToProgrammeScript = async () => {
+  const handleTransfer = () => {
     console.log('Handling add transcript selection...');
     const selection = getDataFromUserWordsSelection();
     const elementsClone = JSON.parse(JSON.stringify(elements));
@@ -377,7 +375,7 @@ const ProgrammeScriptContainer = (props) => {
         elementsClone.splice(insertElementIndex, 0, ...newPaperCuts.elements);
 
         // Adjusts word timings for paper-cuts effected by the insert
-        updatedElements = await updateWordTimings(elementsClone);
+        updatedElements = updateWordTimings(elementsClone);
       }
       setElements(updatedElements);
       setResetPreview(true);
@@ -398,7 +396,7 @@ const ProgrammeScriptContainer = (props) => {
     }
   };
 
-  const handleAddTranscriptElementToProgrammeScript = (elementType) => {
+  const handleAddElement = (elementType) => {
     console.log('Handling add transcript element...');
     const newElements = JSON.parse(JSON.stringify(elements));
     if (
@@ -454,7 +452,7 @@ const ProgrammeScriptContainer = (props) => {
             <Col sm={ 12 } md={ 3 }>
               <Button
                 variant="outline-secondary"
-                onClick={ handleAddTranscriptSelectionToProgrammeScript }
+                onClick={ handleTransfer }
                 title="Add a text selection, select text in the transcript, then click this button to add it to the programme script"
               >
                 <FontAwesomeIcon icon={ faPlus } /> Selection
@@ -462,7 +460,7 @@ const ProgrammeScriptContainer = (props) => {
             </Col>
             <Col sm={ 12 } md={ 2 }>
               <ElementsDropdown
-                handleAdd={ handleAddTranscriptElementToProgrammeScript }
+                handleAdd={ handleAddElement }
               />
             </Col>
             <Col sm={ 12 } md={ 3 }>
