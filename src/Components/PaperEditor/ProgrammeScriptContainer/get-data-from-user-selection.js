@@ -26,14 +26,30 @@ function parseWordElDataset(wordEl) {
    * @returns - an object with start and end time - eg {stat: "23.03", end: "39.61"}
    */
 function getDataFromUserWordsSelection(e) {
-  // https://stackoverflow.com/questions/11300590/how-to-captured-selected-text-range-in-ios-after-text-selection-expansion
-  // https://jsfiddle.net/JasonMore/gWZfb/
   if (!window.getSelection().isCollapsed) {
-    const selectedRange = window.getSelection().getRangeAt(0).cloneContents();
+    const selection = window.getSelection();
+    const countSelectedRanges = selection.rangeCount;
+    let words;
 
-    // Seems like this work no matter if the selection is made left to right
-    // or right to left form the user
-    const words = selectedRange.querySelectorAll('.words');
+    if (countSelectedRanges === 1) {
+      // Handles IE, Opera, Chrome, Firefox before 3: only one range object in a selection
+
+      const selectedRange = selection.getRangeAt(0).cloneContents();
+
+      words = selectedRange.querySelectorAll('.words');
+    } else if (countSelectedRanges > 1) {
+      // Handles Firefox after 3: more than one range object in a selection
+
+      const firstRange = selection.getRangeAt(0);
+      const lastRange = selection.getRangeAt(countSelectedRanges - 1);
+
+      const jointRange = new Range();
+      jointRange.setStartBefore(firstRange.startContainer);
+      jointRange.setEndAfter(lastRange.endContainer);
+
+      const testClone = jointRange.cloneContents();
+      words = testClone.querySelectorAll('.words');
+    }
 
     if (words.length !== 0) {
 
@@ -43,7 +59,7 @@ function getDataFromUserWordsSelection(e) {
         transcriptId: words[0].dataset.transcriptId,
         speaker: words[0].dataset.speaker,
         // words: words
-        words: Array.from(words).map((w) => {return parseWordElDataset(w);})
+        words: Array.from(words).map((w) => { return parseWordElDataset(w); })
       };
     }
     else {
