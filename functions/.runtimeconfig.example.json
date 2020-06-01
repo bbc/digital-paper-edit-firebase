@@ -7,9 +7,15 @@
       "secret": ""
     },
     "api": {
-      "key": "",
-      "schedule": "every 60 minutes",
-      "endpoint": ""
+      "uploader": {
+        "endpoint": "",
+        "key": ""
+      },
+      "transcriber": {
+        "key": "",
+        "endpoint": "",
+        "schedule": "every 1 minutes"
+      }
     }
   },
   "storage": {
