@@ -8,6 +8,7 @@ import { withAuthentication } from './Components/Session';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Alert from 'react-bootstrap/Alert';
+import HelpOverlayTrigger from './HelpOverlayTrigger';
 
 const App = (props) => {
   let offlineWarning = null;
@@ -45,14 +46,15 @@ const App = (props) => {
         {offlineWarning}
         <Container style={ { marginBottom: '1em', marginTop: '1em' } }>
           <Row>
-            <Col>
+            <Col xs={ 5 }>
               <h1> Digital Paper Edit </h1>
             </Col>
-            <Col xs={ 12 } sm={ 3 }>
-              <p>Signed in as: {authUser.email}</p>
+            <Col md={ { offset: 1, span: 3 } }>
+              Signed in as: <br></br>
+              <strong>{authUser.email}</strong>
             </Col>
-            <Col xs={ 12 } sm={ 2 }>
-              <SignOutButton />
+            <Col md={ { span: 3 } }>
+              <SignOutButton /> <HelpOverlayTrigger />
             </Col>
           </Row>
         </Container>
