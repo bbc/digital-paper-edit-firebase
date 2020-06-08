@@ -11,7 +11,11 @@ const HelpOverlayTrigger = () => {
       <Popover.Title as="h3">Need Help?</Popover.Title>
       <Popover.Content>
         See the{' '}
-        <a href={ 'https://autoedit.gitbook.io/autoedit-3-user-manual/' }>
+        <a
+          href={ 'https://autoedit.gitbook.io/autoedit-3-user-manual/' }
+          target={ '_blank' }
+          rel="noopener noreferrer"
+        >
           User manual.
         </a>
         <br />
