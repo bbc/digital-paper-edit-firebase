@@ -14,11 +14,11 @@ const bucketName = config.storage.bucket;
 const bucketTrigger = functions.storage.bucket(bucketName).object();
 const bucket = admin.storage().bucket(bucketName);
 
-exports.onFinalizeBucketObjUpdateFirestore = bucketTrigger.onFinalize((obj) =>
+exports.dpeOnFinalizeBucketObjUpdateFirestore = bucketTrigger.onFinalize((obj) =>
   inventoryChecker.finalizeHandler(admin, obj)
 );
 
-exports.onDeleteBucketObjUpdateFirestore = bucketTrigger.onDelete((obj) =>
+exports.dpeOnDeleteBucketObjUpdateFirestore = bucketTrigger.onDelete((obj) =>
   inventoryChecker.deleteHandler(admin, obj)
 );
 
@@ -27,14 +27,14 @@ const maxRuntimeOpts = {
   memory: "2GB",
 };
 
-exports.onCreateAudioFirestoreUploadToAWS = functions
+exports.dpeOnCreateAudioFirestoreUploadToAWS = functions
   .runWith(maxRuntimeOpts)
   .firestore.document("apps/digital-paper-edit/users/{userId}/audio/{itemId}")
   .onCreate((snap, context) =>
     awsUploader.createHandler(snap, bucket, config.aws, context)
   );
 
-exports.onCreateFirestoreUploadStripAndUploadAudio = functions
+exports.dpeOnCreateFirestoreUploadStripAndUploadAudio = functions
   .runWith(maxRuntimeOpts)
   .firestore.document("apps/digital-paper-edit/users/{userId}/uploads/{itemId}")
   .onCreate((snap, context) =>
@@ -43,16 +43,18 @@ exports.onCreateFirestoreUploadStripAndUploadAudio = functions
 
 const runSchedule = config.aws.api.transcriber.schedule || "every 60 minutes";
 
-exports.cronSTTJobChecker = functions
+exports.dpeCronSTTJobChecker = functions
   .runWith(maxRuntimeOpts)
   .pubsub.schedule(runSchedule)
   .onRun((context) =>
     sttChecker.createHandler(admin, config.aws.api.transcriber, context)
   );
 
-  exports.compressToGrouped = functions
-  .runWith(maxRuntimeOpts)
-  .pubsub.schedule("every 24 hours")
-  .onRun(() =>
-    compressData.createHandler(admin)
-  );
+// For migration of DB
+
+//  exports.compressToGrouped = functions
+//  .runWith(maxRuntimeOpts)
+//  .pubsub.schedule("every 24 hours")
+//  .onRun(() =>
+//    compressData.createHandler(admin)
+//  );
