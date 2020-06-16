@@ -2,6 +2,7 @@ import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/storage';
+import 'firebase-admin';
 
 const config = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -9,10 +10,12 @@ const config = {
   databaseURL: process.env.REACT_APP_DATABASE_URL,
   projectId: process.env.REACT_APP_PROJECT_ID,
   storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID
+  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+  oidc: process.env.REACT_APP_OIDC
 };
 class Firebase {
   constructor() {
+    this.provider = new app.auth.OAuthProvider(config.oidc);
     app.initializeApp(config);
     this.auth = app.auth();
 
@@ -43,8 +46,20 @@ class Firebase {
     return dbUser;
   };
 
+  onOIDCAuthListener = async () => {
+    try {
+      console.log('called oidc', this.provider);
+
+      return await this.auth.signInWithPopup(this.provider);
+    } catch (err) {
+      console.err(err);
+      console.err('you could not log in with OIDC', this.provider);
+    }
+  }
+
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged(async authUser => {
+      console.log('authUser');
       if (authUser) {
         const db = await this.initDB(authUser.uid);
 
@@ -61,6 +76,23 @@ class Firebase {
         fallback();
       }
     });
+
+  onAuthListener = (next, fallback) => {
+    console.log('onAuthListener');
+    try {
+      // const result = await this.auth.getRedirectResult();
+      // if (!result.user) {
+      // await this.onOIDCAuthListener();
+      // }
+      // console.log('result for getRedirectResult', result);
+
+      return this.onAuthUserListener(next, fallback);
+    }
+    catch (err) {
+      console.log(err);
+    }
+
+  }
 
   // doCreateUserWithEmailAndPassword = (email, password) =>
   // this.auth.createUserWithEmailAndPassword(email, password);

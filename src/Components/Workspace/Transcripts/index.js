@@ -37,7 +37,7 @@ const Transcripts = ({ projectId, firebase }) => {
       }
     };
 
-    const authListener = firebase.onAuthUserListener(
+    const authListener = firebase.onAuthListener(
       (authUser) => {
         if (authUser) {
           setUid(authUser.uid);

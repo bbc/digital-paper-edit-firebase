@@ -87,8 +87,7 @@ const Projects = (props) => {
         console.error('Error getting documents: ', error);
       }
     };
-
-    const authListener = props.firebase.onAuthUserListener(
+    const authListener = props.firebase.onAuthListener(
       (authUser) => {
         if (authUser) {
           setUid(authUser.uid);
@@ -144,7 +143,7 @@ const Projects = (props) => {
 
 Projects.propTypes = {
   firebase: PropTypes.shape({
-    onAuthUserListener: PropTypes.func
+    onAuthListener: PropTypes.func
   })
 };
 
