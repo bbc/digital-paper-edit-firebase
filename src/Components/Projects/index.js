@@ -87,7 +87,7 @@ const Projects = (props) => {
         console.error('Error getting documents: ', error);
       }
     };
-    const authListener = props.firebase.onAuthListener(
+    const authListener = props.firebase.onAuthUserListener(
       (authUser) => {
         if (authUser) {
           setUid(authUser.uid);
@@ -143,9 +143,10 @@ const Projects = (props) => {
 
 Projects.propTypes = {
   firebase: PropTypes.shape({
-    onAuthListener: PropTypes.func
+    onAuthUserListener: PropTypes.func
   })
 };
 
-const condition = (authUser) => !!authUser;
+// const condition = (authUser) => !!authUser;
+const condition = (oidc, authUser) => !!(oidc && authUser);
 export default withAuthorization(condition)(Projects);

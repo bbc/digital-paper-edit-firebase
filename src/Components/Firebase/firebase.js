@@ -46,20 +46,22 @@ class Firebase {
     return dbUser;
   };
 
-  onOIDCAuthListener = async () => {
+  onOIDCAuthListener = async (next, fallback) => {
     try {
       console.log('called oidc', this.provider);
 
-      return await this.auth.signInWithPopup(this.provider);
+      const result = await this.auth.signInWithPopup(this.provider);
+      console.log('result odic', result);
+      next(result);
     } catch (err) {
-      console.err(err);
-      console.err('you could not log in with OIDC', this.provider);
+      console.error(err);
+      console.error('you could not log in with OIDC', this.provider);
+      fallback(err);
     }
   }
 
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged(async authUser => {
-      console.log('authUser');
       if (authUser) {
         const db = await this.initDB(authUser.uid);
 
@@ -76,23 +78,6 @@ class Firebase {
         fallback();
       }
     });
-
-  onAuthListener = (next, fallback) => {
-    console.log('onAuthListener');
-    try {
-      // const result = await this.auth.getRedirectResult();
-      // if (!result.user) {
-      // await this.onOIDCAuthListener();
-      // }
-      // console.log('result for getRedirectResult', result);
-
-      return this.onAuthUserListener(next, fallback);
-    }
-    catch (err) {
-      console.log(err);
-    }
-
-  }
 
   // doCreateUserWithEmailAndPassword = (email, password) =>
   // this.auth.createUserWithEmailAndPassword(email, password);

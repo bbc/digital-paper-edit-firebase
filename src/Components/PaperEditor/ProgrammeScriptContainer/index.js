@@ -496,5 +496,6 @@ ProgrammeScriptContainer.propTypes = {
   transcripts: PropTypes.any,
 };
 
-const condition = (authUser) => !!authUser;
+// const condition = (authUser) => !!authUser;
+const condition = (oidc, authUser) => !!(oidc && authUser);
 export default withAuthorization(condition)(ProgrammeScriptContainer);

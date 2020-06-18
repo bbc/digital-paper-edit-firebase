@@ -1,0 +1,310 @@
+{
+  "PanelInference": {
+    "1": [
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "The evidence comes from countries that carry out \"detailed contact tracing\", Dr Maria Van Kerkhove said.",
+        "objects": ["evidence"]
+      }
+    ],
+    "2": [
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "2. Pre-symptomatic: People who test positive when they don't yet have symptoms - but go on to develop them",
+        "objects": ["symptoms"]
+      }
+    ],
+    "3": [
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "1. Asymptomatic: People who never develop symptoms",
+        "objects": ["People"]
+      }
+    ],
+    "4": [
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "Although a proportion of people test positive with no symptoms, it is believed these infections are mostly not passed on.",
+        "objects": ["infections"]
+      }
+    ],
+    "5": [
+      {
+        "id": 3,
+        "text": "Dr Van Kerkhove, the WHO's head of emerging diseases, made the distinction between three categories:",
+        "template": "org",
+        "organisation": { "name": "WHO", "type": "office" }
+      },
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "Dr Van Kerkhove, the WHO's head of emerging diseases, made the distinction between three categories:",
+        "objects": ["three"]
+      }
+    ],
+    "6": [
+      {
+        "template": "quote",
+        "speaker": {
+          "affiliation": "World Health Organization",
+          "name": "a World Health Organization scientist"
+        },
+        "id": 2,
+        "organization": {
+          "name": "World Health Organization",
+          "type": "office"
+        },
+        "text": "People with coronavirus but no symptoms infecting others is \"very rare\""
+      },
+      {
+        "id": 3,
+        "text": "People with coronavirus but no symptoms infecting others is \"very rare\", a World Health Organization scientist has said.",
+        "template": "org",
+        "organisation": {
+          "name": "World Health Organization",
+          "type": "office"
+        }
+      },
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "People with coronavirus but no symptoms infecting others is \"very rare\", a World Health Organization scientist has said.",
+        "objects": ["World Health Organization"]
+      }
+    ],
+    "7": [
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "But people can pass on the disease just before symptoms develop.",
+        "objects": ["people"]
+      }
+    ],
+    "8": [
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "3. People with very mild or atypical symptoms who do not realise they have coronavirus",
+        "objects": ["very mild or atypical symptoms"]
+      }
+    ],
+    "9": [
+      {
+        "id": 0,
+        "text": "It has found that, of those who have so far tested positive for Covid-19, only 29% reported \"any evidence of symptoms\" at the time they were tested, or at the previous or following visits.",
+        "template": "radial",
+        "data": [{ "label": "that reported", "percent": "29" }]
+      },
+      {
+        "id": 3,
+        "text": "It has found that, of those who have so far tested positive for Covid-19, only 29% reported \"any evidence of symptoms\" at the time they were tested, or at the previous or following visits.",
+        "template": "org",
+        "organisation": { "name": "Covid-19", "type": "office" }
+      },
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "It has found that, of those who have so far tested positive for Covid-19, only 29% reported \"any evidence of symptoms\" at the time they were tested, or at the previous or following visits.",
+        "objects": ["evidence"]
+      }
+    ],
+    "10": [
+      {
+        "id": 3,
+        "text": "In England, the Office for National Statistics (ONS) has been regularly testing a sample of the population.",
+        "template": "org",
+        "organisation": { "name": "ONS", "type": "office" }
+      },
+      {
+        "id": 3,
+        "text": "In England, the Office for National Statistics (ONS) has been regularly testing a sample of the population.",
+        "template": "org",
+        "organisation": { "name": "ONS", "type": "office" }
+      },
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "In England, the Office for National Statistics (ONS) has been regularly testing a sample of the population.",
+        "objects": ["Office for National Statistics"]
+      }
+    ],
+    "11": [
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "But Dr Van Kerkhove said the weight of evidence suggested people who never develop symptoms do not play a significant role in passing on the virus",
+        "objects": ["people"]
+      }
+    ],
+    "12": [
+      {
+        "id": 3,
+        "text": "\"The available evidence from contact tracing reported by member states suggests that asymptomatically-infected individuals are much less likely to transmit the virus than those who develop symptoms,\" WHO guidance on wearing masks published at the weekend, says.",
+        "template": "org",
+        "organisation": { "name": "WHO", "type": "office" }
+      },
+      {
+        "template": "objects",
+        "id": 4,
+        "text": "\"The available evidence from contact tracing reported by member states suggests that asymptomatically-infected individuals are much less likely to transmit the virus than those who develop symptoms,\" WHO guidance on wearing masks published at the weekend, says.",
+        "objects": ["WHO"]
+      }
+    ]
+  },
+  "ImageService": {
+    "1": [
+      {
+        "entities": ["infections"],
+        "response": [
+          {
+            "entity": "infection",
+            "url": [
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/conditions_disease.svg"
+            ],
+            "word": "infections"
+          }
+        ]
+      }
+    ],
+    "2": [
+      {
+        "entities": ["people"],
+        "response": [
+          {
+            "entity": "people",
+            "url": [
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/people_people.svg",
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/people_people_2.svg",
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/people_people_3.svg"
+            ],
+            "word": "people"
+          }
+        ]
+      }
+    ],
+    "3": [
+      {
+        "entities": ["evidence"],
+        "response": [
+          {
+            "entity": "data",
+            "url": [
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/concepts_data.svg"
+            ],
+            "word": "evidence"
+          }
+        ]
+      }
+    ],
+    "4": [
+      {
+        "entities": ["People"],
+        "response": [
+          {
+            "entity": "people",
+            "url": [
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/people_people.svg",
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/people_people_2.svg",
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/people_people_3.svg"
+            ],
+            "word": "People"
+          }
+        ]
+      }
+    ],
+    "5": [
+      {
+        "entities": ["symptoms"],
+        "response": [
+          {
+            "entity": "mental illness",
+            "url": [
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/condition_mental_health.svg"
+            ],
+            "word": "symptoms"
+          }
+        ]
+      }
+    ],
+    "6": [
+      {
+        "entities": ["speaker"],
+        "response": [
+          {
+            "entity": "spokesperson",
+            "url": [
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/roles_spokeswoman_2.svg",
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/roles_spokesman_2.svg"
+            ],
+            "word": "speaker"
+          }
+        ]
+      }
+    ],
+    "7": [
+      {
+        "entities": ["office"],
+        "response": [
+          {
+            "entity": "foundation",
+            "url": [
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/organisation_generic_2.svg",
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/organisation_generic.svg"
+            ],
+            "word": "office"
+          }
+        ]
+      }
+    ],
+    "8": [
+      {
+        "entities": ["people"],
+        "response": [
+          {
+            "entity": "people",
+            "url": [
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/people_people.svg",
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/people_people_2.svg",
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/people_people_3.svg"
+            ],
+            "word": "people"
+          }
+        ]
+      }
+    ],
+    "9": [
+      {
+        "entities": ["office"],
+        "response": [
+          {
+            "entity": "foundation",
+            "url": [
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/organisation_generic_2.svg",
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/organisation_generic.svg"
+            ],
+            "word": "office"
+          }
+        ]
+      }
+    ],
+    "10": [
+      {
+        "entities": ["very mild or atypical symptoms"],
+        "response": [
+          {
+            "entity": "organisation",
+            "url": [
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/organisation_generic.svg",
+              "https://graphical-storytelling.s3-eu-west-1.amazonaws.com/components/organisation_generic_2.svg"
+            ],
+            "word": "very mild or atypical symptoms"
+          }
+        ]
+      }
+    ]
+  }
+}

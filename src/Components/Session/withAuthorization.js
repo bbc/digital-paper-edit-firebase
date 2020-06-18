@@ -11,40 +11,51 @@ import * as ROUTES from '../../constants/routes';
 const withAuthorization = condition => Component => {
 
   const WithAuthorization = props => {
-    const [ oidc, setoidc ] = useState();
+
+    // useEffect(() => {
+    //   const listener = props.firebase.onOIDCAuthListener(
+    //     authOIDC => {
+    //       if (!condition(authOIDC)) {
+    //         console.log('OIDC: unauthorised');
+    //       }
+    //     },
+    //     () => {
+    //       console.log('OIDC: unauthorised');
+    //     }
+    //   );
+
+    //   return () => {
+    //     listener();
+    //   };
+    // }, [ props.firebase ]);
 
     useEffect(() => {
-      if (!oidc) {
-        setoidc(props.firebase.onOIDCAuthListener());
-      }
-
-      return () => {
-      };
-    }, [ oidc, props.firebase ]);
-
-    useEffect(() => {
-      let listener;
-
-      if (oidc) {
-        listener = props.firebase.onAuthUserListener(
-          authUser => {
-            if (!condition(authUser)) {
-              console.log('not authorised');
-              props.history.push(ROUTES.SIGN_IN);
-            }
-          },
-          () => props.history.push(ROUTES.SIGN_IN)
-        );
-      }
+      const listener = props.firebase.onAuthUserListener(
+        authUser => {
+          if (!condition(authUser)) {
+            console.log('not authorised');
+            props.history.push(ROUTES.SIGN_IN);
+          }
+        },
+        () => props.history.push(ROUTES.SIGN_IN)
+      );
 
       return () => {
         listener();
       };
-    }, [ props.firebase, props.history, oidc ]);
+    }, [ props.firebase, props.history ]);
 
     return (
       <AuthUserContext.Consumer>
-        {authUser => (condition(authUser) ? <Component { ...props } /> : null)}
+        {ctx => {
+          console.log(ctx);
+          if (ctx && (condition(ctx.oidc, ctx.authUser))) {
+            return <Component { ...props } />;
+          } else {
+            return null;
+          }
+        }
+        }
       </AuthUserContext.Consumer>
     );
   };
