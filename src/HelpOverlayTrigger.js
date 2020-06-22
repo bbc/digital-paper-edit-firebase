@@ -20,9 +20,9 @@ const HelpOverlayTrigger = () => {
         </a>
         <br />
         This is a <strong>slightly different version</strong> of the Digital
-        Paper Edit, but the general workflows should be the same. Should you
-        require more assistance or want to have a chat, please{' '}
-        <a href="mailto:eimi.okuno@bbc.co.uk">get in touch with Newslabs</a>!
+        Paper Edit, but the general workflows should be the same.
+        Should you require login details, or more assistance,{' '}
+        <a href="mailto:dpe@bbcnewslabs.co.uk">get in touch with Newslabs</a>!
       </Popover.Content>
     </Popover>
   );

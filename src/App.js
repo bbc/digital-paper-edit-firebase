@@ -65,10 +65,18 @@ const App = (props) => {
     AppContainer = (
       <>
         <Container style={ { marginBottom: '2em', marginTop: '1em' } }>
-          <h1> Digital Paper Edit </h1>
-          <p>
-            Please <a href="/">sign in</a> - please request a user and password
-          </p>
+          <Row>
+            <Col xs={ 5 }>
+              <h1> Digital Paper Edit </h1>
+            </Col>
+            <Col md={ { offset: 1, span: 3 } }>
+              Please <a href="/">sign in</a> or request login details by clicking the help button!
+            </Col>
+            <Col md={ { span: 3 } }>
+              <HelpOverlayTrigger />
+            </Col>
+          </Row>
+
         </Container>
         <Routes />
       </>
