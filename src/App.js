@@ -9,10 +9,13 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Alert from 'react-bootstrap/Alert';
 import HelpOverlayTrigger from './HelpOverlayTrigger';
+import AdminButton from './AdminButton';
+import Collection from './Components/Firebase/Collection';
 
 const App = (props) => {
   let offlineWarning = null;
   const [ authUser, setAuthUser ] = useState();
+  const [ user, setUser ] = useState();
 
   useEffect(() => {
     const authListener = props.firebase.auth.onAuthStateChanged((user) =>
@@ -23,6 +26,21 @@ const App = (props) => {
       authListener();
     };
   }, [ props.firebase.auth ]);
+
+  useEffect(() => {
+    const userCollection = new Collection(props.firebase, '/users');
+    const getUser = async () => {
+      const userItem = await userCollection.getItem(authUser.uid);
+      setUser(userItem);
+    };
+
+    if (authUser) {
+      getUser();
+    }
+
+    return () => {
+    };
+  }, [ props.firebase, authUser ]);
 
   if (!navigator.onLine) {
     offlineWarning = (
@@ -55,6 +73,7 @@ const App = (props) => {
             </Col>
             <Col md={ { span: 3 } }>
               <SignOutButton /> <HelpOverlayTrigger />
+              {user && user.role === 'ADMIN' ? <AdminButton /> : null}
             </Col>
           </Row>
         </Container>
