@@ -12,6 +12,7 @@ import { PROJECTS } from '../../constants/routes';
 
 const Projects = (props) => {
   const [ uid, setUid ] = useState();
+  const [ email, setEmail ] = useState();
   const [ loading, setIsLoading ] = useState(false);
   const [ items, setItems ] = useState([]);
 
@@ -94,6 +95,7 @@ const Projects = (props) => {
       (authUser) => {
         if (authUser) {
           setUid(authUser.uid);
+          setEmail(authUser.email);
         }
       },
       () => setUid()
@@ -114,7 +116,10 @@ const Projects = (props) => {
     };
 
     const updateUserProjects = async () => {
-      const item = { projects: items.map((project) => project.id) };
+      const item = {
+        'projects': items.map((project) => project.id),
+        'email': email
+      };
       updateUser(item);
     };
 
@@ -123,7 +128,7 @@ const Projects = (props) => {
     }
 
     return () => {};
-  }, [ usersCollection, items, props.firebase, uid ]);
+  }, [ usersCollection, items, props.firebase, uid, email ]);
 
   const breadcrumbItems = [
     {
