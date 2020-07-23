@@ -21,10 +21,11 @@ class Firebase {
       .collection('apps')
       .doc('digital-paper-edit');
     this.storage = app.storage().ref();
+    this.getServerTimestamp = () => this.firestore.FieldValue.serverTimestamp();
   }
 
   // *** Merge Auth and DB User API *** //
-  initDB = async uid => {
+  initDB = async (uid, email) => {
     const dbUserRef = this.db.collection('users').doc(uid);
     const dbSnapshot = await dbUserRef.get();
     const dbUser = dbSnapshot.data();
@@ -33,7 +34,8 @@ class Firebase {
       dbUserRef.set({
         projects: [],
         role: 'USER',
-        created: this.getServerTimestamp()
+        created: this.getServerTimestamp(),
+        email: email
       });
 
       // https://firebase.google.com/docs/firestore/data-model
@@ -46,7 +48,7 @@ class Firebase {
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged(async authUser => {
       if (authUser) {
-        const db = await this.initDB(authUser.uid);
+        const db = await this.initDB(authUser.uid, authUser.email);
 
         const mergeUser = {
           uid: authUser.uid,
@@ -69,6 +71,7 @@ class Firebase {
   doSignOut = () => this.auth.signOut();
   doPasswordReset = email => this.auth.sendPasswordResetEmail(email);
   doPasswordUpdate = password => this.auth.currentUser.updatePassword(password);
+  doCreateUserWithEmailAndPassword = (email, password) => this.auth.createUserWithEmailAndPassword(email, password)
 
   uint8ArrayBlob = (data) => this.firestore.Blob.fromUint8Array(data);
   base64StringBlob = (data) => this.firestore.Blob.fromBase64String(data);

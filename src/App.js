@@ -9,7 +9,6 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Alert from 'react-bootstrap/Alert';
 import HelpOverlayTrigger from './HelpOverlayTrigger';
-import AdminButton from './AdminButton';
 import Collection from './Components/Firebase/Collection';
 
 const App = (props) => {
@@ -69,11 +68,12 @@ const App = (props) => {
             </Col>
             <Col md={ { offset: 1, span: 3 } }>
               Signed in as: <br></br>
-              <strong>{authUser.email}</strong>
+              <strong>
+                {user && user.role === 'ADMIN' ? <a href="#admin">{authUser.email}</a> : authUser.email}
+              </strong>
             </Col>
             <Col md={ { span: 3 } }>
               <SignOutButton /> <HelpOverlayTrigger />
-              {user && user.role === 'ADMIN' ? <AdminButton /> : null}
             </Col>
           </Row>
         </Container>
@@ -95,7 +95,6 @@ const App = (props) => {
               <HelpOverlayTrigger />
             </Col>
           </Row>
-
         </Container>
         <Routes />
       </>
