@@ -124,7 +124,5 @@ AdminView.propTypes = {
     })
   })
 };
-const condition = (authUser) => {
-  return (!!authUser);
-};
+const condition = (authUser) => (!!authUser);
 export default withAuthorization(condition)(AdminView);
