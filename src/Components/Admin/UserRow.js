@@ -35,40 +35,8 @@ const UserRow = props => {
     };
   }, [ Projects, id, userProjects ]);
 
-  // show which transcriptions have failed
-  // show which users are who
-  //   useEffect(() => {
-  //     const getUserTranscripts = async (projectId) => {
-  //       const Transcripts = new Collection(
-  //         props.firebase,
-  //         `/projects/${ projectId }/transcripts`
-  //       );
-
-  //       try {
-  //         return Transcripts.collectionRef.onSnapshot((snapshot) =>
-  //           snapshot.docs.map((doc) => ({
-  //             ...doc.data(), id: doc.id, display: true
-  //           }))
-  //         );
-  //       } catch (error) {
-  //         console.error('Error getting documents: ', error);
-  //       }
-  //     };
-
-  //     const getAllUserTranscripts = async () => {
-  //       const transcripts = await Promise.all(userProjects.map(project => getUserTranscripts(project.id)));
-  //       setUserTranscripts(transcripts);
-  //     };
-
-  //     if (!userTranscripts && userProjects && userProjects.length > 0 ) {
-  //       getAllUserTranscripts();
-  //     }
-
-  //     return () => {
-  //     };
-  //   }, [ userTranscripts, userProjects, props.firebase ]);
-
   let updatedSeconds = 'N/A';
+
   if (updated) {
     updatedSeconds = updated.seconds;
   }
