@@ -10,9 +10,14 @@ This dashboard allows you to join up the information in a meaningful way, that h
 
 ## Features
 
-### Transcript View
+You can access via selecting your email address. E.g. in the image below, access the Admin view by clicking `dpe-admin@test.com`.
+![Access Admin View](../img/access-admin-view.png)
 
-You can view the following fields in the Transcript View
+### Transcripts View
+
+![Transcripts View](../img/admin-transcripts-view.png)
+
+You can view the following fields in the Transcripts View
 
 | Status | Message | Created | Updated | Transcript ID | Transcript Title | Project ID | Project Title | Transcription Duration (Dhms) | Duration (Hms) | Size (bytes) | File location | Media Type |
 | ------ | ------- | ------- | ------- | ------------- | ---------------- | ---------- | ------------- | ----------------------------- | -------------- | ------------ | ------------- | ---------- |
@@ -34,9 +39,11 @@ This will help to debug the problematic transcript faster.
 2. Go to Firebase's Function Console to find the problem
    ![Firebase Console](../img/functions-debug-view.png)
 
-### User View
+### Users View
 
-You can view the following fields in the User View
+![Admin Users View](./../img/admin-users-view.png)
+
+You can view the following fields in the Users View
 | User ID | Email | Project ID | Project Title | Project Created | Role | Updated | Access |
 | ------- | ----- | ---------- | ------------- | --------------- | ---- | ------- | ------ |
 
