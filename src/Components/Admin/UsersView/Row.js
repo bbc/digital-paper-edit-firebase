@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 
-import Collection from '../Firebase/Collection';
-import { PROJECTS } from '../../constants/routes';
+import Collection from '../../Firebase/Collection';
+import { PROJECTS } from '../../../constants/routes';
 
-const UserRow = props => {
+const Row = props => {
   const Projects = new Collection(props.firebase, PROJECTS);
   const { role, access, id, email, updated, } = props.user;
   const [ userProjects, setUserProjects ] = useState();
@@ -79,7 +79,7 @@ const UserRow = props => {
   );
 };
 
-UserRow.propTypes = {
+Row.propTypes = {
   firebase: PropTypes.any,
   match: PropTypes.shape({
     params: PropTypes.shape({
@@ -89,4 +89,4 @@ UserRow.propTypes = {
   user: PropTypes.any
 };
 
-export default UserRow;
+export default Row;
