@@ -19,7 +19,7 @@ const Row = props => {
         const allTranscripts = await Transcripts.getCollection();
         setTranscripts(allTranscripts);
       } catch (e) {
-        console.error('Could not get Project Id: ', e);
+        console.error('Could not get Transcripts: ', e);
         setTranscripts([]);
       }
     };
@@ -123,7 +123,7 @@ const Row = props => {
 
   return (
     <>
-      { transcripts && uploads ? getRows() : [] }
+      { transcripts && transcripts.length && uploads && uploads.length ? getRows() : [] }
     </>
   );
 };
