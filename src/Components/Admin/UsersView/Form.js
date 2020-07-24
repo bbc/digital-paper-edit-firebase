@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
+import BSForm from 'react-bootstrap/Form';
 
-const UserForm = (props) => {
+const Form = (props) => {
 
   const [ validated, setValidated ] = useState(false);
 
@@ -33,29 +33,29 @@ const UserForm = (props) => {
 
   return (
     <>
-      <Form noValidate validated={ validated } onSubmit={ handleSubmit }>
-        <Form.Group controlId="formBasicEmail">
-          <Form.Label >Email address</Form.Label>
-          <Form.Control value={ email } onChange={ onEmailChange } type="email" placeholder="Enter email" />
-          <Form.Text className="text-muted">
-          </Form.Text>
-        </Form.Group>
+      <BSForm noValidate validated={ validated } onSubmit={ handleSubmit }>
+        <BSForm.Group controlId="formBasicEmail">
+          <BSForm.Label >Email address</BSForm.Label>
+          <BSForm.Control value={ email } onChange={ onEmailChange } type="email" placeholder="Enter email" />
+          <BSForm.Text className="text-muted">
+          </BSForm.Text>
+        </BSForm.Group>
 
-        <Form.Group controlId="formBasicPassword">
-          <Form.Label>Password</Form.Label>
-          <Form.Control value={ password } onChange={ onPasswordChange } type="password" placeholder="Password" />
-        </Form.Group>
+        <BSForm.Group controlId="formBasicPassword">
+          <BSForm.Label>Password</BSForm.Label>
+          <BSForm.Control value={ password } onChange={ onPasswordChange } type="password" placeholder="Password" />
+        </BSForm.Group>
 
         <Button variant="primary" type="submit" disabled={ isInvalid }>
           Submit
         </Button>
-      </Form>
+      </BSForm>
     </>
   );
 };
 
-UserForm.propTypes = {
+Form.propTypes = {
   handleSubmit: PropTypes.func
 };
 
-export default UserForm;
+export default Form;
