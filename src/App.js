@@ -9,10 +9,12 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Alert from 'react-bootstrap/Alert';
 import HelpOverlayTrigger from './HelpOverlayTrigger';
+import Collection from './Components/Firebase/Collection';
 
 const App = (props) => {
   let offlineWarning = null;
   const [ authUser, setAuthUser ] = useState();
+  const [ user, setUser ] = useState();
 
   useEffect(() => {
     const authListener = props.firebase.auth.onAuthStateChanged((user) =>
@@ -23,6 +25,21 @@ const App = (props) => {
       authListener();
     };
   }, [ props.firebase.auth ]);
+
+  useEffect(() => {
+    const userCollection = new Collection(props.firebase, '/users');
+    const getUser = async () => {
+      const userItem = await userCollection.getItem(authUser.uid);
+      setUser(userItem);
+    };
+
+    if (authUser) {
+      getUser();
+    }
+
+    return () => {
+    };
+  }, [ props.firebase, authUser ]);
 
   if (!navigator.onLine) {
     offlineWarning = (
@@ -51,7 +68,9 @@ const App = (props) => {
             </Col>
             <Col md={ { offset: 1, span: 3 } }>
               Signed in as: <br></br>
-              <strong>{authUser.email}</strong>
+              <strong>
+                {user && user.role === 'ADMIN' ? <a href="#admin">{authUser.email}</a> : authUser.email}
+              </strong>
             </Col>
             <Col md={ { span: 3 } }>
               <SignOutButton /> <HelpOverlayTrigger />
@@ -65,10 +84,17 @@ const App = (props) => {
     AppContainer = (
       <>
         <Container style={ { marginBottom: '2em', marginTop: '1em' } }>
-          <h1> Digital Paper Edit </h1>
-          <p>
-            Please <a href="/">sign in</a> - please request a user and password
-          </p>
+          <Row>
+            <Col xs={ 5 }>
+              <h1> Digital Paper Edit </h1>
+            </Col>
+            <Col md={ { offset: 1, span: 3 } }>
+              Please <a href="/">sign in</a> or request login details by clicking the help button!
+            </Col>
+            <Col md={ { span: 3 } }>
+              <HelpOverlayTrigger />
+            </Col>
+          </Row>
         </Container>
         <Routes />
       </>

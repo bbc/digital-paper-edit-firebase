@@ -12,17 +12,20 @@ import { PROJECTS } from '../../constants/routes';
 
 const Projects = (props) => {
   const [ uid, setUid ] = useState();
+  const [ email, setEmail ] = useState();
   const [ loading, setIsLoading ] = useState(false);
   const [ items, setItems ] = useState([]);
+
   const type = 'Project';
-  const collection = new Collection(props.firebase, PROJECTS);
+  const projectsCollection = new Collection(props.firebase, PROJECTS);
+  const usersCollection = new Collection(props.firebase, '/users');
 
   const createLabel = async (projectId, label) => {
-    const LabelsCollection = new Collection(
+    const labelsCollection = new Collection(
       props.firebase,
       `/projects/${ projectId }/labels`
     );
-    const labelDocRef = await LabelsCollection.postItem(label);
+    const labelDocRef = await labelsCollection.postItem(label);
 
     labelDocRef.update({
       id: labelDocRef.id,
@@ -30,7 +33,7 @@ const Projects = (props) => {
   };
 
   const createProject = async (item) => {
-    const docRef = await collection.postItem(item);
+    const docRef = await projectsCollection.postItem(item);
     docRef.update({
       url: `/projects/${ docRef.id }`,
     });
@@ -45,7 +48,7 @@ const Projects = (props) => {
   };
 
   const updateProject = (id, item) => {
-    collection.putItem(id, item);
+    projectsCollection.putItem(id, item);
   };
 
   const handleSave = (item) => {
@@ -63,7 +66,7 @@ const Projects = (props) => {
 
   const deleteProject = async (id) => {
     try {
-      await collection.deleteItem(id);
+      await projectsCollection.deleteItem(id);
     } catch (e) {
       console.error(e);
     }
@@ -77,7 +80,7 @@ const Projects = (props) => {
     const getUserProjects = async () => {
       setIsLoading(true);
       try {
-        collection.userRef(uid).onSnapshot((snapshot) => {
+        projectsCollection.userRef(uid).onSnapshot((snapshot) => {
           const projects = snapshot.docs.map((doc) => {
             return { ...doc.data(), id: doc.id, display: true };
           });
@@ -91,6 +94,7 @@ const Projects = (props) => {
       (authUser) => {
         if (authUser) {
           setUid(authUser.uid);
+          setEmail(authUser.email);
         }
       },
       () => setUid()
@@ -103,7 +107,27 @@ const Projects = (props) => {
     return () => {
       authListener();
     };
-  }, [ collection, items, loading, props.firebase, uid ]);
+  }, [ projectsCollection, items, loading, props.firebase, uid ]);
+
+  useEffect(() => {
+    const updateUser = (item) => {
+      usersCollection.putItem(uid, item);
+    };
+
+    const updateUserProjects = async () => {
+      const item = {
+        'projects': items.map((project) => project.id),
+        'email': email
+      };
+      updateUser(item);
+    };
+
+    if (uid && items.length > 0) {
+      updateUserProjects();
+    }
+
+    return () => {};
+  }, [ usersCollection, items, props.firebase, uid, email ]);
 
   const breadcrumbItems = [
     {
@@ -143,8 +167,8 @@ const Projects = (props) => {
 
 Projects.propTypes = {
   firebase: PropTypes.shape({
-    onAuthUserListener: PropTypes.func
-  })
+    onAuthUserListener: PropTypes.func,
+  }),
 };
 
 // const condition = (authUser) => !!authUser;

@@ -23,7 +23,7 @@ When manually adding changes to the changes from a fork - there are challenges o
   ("@bbc/aes31-adl-composer": "^1.0.1"),
   ("@bbc/digital-paper-edit-storybook": "^1.3.2"),
   ("@bbc/fcpx-xml-composer": "^1.0.0"),
-  ("@bbc/react-transcript-editor": "^1.4.0")
+  ("@bbc/react-transcript-editor": "^1.4.0"),
 ];
 ```
 
@@ -81,7 +81,7 @@ let firebaseConfig = {
   storageBucket: "project-id.appspot.com",
   messagingSenderId: "sender-id",
   appId: "app-id",
-  measurementId: "G-measurement-id"
+  measurementId: "G-measurement-id",
 };
 ```
 
@@ -160,10 +160,11 @@ Node version is set in node version manager [`.nvmrc`](https://github.com/creati
 Use node v8 in Functions directory.
 
 Developing is a lot easier if you have your **local emulator** set up.
+
 1. Follow the instructions [here](https://firebase.google.com/docs/functions/local-2. emulator#set_up_admin_credentials_optional) to get the admin credentials.
 2. You need to save this as `gcp-credentials.json` and keep it in your `digital-paper-edit-firebase/functions` folder.
 3. Run `./start_firebase_shell` in functions folder.
-<!-- TODO: Setup eslint in express server -->
+   <!-- TODO: Setup eslint in express server -->
 
 ## Documentation
 
@@ -173,15 +174,13 @@ See [docs](./docs) folder
 - [`docs/user-journey/user-journey.md`](./docs/user-journey/user-journey.md) overview of main features of the app.
 - [`docs/notes/`](./docs/notes/) contains unsorted dev notes on various aspects of the project (think of it as drafts).
 - [`docs/guides/`](./docs/guides/) contains good to know/how to on various aspects of the project.
-    - [`guides/create-new-users](./docs/guides/create-new-users.md)` contains instructions for adding new users to DPE
+  - [`guides/admin-view`](./docs/guides/admin-view.md) contains instructions on the Admin View
+  - [`guides/create-new-users`](./docs/guides/create-new-users.md) contains instructions for adding new users to DPE
 - [`docs/adr/`](./docs/adr/) contains [Architecture Decision Record](https://github.com/joelparkerhenderson/architecture_decision_record).
 
 > An architectural decision record (ADR) is a document that captures an important architectural decision made along with its context and consequences.
 
 We are using [this template for ADR](https://gist.github.com/iaincollins/92923cc2c309c2751aea6f1b34b31d95)
-
-<!--
-[There also QA testing docs](./docs/qa/README.md) to manual test the component before a major release, (QA testing does not require any technical knowledge). -->
 
 ## Build
 
@@ -191,10 +190,10 @@ npm run build
 
 Build of react client side will be in `build`
 
-> Builds the app for production to the `build` folder.<br>
+> Builds the app for production to the `build` folder.<br />
 > It correctly bundles React in production mode and optimizes the build for the best performance.
 >
-> The build is minified and the filenames include the hashes.<br>
+> The build is minified and the filenames include the hashes.<br />
 > Your app is ready to be deployed!
 
 ## Tests
@@ -211,7 +210,7 @@ During development you can use
 npm run test:watch
 ```
 
-> Launches the test runner in the interactive watch mode.<br>
+> Launches the test runner in the interactive watch mode.<br/ >
 > See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
 <!-- See README for individual packages for more details -->

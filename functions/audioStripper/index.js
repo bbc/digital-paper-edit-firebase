@@ -12,24 +12,24 @@ const convertStreamToAudio = (inputStream, outputStream) => {
       .toFormat("wav")
       .audioFrequency(16000)
       .on("start", (cmd) => {
-        console.debug("Started " + cmd);
+        // console.debug("Started " + cmd);
       })
       .on("codecData", (data) => {
-        console.debug(`Input is ${data.audio} audio with ${data.video} video`);
+        // console.debug(`Input is ${data.audio} audio with ${data.video} video`);
       })
       .on("error", (err, stdout, stderr) => {
-        console.debug(err.message); //this will likely return "code=1" not really useful
-        console.debug("stdout:\n" + stdout);
-        console.debug("stderr:\n" + stderr); //this will contain more detailed debugging info
+        // console.debug(err.message); //this will likely return "code=1" not really useful
+        // console.debug("stdout:\n" + stdout);
+        // console.debug("stderr:\n" + stderr); //this will contain more detailed debugging info
         reject(err);
       })
       .on("progress", (progress) => {
-        console.debug(progress);
-        console.debug(`Processing: ${progress.percent}% done`);
+        // console.debug(progress);
+        // console.debug(`Processing: ${progress.percent}% done`);
       })
       .on("end", (stdout, stderr) => {
-        console.debug(stdout, stderr);
-        console.debug("Transcoding succeeded!");
+        // console.debug(stdout, stderr);
+        // console.debug("Transcoding succeeded!");
         resolve();
       })
       .pipe(outputStream, { end: true });
