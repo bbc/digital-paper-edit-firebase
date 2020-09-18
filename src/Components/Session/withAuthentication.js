@@ -16,33 +16,39 @@ const withAuthentication = Component => {
     );
 
     useEffect(() => {
+      // const oidcCall = async () => {
+      //   try {
+      //     const res = await this.auth.signInWithPopup(this.provider);
+      //     console.log(res);
+      //     if (res) {
+      //       localStorage.setItem('oidc', JSON.stringify(res));
+      //       setOidc(res);
+      //     } else {
+      //       console.log('failed');
+      //       localStorage.removeItem('oidc');
+      //       setOidc(null);
+      //     }
+      //   } catch (err) {
+      //     console.log('failed with error', err);
+      //   }
+      // };
+
+      //Firebase console -> Auth section -> Sign in method tab
       const oidcCall = async () => {
-        try {
-          const res = await this.auth.signInWithPopup(this.provider);
-          console.log(res);
-          if (res) {
+        await props.firebase.onOIDCAuthListener(
+          res => {
             localStorage.setItem('oidc', JSON.stringify(res));
             setOidc(res);
-          } else {
-            console.log('failed');
+          },
+          (err) => {
+            console.log('fallback oidc', err);
             localStorage.removeItem('oidc');
             setOidc(null);
+            throw (err);
           }
-        } catch (err) {
-          console.log('failed with error', err);
-        }
+        );
       };
-        // await props.firebase.onOIDCAuthListener(
-        //   res => {
-        //     localStorage.setItem('oidc', JSON.stringify(res));
-        //     setOidc(res);
-        //   },
-        //   (err) => {
-        //     console.log('fallback oidc', err);
-        //     throw (err);
-        //     localStorage.removeItem('oidc');
-        //     setOidc(null);
-        //   }
+
       // }
       // let listener;
       // if (!popup) {
@@ -58,10 +64,10 @@ const withAuthentication = Component => {
       //       localStorage.removeItem('oidc');
       //       setOidc(null);
       //     }
-        // );
+      // );
 
       if (!popup) {
-        oidcCall();
+        // oidcCall();
         setPopup(false);
       }
       // }

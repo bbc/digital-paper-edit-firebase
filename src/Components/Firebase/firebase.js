@@ -2,7 +2,6 @@ import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/storage';
-import 'firebase-admin';
 
 const config = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -11,13 +10,38 @@ const config = {
   projectId: process.env.REACT_APP_PROJECT_ID,
   storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
-  oidc: process.env.REACT_APP_OIDC
+  oidc: process.env.REACT_APP_OIDC,
 };
 class Firebase {
   constructor() {
     this.provider = new app.auth.OAuthProvider(config.oidc);
     app.initializeApp(config);
     this.auth = app.auth();
+
+    // this.auth.getRedirectResult().then(function(result) {
+    //   if (result.credential) {
+    //     console.log(result);
+    //     // This gives you the OAuth Access Token for that provider.
+    //     var token = result.credential.accessToken;
+    //     console.log(token);
+    //   }
+    //   var user = result.user;
+    //   console.log(user);
+    // });
+
+    this.provider.addScope('profile');
+    this.provider.addScope('openid');
+    this.provider.addScope('token');
+    this.auth.signInWithPopup(this.provider).then((result) => {
+      console.log(result);
+    // result.credential is a firebase.auth.OAuthCredential object.
+    // result.credential.providerId is equal to 'oidc.myProvider'.
+    // result.credential.idToken is the OIDC provider's ID token.
+    })
+      .catch((error) => {
+        console.log(error);
+        // Handle error.
+      });;
 
     this.firestore = app.firestore;
     this.db = this.firestore()
@@ -48,19 +72,18 @@ class Firebase {
     return dbUser;
   };
 
-  onOIDCAuthListener = async (next, fallback) => {
-    try {
-      console.log('called oidc', this.provider);
-
-      const result = await this.auth.signInWithPopup(this.provider);
-      console.log('result odic', result);
-      next(result);
-    } catch (err) {
-      console.error(err);
-      console.error('you could not log in with OIDC', this.provider);
-      fallback(err);
-    }
-  }
+  // onOIDCAuthListener = async (next, fallback) => {
+  //   try {
+  //     console.log('called oidc', this.provider);
+  //     const result = await this.auth.signInWithPopup(this.provider);
+  //     console.log('result odic', result);
+  //     next(result);
+  //   } catch (err) {
+  //     console.error(err);
+  //     console.error('you could not log in with OIDC', this.provider);
+  //     fallback(err);
+  //   }
+  // }
 
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged(async authUser => {

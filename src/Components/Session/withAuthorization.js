@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'recompose';
 
@@ -11,23 +11,6 @@ import * as ROUTES from '../../constants/routes';
 const withAuthorization = condition => Component => {
 
   const WithAuthorization = props => {
-
-    // useEffect(() => {
-    //   const listener = props.firebase.onOIDCAuthListener(
-    //     authOIDC => {
-    //       if (!condition(authOIDC)) {
-    //         console.log('OIDC: unauthorised');
-    //       }
-    //     },
-    //     () => {
-    //       console.log('OIDC: unauthorised');
-    //     }
-    //   );
-
-    //   return () => {
-    //     listener();
-    //   };
-    // }, [ props.firebase ]);
 
     useEffect(() => {
       const listener = props.firebase.onAuthUserListener(
@@ -48,7 +31,6 @@ const withAuthorization = condition => Component => {
     return (
       <AuthUserContext.Consumer>
         {ctx => {
-          console.log(ctx);
           if (ctx && (condition(ctx.oidc, ctx.authUser))) {
             return <Component { ...props } />;
           } else {
