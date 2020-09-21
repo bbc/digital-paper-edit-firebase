@@ -156,6 +156,7 @@ const updateTranscriptsStatus = async (
           const { grouped } = psttAdapter(response.transcript.items);
           update.groupedc = zlib.gzipSync(JSON.stringify(grouped));
           update.status = "done";
+          update.message = "Completed"
           update.runtime = getRuntime(execTimestamp, created);
           console.log(
             `Finished job ${jobId} in ${update.runtime.humanReadable}`

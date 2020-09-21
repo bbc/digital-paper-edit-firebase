@@ -5,3 +5,6 @@ docs/guides/example/output/*
 # Local test configuration files
 .runtimeconfig.json
 gcp-credentials.json
+
+# making sure this isn't added to main
+test.js

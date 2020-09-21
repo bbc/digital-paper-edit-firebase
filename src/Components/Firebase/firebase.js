@@ -30,8 +30,6 @@ class Firebase {
     // });
 
     this.provider.addScope('profile');
-    this.provider.addScope('openid');
-    this.provider.addScope('token');
     this.auth.signInWithPopup(this.provider).then((result) => {
       console.log(result);
     // result.credential is a firebase.auth.OAuthCredential object.
