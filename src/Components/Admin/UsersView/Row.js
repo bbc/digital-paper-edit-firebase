@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 
 import Collection from '../../Firebase/Collection';
 import { PROJECTS } from '../../../constants/routes';
+import { updateDescOrder, getISOTime } from '../../../Util/time';
 
 const Row = props => {
   const Projects = new Collection(props.firebase, PROJECTS);
@@ -38,7 +39,7 @@ const Row = props => {
   let updatedSeconds = 'N/A';
 
   if (updated) {
-    updatedSeconds = updated.seconds;
+    updatedSeconds = getISOTime(updated.seconds);
   }
 
   const getRows = () => userProjects.map(project => {
@@ -57,7 +58,7 @@ const Row = props => {
           {project.title}
         </td>
         <td>
-          {project.created.seconds}
+          {getISOTime(project.created.seconds)}
         </td>
         <td>
           {role}
