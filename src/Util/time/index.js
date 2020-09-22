@@ -1,3 +1,10 @@
+const updateDescOrder = (firstTr, secondTr) => {
+  const firstUpdated = firstTr.updated ? firstTr.updated : { seconds: 0 };
+  const secondUpdated = secondTr.updated ? secondTr.updated : { seconds: 0 };
+
+  return secondUpdated.seconds - firstUpdated.seconds;
+};
+
 const secondsToDhms = (sec) => {
   const seconds = Number(sec);
   const d = Math.floor(seconds / (3600 * 24));
@@ -25,5 +32,11 @@ const ToDhmsCompact = (sec) => {
   return dhms.map(display => (display < 10 ? '0' + display : display)).join(':');
 
 };
+const getISOTime = (sec) => {
+  const date = new Date(0);
+  date.setUTCSeconds(sec);
 
-export { ToHumanReadable, ToDhmsCompact };
+  return date.toISOString();
+};
+
+export { ToHumanReadable, ToDhmsCompact, getISOTime, updateDescOrder };
