@@ -9,8 +9,6 @@ import CustomFooter from '../lib/CustomFooter';
 import Transcripts from './Transcripts';
 import PaperEdits from './PaperEdits';
 import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
-import Collection from '../Firebase/Collection';
-import { PROJECTS } from '../../constants/routes';
 import { withAuthorization } from '../Session';
 
 const genBreadcrumb = name => [
@@ -24,25 +22,20 @@ const genBreadcrumb = name => [
 ];
 
 const WorkspaceView = props => {
-  const projects = new Collection(props.firebase, PROJECTS);
+  const collections = props.collections;
   const id = props.match.params.projectId;
+
   const [ active, setActive ] = useState('transcripts');
   const [ title, setTitle ] = useState('Project Title');
 
   useEffect(() => {
-    const getProjectName = async () => {
-      try {
-        const doc = await projects.getItem(id);
-        setTitle(doc.title);
-      } catch (e) {
-        console.error('Could not get Project Id: ', id, e);
-      }
-    };
-
-    getProjectName();
+    if (collections) {
+      const project = collections.getProject(id);
+      setTitle(project.title);
+    }
 
     return () => {};
-  }, [ id, projects ]);
+  }, [ collections, id ]);
 
   return (
     <>

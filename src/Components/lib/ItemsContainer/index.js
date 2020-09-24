@@ -11,6 +11,7 @@ import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
 import SimpleCard from '@bbc/digital-paper-edit-storybook/SimpleCard';
 import TranscriptCard from '@bbc/digital-paper-edit-storybook/TranscriptCard';
 import cuid from 'cuid';
+import { ERROR } from '../../../constants/transcriptStatus';
 
 const initialFormState = {
   title: '',
@@ -31,6 +32,7 @@ const formReducer = (state = initialFormState, { type, payload }) => {
 };
 
 const ItemsContainer = props => {
+
   const type = props.type;
   const [ showingItems, setShowingItems ] = useState([]);
   const [ showModal, setShowModal ] = useState(false);
@@ -100,7 +102,7 @@ const ItemsContainer = props => {
           description={ item.description }
           message={ item.message }
           id={ item.id }
-          status={ item.status }
+          status={ typeof item.status !== 'string' ? ERROR : item.status }
           title={ item.title }
           url={ item.url ? item.url : '' }
           progress={ props.uploadTasks.get(item.id) }

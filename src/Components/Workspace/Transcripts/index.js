@@ -1,208 +1,290 @@
-import React, { useEffect, useState } from 'react';
-import ItemsContainer from '../../lib/ItemsContainer';
+import React, { useEffect, useState, useReducer } from 'react';
 import PropTypes from 'prop-types';
-import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
+import { itemsReducer, itemsInitState, itemsInit } from '../itemsReducer';
+import { formReducer, initialFormState } from '../formReducer';
 
-const Transcripts = ({ projectId, firebase }) => {
-  const TYPE = 'Transcript';
-  const UPLOADFOLDER = 'uploads';
+import { DONE, ERROR, UPLOADING } from '../../../constants/transcriptStatus';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Button from 'react-bootstrap/Button';
 
-  const [ loading, setIsLoading ] = useState(false);
-  const [ items, setItems ] = useState([]);
-  const [ uid, setUid ] = useState();
+import { anyInText } from '../../../Util/in-text';
+import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
+import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
+import TranscriptCard from '@bbc/digital-paper-edit-storybook/TranscriptCard';
+import cuid from 'cuid';
 
+const Transcripts = ({ projectId, collections }) => {
   const [ uploadTasks, setUploadTasks ] = useState(new Map());
-
-  const TranscriptsCollection = new Collection(
-    firebase,
-    `/projects/${ projectId }/transcripts`
+  const [ items, dispatchItems ] = useReducer(
+    itemsReducer,
+    itemsInitState,
+    itemsInit
   );
+  const [ uploading, setUploading ] = useState();
+  const [ showingItems, setShowingItems ] = useState([]);
+  const [ showModal, setShowModal ] = useState(false);
+  const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
 
   const genUrl = (id) => {
     return `/projects/${ projectId }/transcripts/${ id }/correct`;
   };
 
   useEffect(() => {
-    const getTranscripts = async () => {
-      try {
-        TranscriptsCollection.collectionRef.onSnapshot((snapshot) => {
-          const transcripts = snapshot.docs.map((doc) => {
-            return { ...doc.data(), id: doc.id, display: true };
-          });
-          setItems(transcripts);
-        });
-      } catch (error) {
-        console.error('Error getting documents: ', error);
-      }
-    };
-
-    const authListener = firebase.onAuthUserListener(
-      (authUser) => {
-        if (authUser) {
-          setUid(authUser.uid);
-        }
-      },
-      () => setUid()
-    );
-
-    if (!loading) {
-      getTranscripts();
-      setIsLoading(true);
+    if (collections) {
+      dispatchItems({
+        type: 'set',
+        payload: collections.getProjectTranscripts(projectId),
+      });
     }
+
+    return () => {};
+  }, [ collections, projectId ]);
+
+  const handleSaveForm = (item) => {
+    handleSave(item);
+    setShowModal(false);
+    dispatchForm({ type: 'reset' });
+  };
+
+  const handleEditItem = (id) => {
+    const item = items.find((i) => i.id === id);
+    dispatchForm({
+      type: 'update',
+      payload: item,
+    });
+    setShowModal(true);
+  };
+
+  const toggleShowModal = () => {
+    setShowModal(!showModal);
+  };
+
+  const handleOnHide = () => {
+    setShowModal(false);
+  };
+
+  // search
+
+  const handleFilterDisplay = (item, text) => {
+    if (anyInText([ item.title, item.description ], text)) {
+      item.display = true;
+    } else {
+      item.display = false;
+    }
+
+    return item;
+  };
+
+  const handleSearch = (text) => {
+    const results = items.map((item) => handleFilterDisplay(item, text));
+    setShowingItems(results.filter((item) => item.display));
+  };
+
+  // generic
+
+  useEffect(() => {
+    setShowingItems(items);
 
     return () => {
-      authListener();
+      setShowingItems([]);
     };
-  }, [
-    TranscriptsCollection.collectionRef,
-    items,
-    loading,
-    firebase,
-    uploadTasks,
-  ]);
+  }, [ items ]);
 
-  // firestore
-
-  const updateTranscript = async (id, item) => {
-    await TranscriptsCollection.putItem(id, item);
+  const handleDeleteItem = (id) => {
+    collections.deleteTranscript(projectId, id);
+    dispatchItems({ type: 'delete', payload: { id } });
   };
 
-  const createTranscript = async (item) => {
-    const docRef = await TranscriptsCollection.postItem(item);
-
-    return docRef;
-  };
-
-  const deleteTranscript = async (id) => {
-    try {
-      await TranscriptsCollection.deleteItem(id);
-    } catch (e) {
-      console.error('Failed to delete item from collection: ', e.code_);
-    }
-    try {
-      await firebase.storage.child(`users/${ uid }/uploads/${ id }`).delete();
-      await firebase.storage.child(`users/${ uid }/audio/${ id }`).delete();
-    } catch (e) {
-      console.error('Failed to delete item in storage: ', e.code_);
-    }
-  };
-
-  const handleDelete = (id) => {
-    deleteTranscript(id);
+  const handleUpdateStatus = (id, status) => {
+    const updatedStatus = { status: status };
+    collections.updateTranscript(projectId, id, updatedStatus);
+    dispatchItems({
+      type: 'update',
+      payload: { id, update: updatedStatus },
+    });
   };
 
   // storage
-
-  const updateUploadTasksProgress = (id, progress) => {
-    const newUploading = new Map(uploadTasks); // shallow clone
-    newUploading.set(id, progress);
-
-    setUploadTasks(newUploading);
-  };
 
   const handleUploadProgress = (id, snapshot) => {
     const progress = Math.floor(
       (snapshot.bytesTransferred / snapshot.totalBytes) * 100
     );
-    updateUploadTasksProgress(id, progress);
+    const newUploading = new Map(uploadTasks); // shallow clone
+    newUploading.set(id, progress);
+
+    return newUploading;
   };
 
   const handleUploadError = (id, error) => {
     console.error('Failed to upload file: ', error);
     const newTasks = new Map(uploadTasks); // shallow clone
     newTasks.delete(id);
-    setUploadTasks(newTasks);
 
-    updateTranscript(id, { status: 'error' });
+    return newTasks;
   };
 
   const handleUploadComplete = (id) => {
     console.log('File upload completed');
     const newTasks = new Map(uploadTasks); // shallow clone
     newTasks.delete(id);
-    setUploadTasks(newTasks);
 
-    updateTranscript(id, { status: 'in-progress' });
+    return newTasks;
+
   };
 
-  const getUploadPath = (id) => {
-    return `users/${ uid }/${ UPLOADFOLDER }/${ id }`;
-  };
-
-  const asyncUploadFile = async (id, file) => {
-    const path = getUploadPath(id);
-    const video = document.createElement('video');
-    video.preload = 'metadata';
-
-    video.onloadedmetadata = () => {
-      window.URL.revokeObjectURL(video.src);
-      const duration = video.duration;
-
-      const metadata = {
-        customMetadata: {
-          userId: uid,
-          id: id,
-          projectId: projectId,
-          originalName: file.name,
-          folder: UPLOADFOLDER,
-          duration: duration,
-        },
-      };
-
-      const uploadTask = firebase.storage.child(path).put(file, metadata);
-
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          handleUploadProgress(id, snapshot);
-        },
-        (error) => {
-          handleUploadError(id, error);
-        },
-        () => {
-          handleUploadComplete(id);
-        }
-      );
+  const createTranscript = async (item) => {
+    const newItem = {
+      title: item.title,
+      description: item.description ? item.description : '',
+      status: 'uploading',
+      projectId: projectId,
     };
-    video.src = URL.createObjectURL(file);
-  };
 
-  // general
+    const newTranscript = await collections.createTranscript(
+      projectId,
+      newItem
+    );
+
+    newItem.id = newTranscript.id;
+    newItem.url = genUrl(newTranscript.id);
+
+    dispatchItems({ type: 'add', payload: { item: newItem } });
+    await collections.updateTranscript(projectId, newItem.id, newItem);
+
+    return newItem.id;
+  };
 
   const handleSave = async (item) => {
     if (item.id) {
-      updateTranscript(item.id, item);
+      collections.updateTranscript(projectId, item.id, item);
+      dispatchItems({
+        type: 'update',
+        payload: { id: item.id, update: item },
+      });
     } else {
-      const newTranscript = await createTranscript({
-        title: item.title,
-        description: item.description ? item.description : '',
-        status: 'uploading',
-        projectId: projectId,
-      });
-
-      asyncUploadFile(newTranscript.id, item.file);
-
-      newTranscript.update({
-        url: genUrl(newTranscript.id),
-      });
+      const id = await createTranscript(item);
+      setUploading({ id: id, file: item.file });
     }
   };
 
+  const uploadHandler = (id, file, video, items) => {
+    window.URL.revokeObjectURL(video.src);
+    const uploadTask = collections.asyncUploadFile(
+      id,
+      projectId,
+      video.duration,
+      file
+    );
+
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const newUploading = handleUploadProgress(id, snapshot);
+        setUploadTasks(newUploading);
+        handleUpdateStatus(id, UPLOADING, items);
+      },
+      (error) => {
+        const newTasks = handleUploadError(id, error);
+        setUploadTasks(newTasks);
+        handleUpdateStatus(id, ERROR, items);
+      },
+      () => {
+        const newTasks = handleUploadComplete(id);
+        setUploadTasks(newTasks);
+        handleUpdateStatus(id, DONE, items);
+        setUploading(null);
+      }
+    );
+  };
+
+  const asyncUploadFile = ({ id, file }, items) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.onloadedmetadata = () => uploadHandler(id, file, video, items);
+    video.src = URL.createObjectURL(file);
+  };
+
+  useEffect(() => {
+    if (uploading) {
+      console.log(items);
+      asyncUploadFile(uploading, items);
+      setUploading();
+    }
+
+    return () => {
+    };
+  }, [ items, uploading ]);
+
+  const Cards = showingItems.map((item) => {
+    const key = 'card-' + cuid();
+
+    return (
+      <TranscriptCard
+        description={ item.description }
+        message={ item.message }
+        id={ item.id }
+        status={ typeof item.status !== 'string' ? ERROR : item.status }
+        title={ item.title }
+        url={ item.url ? item.url : '' }
+        progress={ uploadTasks.get(item.id) }
+        key={ key }
+        handleEditItem={ handleEditItem }
+        handleDeleteItem={ handleDeleteItem }
+      />
+    );
+  });
+
   return (
-    <ItemsContainer
-      type={ TYPE }
-      items={ items }
-      handleSave={ handleSave }
-      handleDelete={ handleDelete }
-      uploadTasks={ uploadTasks }
-    />
+    <>
+      <Row>
+        <Col sm={ 9 }>
+          <SearchBar handleSearch={ handleSearch } />
+        </Col>
+        <Col xs={ 12 } sm={ 3 }>
+          <Button
+            onClick={ toggleShowModal }
+            variant="outline-secondary"
+            size="sm"
+            block
+          >
+            New Transcript
+          </Button>
+        </Col>
+      </Row>
+
+      <section style={ { height: '75vh', overflow: 'scroll' } }>
+        {showingItems.length > 0 ? (
+          Cards
+        ) : (
+          <i>There are no transcripts, create a new one to get started.</i>
+        )}
+      </section>
+
+      <FormModal
+        { ...formData }
+        modalTitle={ formData.id ? 'Edit transcripts' : 'New transcripts' }
+        showModal={ showModal }
+        handleOnHide={ handleOnHide }
+        handleSaveForm={ handleSaveForm }
+        type={ 'transcript' }
+      />
+    </>
   );
 };
 
 Transcripts.propTypes = {
-  projectId: PropTypes.any,
+  collections: PropTypes.shape({
+    asyncUploadFile: PropTypes.func,
+    createTranscript: PropTypes.func,
+    deleteTranscript: PropTypes.func,
+    getProjectTranscripts: PropTypes.func,
+    updateTranscript: PropTypes.func,
+  }),
   firebase: PropTypes.any,
+  projectId: PropTypes.any,
 };
 
 const condition = (authUser) => !!authUser;

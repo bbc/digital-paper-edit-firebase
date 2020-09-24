@@ -6,129 +6,39 @@ import Col from 'react-bootstrap/Col';
 import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 import CustomFooter from '../lib/CustomFooter';
 import ItemsContainer from '../lib/ItemsContainer';
-import Collection from '../Firebase/Collection';
 import { withAuthorization } from '../Session';
-import { PROJECTS } from '../../constants/routes';
+import { updateItems, deleteItem, addItem } from '../../Util/items';
 
 const Projects = (props) => {
-  const [ uid, setUid ] = useState();
-  const [ email, setEmail ] = useState();
-  const [ loading, setIsLoading ] = useState(false);
-  const [ items, setItems ] = useState([]);
+  const collections = props.collections;
+  const [ items, setItems ] = useState();
+
+  useEffect(() => {
+    if (collections) {
+      setItems(collections.userProjects);
+    }
+
+    return () => {};
+  }, [ collections ]);
 
   const type = 'Project';
-  const projectsCollection = new Collection(props.firebase, PROJECTS);
-  const usersCollection = new Collection(props.firebase, '/users');
-
-  const createLabel = async (projectId, label) => {
-    const labelsCollection = new Collection(
-      props.firebase,
-      `/projects/${ projectId }/labels`
-    );
-    const labelDocRef = await labelsCollection.postItem(label);
-
-    labelDocRef.update({
-      id: labelDocRef.id,
-    });
-  };
-
-  const createProject = async (item) => {
-    const docRef = await projectsCollection.postItem(item);
-    docRef.update({
-      url: `/projects/${ docRef.id }`,
-    });
-
-    const defaultLabel = {
-      label: 'Default',
-      color: 'yellow',
-      value: 'yellow',
-      description: '',
-    };
-    createLabel(docRef.id, defaultLabel);
-  };
-
-  const updateProject = (id, item) => {
-    projectsCollection.putItem(id, item);
-  };
 
   const handleSave = (item) => {
     item.display = true;
 
     if (item.id) {
-      updateProject(item.id, item);
+      collections.updateProject(item.id, item);
+      setItems(() => updateItems(item.id, items, item));
     } else {
-      item.users = [ uid ];
-      item.url = '';
-      createProject(item);
-      setItems(() => [ ...items, item ]);
-    }
-  };
-
-  const deleteProject = async (id) => {
-    try {
-      await projectsCollection.deleteItem(id);
-    } catch (e) {
-      console.error(e);
+      collections.createProject(item);
+      setItems(() => addItem(items, item));
     }
   };
 
   const handleDelete = (id) => {
-    deleteProject(id);
+    collections.deleteProject(id);
+    setItems(() => deleteItem(id, items));
   };
-
-  useEffect(() => {
-    const getUserProjects = async () => {
-      setIsLoading(true);
-      try {
-        projectsCollection.userRef(uid).onSnapshot((snapshot) => {
-          const projects = snapshot.docs.map((doc) => {
-            return { ...doc.data(), id: doc.id, display: true };
-          });
-          setItems(projects);
-        });
-      } catch (error) {
-        console.error('Error getting documents: ', error);
-      }
-    };
-
-    const authListener = props.firebase.onAuthUserListener(
-      (authUser) => {
-        if (authUser) {
-          setUid(authUser.uid);
-          setEmail(authUser.email);
-        }
-      },
-      () => setUid()
-    );
-
-    if (uid && !loading) {
-      getUserProjects(uid);
-    }
-
-    return () => {
-      authListener();
-    };
-  }, [ projectsCollection, items, loading, props.firebase, uid ]);
-
-  useEffect(() => {
-    const updateUser = (item) => {
-      usersCollection.putItem(uid, item);
-    };
-
-    const updateUserProjects = async () => {
-      const item = {
-        'projects': items.map((project) => project.id),
-        'email': email
-      };
-      updateUser(item);
-    };
-
-    if (uid && items.length > 0) {
-      updateUserProjects();
-    }
-
-    return () => {};
-  }, [ usersCollection, items, props.firebase, uid, email ]);
 
   const breadcrumbItems = [
     {
@@ -167,8 +77,11 @@ const Projects = (props) => {
 };
 
 Projects.propTypes = {
-  firebase: PropTypes.shape({
-    onAuthUserListener: PropTypes.func,
+  collections: PropTypes.shape({
+    createProject: PropTypes.func,
+    deleteProject: PropTypes.func,
+    updateProject: PropTypes.func,
+    userProjects: PropTypes.any,
   }),
 };
 
