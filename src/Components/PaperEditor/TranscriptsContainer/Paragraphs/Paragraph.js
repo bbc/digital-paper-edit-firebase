@@ -49,6 +49,7 @@ const Paragraph = (props) => {
     if (word.annotation) {
       return (
         <AnnotationOverlayTrigger
+          key={ `${ word.annotation.id }-${ word.text }` }
           words={ wordEl }
           labels={ labels }
           annotation={ word.annotation }

@@ -3,7 +3,7 @@ import React, { useRef, useEffect, useState, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import SearchBar from '../../SearchBar'; // move to same folder + rename to SearchTool
-import Collection from '../../../../Firebase/Collection';
+import Collection from '../../../../Firebase/Collections/Collection';
 import TranscriptMenu from '../../TranscriptMenu';
 import getTimeFromUserWordsSelection from '../../get-user-selection.js';
 import paragraphWithAnnotations from '../../Paragraphs/add-annotations-to-words-in-paragraphs.js';
