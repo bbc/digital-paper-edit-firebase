@@ -122,4 +122,31 @@ const groupWordsInParagraphsBySpeakers = (words, paragraphs) => {
   return newParagraphs;
 };
 
-export default groupWordsInParagraphsBySpeakers;
+const ungroupReducer = (transcript, data) => {
+  const w = [ ...data.words ];
+
+  if (!data.start || !data.end) {
+    const firstWord = w[0];
+    const lastWord = w[w.length - 1];
+    data.start = parseFloat(firstWord.start);
+    data.end = parseFloat(lastWord.end);
+  }
+
+  delete data.words;
+  transcript.paragraphs.push(data);
+  transcript.words = transcript.words.concat(w);
+
+  return transcript;
+};
+
+const ungroupWordsInParagraphsBySpeakers = (grouped) => {
+  const init = { paragraphs: [], words: [] };
+  const ungrouped = grouped.reduce(
+    (transcript, data) => ungroupReducer(transcript, data),
+    init
+  );
+
+  return ungrouped;
+};
+
+export { groupWordsInParagraphsBySpeakers, ungroupWordsInParagraphsBySpeakers };

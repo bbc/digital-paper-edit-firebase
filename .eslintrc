@@ -5,7 +5,8 @@
   "env": {
     "browser": true,
     "node": true,
-    "jest": true
+    "jest": true,
+    "es6": true
   },
   "rules": {
     "react-hooks/rules-of-hooks": "error", // Checks rules of Hooks

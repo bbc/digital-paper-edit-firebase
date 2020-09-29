@@ -4,7 +4,7 @@ import { withAuthorization } from '../../Session';
 import { itemsReducer, itemsInitState, itemsInit } from '../itemsReducer';
 import { formReducer, initialFormState } from '../formReducer';
 
-import { DONE, ERROR, UPLOADING } from '../../../constants/transcriptStatus';
+import { ERROR, IN_PROGRESS, UPLOADING } from '../../../constants/transcriptStatus';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
@@ -65,8 +65,6 @@ const Transcripts = ({ projectId, collections }) => {
     setShowModal(false);
   };
 
-  // search
-
   const handleFilterDisplay = (item, text) => {
     if (anyInText([ item.title, item.description ], text)) {
       item.display = true;
@@ -82,8 +80,6 @@ const Transcripts = ({ projectId, collections }) => {
     setShowingItems(results.filter((item) => item.display));
   };
 
-  // generic
-
   useEffect(() => {
     setShowingItems(items);
 
@@ -92,18 +88,22 @@ const Transcripts = ({ projectId, collections }) => {
     };
   }, [ items ]);
 
-  const handleDeleteItem = (id) => {
+  const handleDeleteTranscript = (id) => {
     collections.deleteTranscript(projectId, id);
     dispatchItems({ type: 'delete', payload: { id } });
   };
 
-  const handleUpdateStatus = (id, status) => {
-    const updatedStatus = { status: status };
-    collections.updateTranscript(projectId, id, updatedStatus);
+  const handleUpdateTranscript = (id, item) => {
+    collections.updateTranscript(projectId, id, item);
     dispatchItems({
       type: 'update',
-      payload: { id, update: updatedStatus },
+      payload: { id, update: item },
     });
+  };
+
+  const handleUpdateStatus = (id, status) => {
+    const updatedStatus = { status: status };
+    handleUpdateTranscript(id, updatedStatus);
   };
 
   // storage
@@ -159,11 +159,7 @@ const Transcripts = ({ projectId, collections }) => {
 
   const handleSave = async (item) => {
     if (item.id) {
-      collections.updateTranscript(projectId, item.id, item);
-      dispatchItems({
-        type: 'update',
-        payload: { id: item.id, update: item },
-      });
+      handleUpdateTranscript(item.id, item);
     } else {
       const id = await createTranscript(item);
       setUploading({ id: id, file: item.file });
@@ -194,7 +190,7 @@ const Transcripts = ({ projectId, collections }) => {
       () => {
         const newTasks = handleUploadComplete(id);
         setUploadTasks(newTasks);
-        handleUpdateStatus(id, DONE, items);
+        handleUpdateStatus(id, IN_PROGRESS, items);
         setUploading(null);
       }
     );
@@ -209,7 +205,6 @@ const Transcripts = ({ projectId, collections }) => {
 
   useEffect(() => {
     if (uploading) {
-      console.log(items);
       asyncUploadFile(uploading, items);
       setUploading();
     }
@@ -232,7 +227,7 @@ const Transcripts = ({ projectId, collections }) => {
         progress={ uploadTasks.get(item.id) }
         key={ key }
         handleEditItem={ handleEditItem }
-        handleDeleteItem={ handleDeleteItem }
+        handleDeleteItem={ handleDeleteTranscript }
       />
     );
   });

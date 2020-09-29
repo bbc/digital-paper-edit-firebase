@@ -11,93 +11,36 @@ import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 import TranscriptsContainer from './TranscriptsContainer';
 import ProgrammeScriptContainer from './ProgrammeScriptContainer';
 import PropTypes from 'prop-types';
-import Collection from '../Firebase/Collection';
 
 const PaperEditor = (props) => {
   const projectId = props.match.params.projectId;
   const papereditId = props.match.params.papereditId;
   const videoHeight = props.videoHeight; //('10em');
 
+  const collections = props.collections;
+
   const [ projectTitle, setProjectTitle ] = useState('');
   const [ paperEditTitle, setPaperEditTitle ] = useState('');
-
-  const [ fetchTranscripts, setFetchTranscripts ] = useState(false);
-  const [ fetchProject, setFetchProject ] = useState(false);
-  const [ fetchPaperEdit, setFetchPaperEdit ] = useState(false);
 
   const [ transcripts, setTranscripts ] = useState();
 
   const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
   const [ isProgramScriptShown, setIsProgramScriptShown ] = useState(true);
 
-  const Projects = new Collection(props.firebase, 'projects');
-  const PaperEdits = new Collection(
-    props.firebase,
-    `/projects/${ projectId }/paperedits`
-  );
-  const Transcriptions = new Collection(
-    props.firebase,
-    `/projects/${ projectId }/transcripts`
-  );
-
   useEffect(() => {
-    const getProject = async () => {
-      setFetchProject(true);
-      try {
-        const project = await Projects.getItem(projectId);
-        setProjectTitle(project.title);
-      } catch (e) {
-        console.error('Could not get Project Id: ', projectId, e);
-      }
-    };
+    if (collections) {
 
-    if (!projectTitle && !fetchProject) {
-      getProject();
+      const project = collections.getProject(projectId);
+      setProjectTitle(project.title);
+
+      const paperEdit = collections.getPaperEdit(projectId, papereditId);
+      setPaperEditTitle(paperEdit.title);
+
+      setTranscripts(collections.getProjectTranscripts(projectId));
     }
 
     return () => {};
-  }, [ Projects, projectTitle, projectId, fetchProject ]);
-
-  useEffect(() => {
-    const getPaperEdit = async () => {
-      setFetchPaperEdit(true);
-      try {
-        const paperEdit = await PaperEdits.getItem(papereditId);
-        setPaperEditTitle(paperEdit.title);
-      } catch (e) {
-        console.error('Could not get PaperEdit Id: ', papereditId, e);
-      }
-    };
-
-    if (!paperEditTitle && !fetchPaperEdit) {
-      getPaperEdit();
-    }
-
-    return () => {};
-  }, [ PaperEdits, papereditId, fetchPaperEdit, paperEditTitle ]);
-
-  useEffect(() => {
-    const getTranscripts = async () => {
-      setFetchTranscripts(true);
-      try {
-        Transcriptions.collectionRef.onSnapshot((snapshot) => {
-          setTranscripts(
-            snapshot.docs.map((doc) => {
-              return { ...doc.data(), id: doc.id, display: true };
-            })
-          );
-        });
-      } catch (error) {
-        console.error('Error getting documents: ', error);
-      }
-    };
-
-    if (!transcripts && !fetchTranscripts) {
-      getTranscripts();
-    }
-
-    return () => {};
-  }, [ Transcriptions.collectionRef, transcripts, fetchTranscripts ]);
+  }, [ collections, projectId, papereditId ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {
@@ -167,7 +110,6 @@ const PaperEditor = (props) => {
       <TranscriptsContainer
         projectId={ projectId }
         transcripts={ transcripts }
-        firebase={ props.firebase }
       />
     );
   }
@@ -275,10 +217,18 @@ const PaperEditor = (props) => {
 };
 
 PaperEditor.propTypes = {
-  match: PropTypes.any,
-  videoHeight: PropTypes.any,
-  firebase: PropTypes.any,
+  collections: PropTypes.shape({
+    getPaperEdit: PropTypes.func,
+    getProject: PropTypes.func,
+    getProjectTranscripts: PropTypes.func
+  }),
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      papereditId: PropTypes.any,
+      projectId: PropTypes.any
+    })
+  }),
+  videoHeight: PropTypes.any
 };
-
 const condition = (authUser) => !!authUser;
 export default withAuthorization(condition)(PaperEditor);

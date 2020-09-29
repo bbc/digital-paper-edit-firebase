@@ -6,7 +6,7 @@ import { compose } from 'recompose';
 import AuthUserContext from './context';
 import { withFirebase } from '../Firebase';
 import * as ROUTES from '../../constants/routes';
-import { UsersCollection } from '../Firebase/Collections';
+import { UserCollection } from '../Firebase/Collections';
 
 // with Authorization called before each route
 const withAuthorization = condition => Component => {
@@ -17,7 +17,7 @@ const withAuthorization = condition => Component => {
 
     const buildCollections = async () => {
       setLoading(true);
-      const userCollections = await UsersCollection.build(props.firebase);
+      const userCollections = await UserCollection.build(props.firebase);
       setCollections(userCollections);
       setLoading(false);
     };

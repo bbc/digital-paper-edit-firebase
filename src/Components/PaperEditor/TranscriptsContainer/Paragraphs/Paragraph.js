@@ -38,6 +38,7 @@ const Paragraph = (props) => {
   const getWordWithAnnotations = (word) => {
     const wordEl = (
       <Word
+        key={ word.id }
         transcriptId={ transcriptId }
         speaker={ speaker }
         word={ word }

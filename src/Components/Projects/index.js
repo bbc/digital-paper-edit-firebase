@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -7,15 +7,22 @@ import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 import CustomFooter from '../lib/CustomFooter';
 import ItemsContainer from '../lib/ItemsContainer';
 import { withAuthorization } from '../Session';
-import { updateItems, deleteItem, addItem } from '../../Util/items';
+import { itemsReducer, itemsInitState, itemsInit } from '../Workspace/itemsReducer';
 
 const Projects = (props) => {
   const collections = props.collections;
-  const [ items, setItems ] = useState();
+  const [ items, dispatchItems ] = useReducer(
+    itemsReducer,
+    itemsInitState,
+    itemsInit
+  );
 
   useEffect(() => {
     if (collections) {
-      setItems(collections.userProjects);
+      dispatchItems({
+        type: 'set',
+        payload: collections.userProjects,
+      });
     }
 
     return () => {};
@@ -28,16 +35,21 @@ const Projects = (props) => {
 
     if (item.id) {
       collections.updateProject(item.id, item);
-      setItems(() => updateItems(item.id, items, item));
+      dispatchItems({
+        type: 'update',
+        payload: {
+          id:item.id, item: item
+        },
+      });
     } else {
       collections.createProject(item);
-      setItems(() => addItem(items, item));
+      dispatchItems({ type: 'add', payload: { item: item } });
     }
   };
 
   const handleDelete = (id) => {
     collections.deleteProject(id);
-    setItems(() => deleteItem(id, items));
+    dispatchItems({ type: 'delete', payload: { id } });
   };
 
   const breadcrumbItems = [

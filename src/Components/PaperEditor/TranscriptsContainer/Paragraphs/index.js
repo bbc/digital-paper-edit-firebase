@@ -20,6 +20,7 @@ const Paragraphs = (props) => {
      */
     return (
       <Paragraph
+        key={ `${ paragraph.words[0].start }-${ paragraph.text }` }
         transcriptId={ transcriptId }
         labels={ labels }
         isSearchResult={ isSearchResult }

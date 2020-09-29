@@ -11,7 +11,6 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 
-import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 
 import ExportDropdown from './ExportDropdown/index';
@@ -33,33 +32,21 @@ import PropTypes from 'prop-types';
 const Article = React.lazy(() => import('./Article'));
 
 const ProgrammeScriptContainer = (props) => {
-  const transcripts = props.transcripts;
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
-  const firebase = props.firebase;
+  const collections = props.collections;
 
   const [ elements, setElements ] = useState();
   const [ title, setTitle ] = useState('');
   const [ resetPreview, setResetPreview ] = useState(false);
   const [ currentTime, setCurrentTime ] = useState();
-
   // Video Context Preview
   const [ width, setWidth ] = useState(150);
   const [ playlist, setPlaylist ] = useState([]);
   const previewCardRef = useRef();
 
-  const PaperEditsCollection = new Collection(
-    firebase,
-    `/projects/${ projectId }/paperedits`
-  );
-
-  const createPaperEdits = async (paperEdit) => {
-    try {
-      await PaperEditsCollection.putItem(papereditsId, paperEdit);
-      console.log('Successfully saved');
-    } catch (error) {
-      console.error('Error saving document', error);
-    }
+  const createPaperEdit = (paperEdit) => {
+    collections.createPaperEdit(projectId, papereditsId, paperEdit);
   };
 
   const handleSaveProgrammeScript = (els) => {
@@ -76,58 +63,47 @@ const ProgrammeScriptContainer = (props) => {
         title: title,
         elements: newElements,
       };
-
-      createPaperEdits(paperEdit);
+      createPaperEdit(paperEdit);
     }
   };
 
   useEffect(() => {
-    const getPaperEdit = async () => {
-      try {
-        const paperEdit = await PaperEditsCollection.getItem(papereditsId);
-        setTitle(paperEdit.title);
+    const getPaperEdit = () => {
+      const paperEdit = collections.getPaperEdit(projectId, papereditsId);
+      setTitle(paperEdit.title);
 
-        const newElements = paperEdit.elements
-          ? JSON.parse(JSON.stringify(paperEdit.elements))
-          : [];
-        const insertElement = {
-          type: 'insert',
-          text: 'Insert point to add selection',
-        };
+      const newElements = paperEdit.elements
+        ? JSON.parse(JSON.stringify(paperEdit.elements))
+        : [];
+      const insertElement = {
+        type: 'insert',
+        text: 'Insert point to add selection',
+      };
 
-        newElements.push(insertElement);
-        setElements(newElements);
-        setResetPreview(true);
-      } catch (error) {
-        console.error('Error getting paper edits: ', error);
-      }
+      newElements.push(insertElement);
+      setElements(newElements);
+      setResetPreview(true);
     };
 
-    if (!elements) {
+    if (!elements && collections) {
       getPaperEdit();
     }
-  }, [ PaperEditsCollection, elements, papereditsId ]);
+  }, [ collections, elements, projectId, papereditsId ]);
 
   useEffect(() => {
     const getPlaylistItem = (element) => ({
       type: 'video',
       sourceStart: element.start,
       duration: element.end - element.start,
+      transcriptId : element.transcriptId
     });
-
-    const getMediaUrl = async (item) => {
-      return await firebase.storage.storage.ref(item.ref).getDownloadURL();
-    };
 
     const getPlaylist = async (els) => {
       const paperEdits = els.filter((element) => element.type === 'paper-cut');
 
       const results = paperEdits.reduce(
         (prevResult, paperEdit) => {
-          const transcriptId = paperEdit.transcriptId;
-          const transcript = transcripts.find((tr) => tr.id === transcriptId);
           const playlistItem = getPlaylistItem(paperEdit);
-          playlistItem.ref = transcript.media.ref;
           playlistItem.start = prevResult.startTime;
           prevResult.playlist.push(playlistItem);
           prevResult.startTime += playlistItem.duration;
@@ -140,7 +116,7 @@ const ProgrammeScriptContainer = (props) => {
       let { playlist: playlistItems } = results;
       playlistItems = await Promise.all(
         playlistItems.map(async (item) => {
-          item.src = await getMediaUrl(item);
+          item.src = await collections.getTranscriptMediaUrl(projectId, item.transcriptId);
 
           return item;
         })
@@ -153,7 +129,7 @@ const ProgrammeScriptContainer = (props) => {
       getPlaylist(elements);
       setResetPreview(false);
     }
-  }, [ elements, resetPreview, firebase.storage.storage, transcripts ]);
+  }, [ elements, resetPreview, collections, projectId ]);
 
   useEffect(() => {
     const updateVideoContextWidth = () => {
@@ -459,13 +435,11 @@ const ProgrammeScriptContainer = (props) => {
               </Button>
             </Col>
             <Col sm={ 12 } md={ 2 }>
-              <ElementsDropdown
-                handleAdd={ handleAddElement }
-              />
+              <ElementsDropdown handleAdd={ handleAddElement } />
             </Col>
             <Col sm={ 12 } md={ 3 }>
               <ExportDropdown
-                transcripts={ transcripts }
+                projectId={ projectId }
                 title={ title }
                 elements={ elements }
               ></ExportDropdown>
@@ -491,9 +465,17 @@ const ProgrammeScriptContainer = (props) => {
 };
 
 ProgrammeScriptContainer.propTypes = {
-  firebase: PropTypes.any,
-  match: PropTypes.any,
-  transcripts: PropTypes.any,
+  collections: PropTypes.shape({
+    createPaperEdit: PropTypes.func,
+    getDownloadURL: PropTypes.func,
+    getPaperEdit: PropTypes.func
+  }),
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      papereditId: PropTypes.any,
+      projectId: PropTypes.any
+    })
+  }),
 };
 
 const condition = (authUser) => !!authUser;

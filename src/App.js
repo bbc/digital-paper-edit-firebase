@@ -9,7 +9,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Alert from 'react-bootstrap/Alert';
 import HelpOverlayTrigger from './HelpOverlayTrigger';
-import Collection from './Components/Firebase/Collection';
+import Collection from './Components/Firebase/Collections/Collection';
 
 const App = (props) => {
   let offlineWarning = null;

@@ -3,7 +3,6 @@ const updateItems = (id, items, item) => {
   const newItem = { ...items[elementsIndex], ...item };
   const newArray = [ ...items ];
   newArray[elementsIndex] = newItem;
-  console.log('updating', newArray);
 
   return newArray;
 };

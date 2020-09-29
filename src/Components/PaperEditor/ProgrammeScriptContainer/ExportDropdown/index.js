@@ -20,17 +20,15 @@ const ExportDropdown = (props) => {
   const defaultTimecodeOffset = '00:00:00:00';
   const defaultSampleRate = '16000';
 
+  const projectId = props.projectId;
   const title = props.title;
   const elements = props.elements;
-  const transcripts = props.transcripts;
+  const collections = props.collections;
 
   // /**
   //  * Helper function to create json EDL for other EDL/ADL/FPCX export
   //  */
 
-  const getCurrentTranscript = (element) => transcripts.find(tr => {
-    return tr.id === element.transcriptId;
-  });
   const getSequenceJsonEDL = () => {
     const edlSq = {
       title: title,
@@ -41,9 +39,7 @@ const ExportDropdown = (props) => {
       .map(element => {
         if (element.type === 'paper-cut') {
           // Get clipName for current transcript
-
-          const currentTranscript = getCurrentTranscript(element);
-
+          const currentTranscript = collections.getTranscript(projectId, element.transcriptId);
           const result = {
             startTime: element.start,
             endTime: element.end,
@@ -150,7 +146,7 @@ const ExportDropdown = (props) => {
         if (element.type === 'paper-cut') {
           console.log('paper-cut::', element);
           // Get clipName for current transcript
-          const currentTranscript = getCurrentTranscript(element);
+          const currentTranscript = collections.getTranscript(projectId, element.transcriptId);
 
           const result = {
             ...element,
@@ -301,7 +297,7 @@ const ExportDropdown = (props) => {
 ExportDropdown.propTypes = {
   elements: PropTypes.any,
   title: PropTypes.any,
-  transcripts: PropTypes.any
+  projectId: PropTypes.any
 };
 
 export default ExportDropdown;

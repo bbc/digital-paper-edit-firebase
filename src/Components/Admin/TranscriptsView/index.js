@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
-import Collection from '../../Firebase/Collection';
+import Collection from '../../Firebase/Collections/Collection';
 import { withAuthorization } from '../../Session';
 import TranscriptRow from './Row';
 import Table from 'react-bootstrap/Table';

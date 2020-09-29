@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 
-import Collection from '../../Firebase/Collection';
+import Collection from '../../Firebase/Collections/Collection';
 import { PROJECTS } from '../../../constants/routes';
 import { updateDescOrder, getISOTime } from '../../../Util/time';
 

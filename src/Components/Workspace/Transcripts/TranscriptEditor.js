@@ -6,10 +6,6 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 
-import groupWordsInParagraphsBySpeakers from './group-words-by-speakers';
-
-import Collection from '../../Firebase/Collection';
-import { compress, decompress } from '../../../Util/gzip';
 import Alert from 'react-bootstrap/Alert';
 
 import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
@@ -18,14 +14,11 @@ const ReactTranscriptEditor = React.lazy(() =>
   import('@bbc/react-transcript-editor')
 );
 
-const TranscriptEditor = ({ match, firebase }) => {
+const TranscriptEditor = ({ match, collections }) => {
   const projectId = match.params.projectId;
   const transcriptId = match.params.transcriptId;
 
   const [ transcriptTitle, setTranscriptTitle ] = useState('');
-  const [ fetchTranscript, setFetchTranscript ] = useState(false);
-
-  const [ fetchProject, setFetchProject ] = useState(false);
   const [ projectTitle, setProjectTitle ] = useState('');
 
   const [ savedNotification, setSavedNotification ] = useState();
@@ -33,121 +26,45 @@ const TranscriptEditor = ({ match, firebase }) => {
 
   const [ mediaType, setMediaType ] = useState('video');
   const [ mediaUrl, setMediaUrl ] = useState('');
-  const [ mediaRef, setMediaRef ] = useState();
 
-  const [ compressedGrouped, setCompressedGrouped ] = useState();
   const [ words, setWords ] = useState();
   const [ paragraphs, setParagraphs ] = useState();
 
   const transcriptEditorRef = useRef();
 
-  const TranscriptsCollection = new Collection(
-    firebase,
-    `/projects/${ projectId }/transcripts`
-  );
-
-  const ProjectsCollection = new Collection(firebase, '/projects');
-
   useEffect(() => {
-    const getTranscript = async () => {
-      setFetchTranscript(true);
-      try {
-        const { media, groupedc, title } = await TranscriptsCollection.getItem(
-          transcriptId
-        );
+    const getCompressedTranscript = async () => {
+      const transcript = await collections.getTranscriptWithDecompression(projectId, transcriptId);
+      const { paragraphs: ps, words: ws } = transcript;
 
-        setMediaRef(media.ref);
-        setMediaType(media.type.split('/')[0]);
-
-        setCompressedGrouped(groupedc);
-        setTranscriptTitle(title);
-      } catch (error) {
-        console.error('Error getting documents: ', error);
-      }
+      setParagraphs(ps);
+      setWords(ws);
     };
 
-    if (!compressedGrouped && !fetchTranscript) {
-      getTranscript();
-    }
-
-    return () => {};
-  }, [
-    TranscriptsCollection,
-    transcriptId,
-    firebase.storage,
-    fetchTranscript,
-    compressedGrouped,
-  ]);
-
-  useEffect(() => {
     const getDownloadURL = async () => {
-      const url = await firebase.storage.storage.ref(mediaRef).getDownloadURL();
+      const url = await collections.getTranscriptMediaUrl(projectId, transcriptId);
       setMediaUrl(url);
     };
 
-    if (mediaRef) {
+    if (collections) {
+      const project = collections.getProject(projectId);
+      setProjectTitle(project.title);
+
+      const transcript = collections.getTranscript(projectId, transcriptId);
+      const { media, title } = transcript;
+      setMediaType(media.type.split('/')[0]);
+      setTranscriptTitle(title);
+
+      getCompressedTranscript();
       getDownloadURL();
     }
 
     return () => {
+      setParagraphs();
+      setWords();
       setMediaUrl('');
     };
-  }, [ firebase.storage.storage, mediaRef ]);
-
-  useEffect(() => {
-    const getProject = async () => {
-      setFetchProject(true);
-      try {
-        const data = await ProjectsCollection.getItem(projectId);
-        setProjectTitle(data.title);
-      } catch (error) {
-        console.error('Error getting documents: ', error);
-      }
-    };
-    if (!projectTitle && !fetchProject) {
-      getProject();
-    }
-
-    return () => {};
-  }, [ ProjectsCollection, projectId, projectTitle, fetchProject ]);
-
-  useEffect(() => {
-    const getTranscriptData = (grouped) => {
-      const result = grouped.reduce(
-        (transcript, data) => {
-          const w = [ ...data.words ];
-
-          if (!data.start || !data.end) {
-            const firstWord = w[0];
-            const lastWord = w[w.length - 1];
-            data.start = parseFloat(firstWord.start);
-            data.end = parseFloat(lastWord.end);
-          }
-
-          delete data.words;
-          transcript.paragraphs.push(data);
-          transcript.words = transcript.words.concat(w);
-
-          return transcript;
-        },
-        { paragraphs: [], words: [] }
-      );
-
-      setParagraphs(result.paragraphs);
-      setWords(result.words);
-    };
-
-    if (compressedGrouped) {
-      const grouped = decompress(compressedGrouped);
-      getTranscriptData(grouped);
-    }
-
-    return () => {};
-  }, [ compressedGrouped ]);
-
-  const updateTranscript = async (id, item) => {
-    await TranscriptsCollection.putItem(id, item);
-  };
+  }, [ collections, projectId, transcriptId ]);
 
   const handleAlertClose = () => {
     setShowNotification(false);
@@ -168,15 +85,8 @@ const TranscriptEditor = ({ match, firebase }) => {
       'digitalpaperedit'
     );
 
-    const groupedc = groupWordsInParagraphsBySpeakers(
-      data.words,
-      data.paragraphs
-    );
-
-    data.groupedc = firebase.uint8ArrayBlob(compress(groupedc));
-
     try {
-      await updateTranscript(transcriptId, data);
+      await collections.updateTranscript(projectId, transcriptId, data);
       setShowNotification(true);
       setSavedNotification(
         <Alert onClose={ handleAlertClose } dismissible variant="success">
@@ -258,20 +168,18 @@ const TranscriptEditor = ({ match, firebase }) => {
 };
 
 TranscriptEditor.propTypes = {
-  firebase: PropTypes.shape({
-    storage: PropTypes.shape({
-      storage: PropTypes.shape({
-        ref: PropTypes.func,
-      }),
-    }),
-    uint8ArrayBlob: PropTypes.func,
+  collections: PropTypes.shape({
+    getDownloadURL: PropTypes.func,
+    getProject: PropTypes.func,
+    getTranscript: PropTypes.func,
+    updateTranscript: PropTypes.func
   }),
   match: PropTypes.shape({
     params: PropTypes.shape({
       projectId: PropTypes.any,
-      transcriptId: PropTypes.any,
-    }),
-  }),
+      transcriptId: PropTypes.any
+    })
+  })
 };
 
 const condition = (authUser) => !!authUser;
