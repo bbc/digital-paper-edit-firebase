@@ -1,33 +1,61 @@
 import PropTypes from 'prop-types';
-import React, { useState, useEffect } from 'react';
-import Container from 'react-bootstrap/Container';
-import Tabs from 'react-bootstrap/Tabs';
-import Tab from 'react-bootstrap/Tab';
+import React, { useState, useEffect, useReducer } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import CustomFooter from '../lib/CustomFooter';
 import Transcripts from './Transcripts';
 import PaperEdits from './PaperEdits';
-import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
+import Button from 'react-bootstrap/Button';
 import Collection from '../Firebase/Collection';
 import { PROJECTS } from '../../constants/routes';
 import { withAuthorization } from '../Session';
 
-const genBreadcrumb = name => [
-  {
-    name: 'Projects',
-    link: '/projects'
-  },
-  {
-    name: name
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+import {
+  faCircle,
+} from '@fortawesome/free-solid-svg-icons';
+import Container from 'react-bootstrap/Container';
+
+const initialFormState = {
+  title: '',
+  description: '',
+  id: null
+};
+
+const formReducer = (state = initialFormState, { type, payload }) => {
+  switch (type) {
+  case 'update':
+    return { ...state, ...payload };
+  case 'reset': {
+    return { initialFormState };
   }
-];
+  default:
+    return state;
+  }
+};
 
 const WorkspaceView = props => {
   const projects = new Collection(props.firebase, PROJECTS);
+  const PaperEditsCollection = new Collection(
+    props.firebase,
+    `/projects/${ id }/paperedits`
+  );
+
   const id = props.match.params.projectId;
-  const [ active, setActive ] = useState('transcripts');
   const [ title, setTitle ] = useState('Project Title');
+
+  const firebase = props.firebase;
+  const [ loading, setIsLoading ] = useState(false);
+
+  const [ modalTitle, setModalTitle ] = useState('');
+  const [ showModal, setShowModal ] = useState(false);
+  const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
+
+  const [ paperEditItems, setPaperEditItems ] = useState([]);
+  const [ loadingPE, setIsloadingPE ] = useState(false);
+
+  // search to move here
 
   useEffect(() => {
     const getProjectName = async () => {
@@ -44,35 +72,231 @@ const WorkspaceView = props => {
     return () => {};
   }, [ id, projects ]);
 
+  const createCollectionItem = async (item, collection) => {
+    const docRef = await collection.postItem(item);
+
+    const update = {
+      id: docRef.id,
+      url: `${ collection.name }/${ docRef.id }`,
+    };
+    docRef.update(update);
+
+    return { ...item, ...update };
+  };
+
+  const updateCollectionItem = (item, collection) => collection.putItem(item.id, item);
+
+  const updateItems = (item, items) => {
+    const itemsToUpdate = [ ...items ];
+
+    const updateItem = items.find(i => i.id === item.id);
+    const updateIndex = items.indexOf(updateItem);
+
+    itemsToUpdate[updateIndex] = { ...updateItem }.update(item);
+
+    return itemsToUpdate;
+  };
+
+  const deleteCollectionItem = async (id, collection) => {
+    try {
+      await collection.deleteItem(id);
+    } catch (e) {
+      console.error('Failed to delete item:', e);
+    }
+  };
+
+  // modal
+
+  const createPaperEdit = async (item) => {
+    const newItem = await createCollectionItem(item, PaperEditsCollection);
+    setPaperEditItems(() => [ newItem, ...paperEditItems ]);
+  };
+
+  const deletePaperEdit = async (item) => {
+    await deleteCollectionItem(item.id, PaperEditsCollection);
+    setPaperEditItems(() => paperEditItems.filter(i => i.id !== item.id));
+  };
+
+  const updatePaperEdit = (item) => {
+    updateCollectionItem(item, paperEditItems);
+    setPaperEditItems(updateItems(item, paperEditItems));
+  };
+
+  const handleSaveForm = (item) => {
+    createOrUpdateFn(formData);
+    setShowModal(false);
+    dispatchForm({ type: 'reset' });
+  };
+
+  const handleEditItem = (itemId, items) => {
+    setModalTitle(formData.id ? `Edit ${ type }` : `New ${ type }`);
+    const item = items.find(i => i.id === itemId);
+    dispatchForm({
+      type: 'update',
+      payload: item
+    });
+    setShowModal(true);
+  };
+
+  const toggleShowModal = () => {
+    setShowModal(!showModal);
+  };
+
+  const handleOnHide = () => {
+    setShowModal(false);
+  };
+
+  useEffect(() => {
+    const getTranscripts = async () => {
+      try {
+        TranscriptsCollection.collectionRef.onSnapshot((snapshot) => {
+          const transcripts = snapshot.docs.map((doc) => {
+            return { ...doc.data(), id: doc.id, display: true };
+          });
+          setTranscriptItems(transcripts);
+        });
+      } catch (error) {
+        console.error('Error getting documents: ', error);
+      }
+    };
+
+    const authListener = firebase.onAuthUserListener(
+      (authUser) => {
+        if (authUser) {
+          setUid(authUser.uid);
+        }
+      },
+      () => setUid()
+    );
+
+    if (!loading) {
+      getTranscripts();
+      setIsLoading(true);
+    }
+
+    return () => {
+      authListener();
+    };
+  }, [
+    TranscriptsCollection.collectionRef,
+    transcriptItems,
+    loading,
+    firebase,
+    uploadTasks,
+  ]);
+
+  // general
+
+  const createOrUpdateItem = async (item, create, update) => {
+    const updatedItem = { ...item };
+    updatedItem.display = true;
+
+    if (updatedItem.id) {
+      update(updatedItem.id, updatedItem);
+
+    } else {
+      updatedItem.url = '';
+      updatedItem.projectId = id;
+      updatedItem = create(item);
+    }
+
+    return updatedItem;
+  };
+
+  const createOrUpdatePaperEdit = async (item) => {
+    const paperEdit = await createOrUpdateItem(item, createPaperEdit, updatePaperEdit);
+
+    return paperEdit;
+  };
+
+  const handleDeleteItem = (item, deleteFn) => {
+    deleteFn(item);
+  };
+
+  const handleDuplicateItem = (item, updateFn) => {
+    const clone = { ...item };
+
+  };
+
+  useEffect(() => {
+    const getPaperEdits = async () => {
+      try {
+        PaperEditsCollection.collectionRef.onSnapshot((snapshot) => {
+          const paperEdits = snapshot.docs.map((doc) => {
+            return { ...doc.data(), id: doc.id, display: true };
+          });
+          setPaperEditItems(paperEdits);
+        });
+      } catch (error) {
+        console.error('Error getting documents: ', error);
+      }
+    };
+    // TODO: some error handling
+    if (!loadingPE) {
+      getPaperEdits();
+      setIsloadingPE(true);
+    }
+
+    return () => {};
+  }, [ PaperEditsCollection, loadingPE, paperEditItems, id ]);
+
   return (
-    <>
-      <Container style={ { marginBottom: '5em', marginTop: '1em' } }>
-        <Row>
-          <Col sm={ 12 }>
-            <Breadcrumb items={ genBreadcrumb(title) } />
-          </Col>
-        </Row>
+    <Container style={ { marginBottom: '5em' } }>
+      <Row>
+        <Col sm={ 3 }>
+          <Button
+            onClick={ toggleShowModal }
+            variant="outline-secondary"
+            size="sm"
+            block
+          >
+            <FontAwesomeIcon icon={ faCircle } /> New Programme Script
+          </Button>
+        </Col>
+        <Col sm={ 3 }>
+          <Button
+            onClick={ toggleShowModal }
+            variant="outline-secondary"
+            size="sm"
+            block
+          >
+            <FontAwesomeIcon icon={ faCircle } /> Convert Media to Transcript
+          </Button>
+        </Col>
+      </Row>
+      <hr></hr>
+      <Row style={ { marginBottom: '15px' } }>
+        <Col>
+          <h2>&quot;{title}&quot;</h2>
+        </Col>
+      </Row>
+      <Row>
+        <Col sm={ 8 }>
 
-        <Tabs
-          id="controlled-tab-example"
-          activeKey={ active }
-          onSelect={ tab => setActive(tab) }
-        >
-          <Tab eventKey="transcripts" title="Transcripts">
-            <Container style={ { marginBottom: '5em', marginTop: '1em' } }>
-              <Transcripts projectId={ id } />
-            </Container>
-          </Tab>
-
-          <Tab eventKey="paperedits" title="Paper Edits">
-            <Container style={ { marginBottom: '5em', marginTop: '1em' } }>
-              <PaperEdits projectId={ id } />
-            </Container>
-          </Tab>
-        </Tabs>
-      </Container>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          {paperEditItems ? (
+            <PaperEdits
+              items={ paperEditItems }
+              handleEditItem={ (item) => handleEditItem(item, createOrUpdatePaperEdit) }
+              handleDeleteItem={ (item) => handleDeleteItem(item, deletePaperEdit) }
+              handleDuplicateItem={ (item) => handleDuplicateItem(item, updatePaperEdit) }
+            />
+          ) : null}
+        </Col>
+      </Row>
       <CustomFooter />
-    </>
+      <FormModal
+        { ...formData }
+        modalTitle={ modalTitle }
+        showModal={ showModal }
+        handleOnHide={ handleOnHide }
+        handleSaveForm={ handleSaveForm }
+        type={ type }
+      />
+    </Container>
   );
 };
 

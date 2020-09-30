@@ -5,83 +5,88 @@ import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 
 import { anyInText } from '../../../Util/in-text';
-import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
+import { getISOTime } from '../../../Util/time';
+// import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
 import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
 
-import SimpleCard from '@bbc/digital-paper-edit-storybook/SimpleCard';
-import TranscriptCard from '@bbc/digital-paper-edit-storybook/TranscriptCard';
+import ProjectRow from '@bbc/digital-paper-edit-storybook/ProjectRow';
+import TranscriptRow from '@bbc/digital-paper-edit-storybook/TranscriptRow';
 import cuid from 'cuid';
 
-const initialFormState = {
-  title: '',
-  description: '',
-  id: null
-};
+// const initialFormState = {
+//   title: '',
+//   description: '',
+//   id: null
+// };
 
-const formReducer = (state = initialFormState, { type, payload }) => {
-  switch (type) {
-  case 'update':
-    return { ...state, ...payload };
-  case 'reset': {
-    return { initialFormState };
-  }
-  default:
-    return state;
-  }
-};
+// const formReducer = (state = initialFormState, { type, payload }) => {
+//   switch (type) {
+//   case 'update':
+//     return { ...state, ...payload };
+//   case 'reset': {
+//     return { initialFormState };
+//   }
+//   default:
+//     return state;
+//   }
+// };
 
 const ItemsContainer = props => {
   const type = props.type;
   const [ showingItems, setShowingItems ] = useState([]);
-  const [ showModal, setShowModal ] = useState(false);
-  const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
+  // const [ showModal, setShowModal ] = useState(false);
+  // const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
 
   // modal
 
-  const handleSaveForm = item => {
-    props.handleSave(item);
-    setShowModal(false);
-    dispatchForm({ type: 'reset' });
-  };
+  // const handleSaveForm = item => {
+  //   props.handleSave(item);
+  //   setShowModal(false);
+  //   dispatchForm({ type: 'reset' });
+  // };
 
-  const handleEditItem = id => {
-    const item = props.items.find(i => i.id === id);
-    dispatchForm({
-      type: 'update',
-      payload: item
-    });
-    setShowModal(true);
-  };
+  // const handleEditItem = id => {
+  //   const item = props.items.find(i => i.id === id);
+  //   dispatchForm({
+  //     type: 'update',
+  //     payload: item
+  //   });
+  //   setShowModal(true);
+  // };
 
-  const toggleShowModal = () => {
-    setShowModal(!showModal);
-  };
+  // const toggleShowModal = () => {
+  //   setShowModal(!showModal);
+  // };
 
-  const handleOnHide = () => {
-    setShowModal(false);
-  };
+  // const handleOnHide = () => {
+  //   setShowModal(false);
+  // };
 
   // search
 
-  const handleFilterDisplay = (item, text) => {
-    if (anyInText([ item.title, item.description ], text)) {
-      item.display = true;
-    } else {
-      item.display = false;
-    }
+  // const handleFilterDisplay = (item, text) => {
+  //   if (anyInText([ item.title, item.description ], text)) {
+  //     item.display = true;
+  //   } else {
+  //     item.display = false;
+  //   }
 
-    return item;
-  };
+  //   return item;
+  // };
 
-  const handleSearch = text => {
-    const results = props.items.map(item => handleFilterDisplay(item, text));
-    setShowingItems(results.filter(item => item.display));
-  };
+  // const handleSearch = text => {
+  //   const results = props.items.map(item => handleFilterDisplay(item, text));
+  //   setShowingItems(results.filter(item => item.display));
+  // };
 
   // generic
 
   const handleDeleteItem = id => {
     props.handleDelete(id);
+  };
+
+  const handleDuplicateItem = id => {
+    props.handleDuplicate(id);
   };
 
   useEffect(() => {
@@ -92,34 +97,38 @@ const ItemsContainer = props => {
     };
   }, [ props.items ]);
 
-  const Cards = showingItems.map(item => {
+  const Rows = showingItems.map(item => {
     const key = 'card-' + cuid();
+    const created = item.created ? getISOTime(item.created.seconds).split('T')[0] : 0;
+    const updated = item.updated ? getISOTime(item.updated.seconds).split('T')[0] : 0;
     if (type === 'Transcript') {
       return (
-        <TranscriptCard
-          description={ item.description }
-          message={ item.message }
-          id={ item.id }
-          status={ item.status }
-          title={ item.title }
-          url={ item.url ? item.url : '' }
-          progress={ props.uploadTasks.get(item.id) }
-          key={ key }
-          handleEditItem={ handleEditItem }
-          handleDeleteItem={ handleDeleteItem }
-        />
+        <>
+          <TranscriptRow
+            { ...item }
+            created={ created }
+            updated={ updated }
+            key={ key }
+            handleEditItem={ handleEditItem }
+            handleDeleteItem={ handleDeleteItem }
+          />
+          <hr style={ { color: 'grey' } } />
+        </>
       );
     } else {
       return (
-        <SimpleCard
-          id={ item.id }
-          title={ item.title }
-          url={ item.url }
-          description={ item.description }
-          key={ key }
-          handleEditItem={ handleEditItem }
-          handleDeleteItem={ handleDeleteItem }
-        />
+        <>
+          <ProjectRow
+            { ...item }
+            created={ created }
+            updated={ updated }
+            key={ key }
+            handleDuplicateItem={ handleDuplicateItem }
+            handleEditItem={ handleEditItem }
+            handleDeleteItem={ handleDeleteItem }
+          />
+          <hr style={ { color: 'grey' } } />
+        </>
       );
     }
   });
@@ -144,12 +153,12 @@ const ItemsContainer = props => {
 
       <section style={ { height: '75vh', overflow: 'scroll' } }>
         {showingItems.length > 0 ? (
-          Cards
+          Rows
         ) : (
           <i>There are no {type}s, create a new one to get started.</i>
         )}
       </section>
-
+      {/*
       <FormModal
         { ...formData }
         modalTitle={ formData.id ? `Edit ${ type }` : `New ${ type }` }
@@ -157,7 +166,7 @@ const ItemsContainer = props => {
         handleOnHide={ handleOnHide }
         handleSaveForm={ handleSaveForm }
         type={ type }
-      />
+      /> */}
     </>
   );
 };

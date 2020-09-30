@@ -189,14 +189,43 @@ const Transcripts = ({ projectId, firebase }) => {
     }
   };
 
+  const Transcripts = items.map(item => {
+    const key = `card-${ item.id }`;
+    const created = item.created ? getISOTime(item.created.seconds).split('T')[0] : 0;
+    const updated = item.updated ? getISOTime(item.updated.seconds).split('T')[0] : 0;
+
+    return (
+      <>
+        <TranscriptRow
+          { ...item }
+          created={ created }
+          updated={ updated }
+          key={ key }
+          handleEditItem={ handleEditItem }
+          handleDeleteItem={ handleDeleteItem }
+        />
+      </>
+    );
+  });
+
   return (
-    <ItemsContainer
-      type={ TYPE }
-      items={ items }
-      handleSave={ handleSave }
-      handleDelete={ handleDelete }
-      uploadTasks={ uploadTasks }
-    />
+    // <ItemsContainer
+    //   type={ TYPE }
+    //   items={ items }
+    //   handleSave={ handleSave }
+    //   handleDelete={ handleDelete }
+    //   uploadTasks={ uploadTasks }
+    // />
+    <>
+      <p>Converted Transcripts</p>
+      <section style={ { height: '75vh', overflow: 'scroll' } }>
+        {items.length > 0 ? (
+          Transcripts
+        ) : (
+          <i>There are no transcripts, create a new one to get started.</i>
+        )}
+      </section>
+    </>
   );
 };
 
