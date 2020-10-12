@@ -1,0 +1,24 @@
+{
+  "aws": {
+    "bucket": {
+      "name": "",
+      "region": "",
+      "key": "",
+      "secret": ""
+    },
+    "api": {
+      "uploader": {
+        "endpoint": "",
+        "key": ""
+      },
+      "transcriber": {
+        "key": "",
+        "endpoint": "",
+        "schedule": "every 1 minutes"
+      }
+    }
+  },
+  "storage": {
+    "bucket": "dev-digital-paper-edit"
+  }
+}

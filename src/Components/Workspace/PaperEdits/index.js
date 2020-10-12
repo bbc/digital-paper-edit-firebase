@@ -1,30 +1,31 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import ItemsContainer from '../../lib/ItemsContainer';
 import PropTypes from 'prop-types';
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 
-const PaperEdits = props => {
-  const api = new Collection(props.firebase.db, 'paperedits');
-  const [ items, setItems ] = useState([]);
+const PaperEdits = (props) => {
   const TYPE = 'Paper Edit';
-  const [ loading, setIsLoading ] = useState(false);
 
-  const genUrl = id => {
-    return `/projects/${ props.projectId }/paperedits/${ id }`;
-  };
+  const PaperEditsCollection = new Collection(
+    props.firebase,
+    `/projects/${ props.projectId }/paperedits`
+  );
+
+  const [ items, setItems ] = useState([]);
+  const [ loading, setIsLoading ] = useState(false);
 
   useEffect(() => {
     const getPaperEdits = async () => {
       try {
-        api.projectRef(props.projectId).onShapshot(snapshot => {
-          const paperEdits = snapshot.docs.map(doc => {
+        PaperEditsCollection.collectionRef.onSnapshot((snapshot) => {
+          const paperEdits = snapshot.docs.map((doc) => {
             return { ...doc.data(), id: doc.id, display: true };
           });
           setItems(paperEdits);
         });
       } catch (error) {
-        console.log('Error getting documents: ', error);
+        console.error('Error getting documents: ', error);
       }
     };
     // TODO: some error handling
@@ -34,44 +35,46 @@ const PaperEdits = props => {
     }
 
     return () => {};
-  }, [ api, loading, items, props.projectId ]);
+  }, [ PaperEditsCollection, loading, items, props.projectId ]);
 
-  const createPaperEdit = async item => {
-    item.projectId = props.projectId;
-    const docRef = await api.postItem(item);
-    item.url = genUrl(docRef.id);
+  const createPaperEdit = async (item) => {
+    const docRef = await PaperEditsCollection.postItem(item);
 
     docRef.update({
-      url: item.url
+      id: docRef.id,
+      url: `/projects/${ props.projectId }/paperedits/${ docRef.id }`,
     });
-
-    item.display = true;
 
     return item;
   };
 
-  const updatePaperEdit = async (id, item) => {
-    await api.put(id, item);
+  const updatePaperEdit = (id, item) => {
+    PaperEditsCollection.putItem(id, item);
+  };
+
+  const handleSave = async (item) => {
     item.display = true;
-  };
 
-  const handleSave = async item => {
     if (item.id) {
-      return await updatePaperEdit(item.id, item);
+      updatePaperEdit(item.id, item);
     } else {
-      return await createPaperEdit(item);
+      item.url = '';
+      item.projectId = props.projectId;
+      createPaperEdit(item);
+
+      setItems(() => [ ...items, item ]);
     }
   };
 
-  const deletePaperEdit = async id => {
+  const deletePaperEdit = async (id) => {
     try {
-      await api.delete(id);
+      await PaperEditsCollection.deleteItem(id);
     } catch (e) {
-      console.log(e);
+      console.error('Failed to delete item:', e);
     }
   };
 
-  const handleDelete = id => {
+  const handleDelete = (id) => {
     deletePaperEdit(id);
   };
 
@@ -86,8 +89,9 @@ const PaperEdits = props => {
 };
 
 PaperEdits.propTypes = {
+  firebase: PropTypes.any,
   projectId: PropTypes.any
 };
 
-const condition = authUser => !!authUser;
+const condition = (authUser) => !!authUser;
 export default withAuthorization(condition)(PaperEdits);

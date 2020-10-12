@@ -1,6 +1,7 @@
 import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
+import 'firebase/storage';
 
 const config = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -14,38 +15,47 @@ class Firebase {
   constructor() {
     app.initializeApp(config);
     this.auth = app.auth();
-    const firestore = app.firestore();
-    this.db = firestore.collection('apps').doc('digital-paper-edit');
+
+    this.firestore = app.firestore;
+    this.db = this.firestore()
+      .collection('apps')
+      .doc('digital-paper-edit');
+    this.storage = app.storage().ref();
+    this.getServerTimestamp = () => this.firestore.FieldValue.serverTimestamp();
   }
 
-  usersRef = () => this.db.collection('users');
-  userRef = uid => this.usersRef().doc(`${ uid }`);
-
-  user = async uid => await this.userRef(uid).get();
-  users = async () => await this.usersRef().get();
   // *** Merge Auth and DB User API *** //
+  initDB = async (uid, email) => {
+    const dbUserRef = this.db.collection('users').doc(uid);
+    const dbSnapshot = await dbUserRef.get();
+    const dbUser = dbSnapshot.data();
+
+    if (!dbSnapshot.exists || !dbUser) {
+      dbUserRef.set({
+        projects: [],
+        role: 'USER',
+        created: this.getServerTimestamp(),
+        email: email
+      });
+
+      // https://firebase.google.com/docs/firestore/data-model
+      // Docs / Collections are automatically created if not existing
+    }
+
+    return dbUser;
+  };
 
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged(async authUser => {
       if (authUser) {
-        const dbUserRef = this.userRef(authUser.uid);
-        const dbSnapshot = await dbUserRef.get();
-        const dbUser = dbSnapshot.data();
+        const db = await this.initDB(authUser.uid, authUser.email);
 
-        if (!dbSnapshot.exists || !dbUser) {
-          dbUserRef.set({
-            projects: [],
-            roles: {}
-          });
-        }
-
-        // merge auth and db user
         const mergeUser = {
           uid: authUser.uid,
           email: authUser.email,
           emailVerified: authUser.emailVerified,
           providerData: authUser.providerData,
-          ...dbUser
+          ...db
         };
 
         next(mergeUser);
@@ -61,6 +71,10 @@ class Firebase {
   doSignOut = () => this.auth.signOut();
   doPasswordReset = email => this.auth.sendPasswordResetEmail(email);
   doPasswordUpdate = password => this.auth.currentUser.updatePassword(password);
+  doCreateUserWithEmailAndPassword = (email, password) => this.auth.createUserWithEmailAndPassword(email, password)
+
+  uint8ArrayBlob = (data) => this.firestore.Blob.fromUint8Array(data);
+  base64StringBlob = (data) => this.firestore.Blob.fromBase64String(data);
 }
 
 export default Firebase;

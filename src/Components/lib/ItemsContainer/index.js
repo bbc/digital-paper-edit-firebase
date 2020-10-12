@@ -5,10 +5,12 @@ import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 
 import { anyInText } from '../../../Util/in-text';
-import arrayMatch from '../../../Util/array-match';
-import List from '@bbc/digital-paper-edit-react-components/List';
-import SearchBar from '@bbc/digital-paper-edit-react-components/SearchBar';
-import FormModal from '@bbc/digital-paper-edit-react-components/FormModal';
+import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
+import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
+
+import SimpleCard from '@bbc/digital-paper-edit-storybook/SimpleCard';
+import TranscriptCard from '@bbc/digital-paper-edit-storybook/TranscriptCard';
+import cuid from 'cuid';
 
 const initialFormState = {
   title: '',
@@ -30,12 +32,12 @@ const formReducer = (state = initialFormState, { type, payload }) => {
 
 const ItemsContainer = props => {
   const type = props.type;
-  const [ items, setItems ] = useState([]);
-
+  const [ showingItems, setShowingItems ] = useState([]);
   const [ showModal, setShowModal ] = useState(false);
   const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
 
-  // The form works both for new/create and edit/update
+  // modal
+
   const handleSaveForm = item => {
     props.handleSave(item);
     setShowModal(false);
@@ -43,7 +45,7 @@ const ItemsContainer = props => {
   };
 
   const handleEditItem = id => {
-    const item = items.find(i => i.id === id);
+    const item = props.items.find(i => i.id === id);
     dispatchForm({
       type: 'update',
       payload: item
@@ -51,9 +53,15 @@ const ItemsContainer = props => {
     setShowModal(true);
   };
 
-  const handleDeleteItem = id => {
-    props.handleDelete(id);
+  const toggleShowModal = () => {
+    setShowModal(!showModal);
   };
+
+  const handleOnHide = () => {
+    setShowModal(false);
+  };
+
+  // search
 
   const handleFilterDisplay = (item, text) => {
     if (anyInText([ item.title, item.description ], text)) {
@@ -66,43 +74,62 @@ const ItemsContainer = props => {
   };
 
   const handleSearch = text => {
-    const results = items.map(item => handleFilterDisplay(item, text));
-    setItems(results);
+    const results = props.items.map(item => handleFilterDisplay(item, text));
+    setShowingItems(results.filter(item => item.display));
   };
 
-  const toggleShowModal = () => {
-    console.log('toggle', !showModal);
-    setShowModal(!showModal);
+  // generic
+
+  const handleDeleteItem = id => {
+    props.handleDelete(id);
   };
 
   useEffect(() => {
-    if (!arrayMatch(props.items, items)) {
-      setItems(props.items);
+    setShowingItems(props.items);
+
+    return () => {
+      setShowingItems([]);
+    };
+  }, [ props.items ]);
+
+  const Cards = showingItems.map(item => {
+    const key = 'card-' + cuid();
+    if (type === 'Transcript') {
+      return (
+        <TranscriptCard
+          description={ item.description }
+          message={ item.message }
+          id={ item.id }
+          status={ item.status }
+          title={ item.title }
+          url={ item.url ? item.url : '' }
+          progress={ props.uploadTasks.get(item.id) }
+          key={ key }
+          handleEditItem={ handleEditItem }
+          handleDeleteItem={ handleDeleteItem }
+        />
+      );
+    } else {
+      return (
+        <SimpleCard
+          id={ item.id }
+          title={ item.title }
+          url={ item.url }
+          description={ item.description }
+          key={ key }
+          handleEditItem={ handleEditItem }
+          handleDeleteItem={ handleDeleteItem }
+        />
+      );
     }
-
-    return () => {};
-  }, [ items, props.items ]);
-
-  let searchEl;
-  let showItems;
-
-  if (items.length > 0) {
-    searchEl = <SearchBar handleSearch={ handleSearch } />;
-    showItems = (
-      <List
-        items={ items }
-        handleEditItem={ handleEditItem }
-        handleDeleteItem={ handleDeleteItem }
-      />
-    );
-  } else {
-    showItems = <i>There are no {type}s, create a new one to get started.</i>;
-  }
+  });
 
   return (
     <>
       <Row>
-        <Col sm={ 9 }>{searchEl}</Col>
+        <Col sm={ 9 }>
+          <SearchBar handleSearch={ handleSearch } />
+        </Col>
         <Col xs={ 12 } sm={ 3 }>
           <Button
             onClick={ toggleShowModal }
@@ -114,13 +141,22 @@ const ItemsContainer = props => {
           </Button>
         </Col>
       </Row>
-      {showItems}
+
+      <section style={ { height: '75vh', overflow: 'scroll' } }>
+        {showingItems.length > 0 ? (
+          Cards
+        ) : (
+          <i>There are no {type}s, create a new one to get started.</i>
+        )}
+      </section>
+
       <FormModal
         { ...formData }
         modalTitle={ formData.id ? `Edit ${ type }` : `New ${ type }` }
         showModal={ showModal }
+        handleOnHide={ handleOnHide }
         handleSaveForm={ handleSaveForm }
-        itemType={ type.toLowerCase }
+        type={ type }
       />
     </>
   );
@@ -130,11 +166,12 @@ ItemsContainer.propTypes = {
   handleSave: PropTypes.any,
   handleDelete: PropTypes.any,
   items: PropTypes.array.isRequired,
-  type: PropTypes.string
+  type: PropTypes.string,
+  uploadTasks: PropTypes.any
 };
 
 ItemsContainer.defaultProps = {
   type: 'Project'
 };
 
-export default ItemsContainer;
+export default React.memo(ItemsContainer);

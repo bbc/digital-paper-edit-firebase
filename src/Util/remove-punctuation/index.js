@@ -1,5 +1,5 @@
-const removePunctuation = (string) => {
-  return string.replace(/\.|\?|!|,|;/, '').toLowerCase() ;
+const removePunctuation = (text) => {
+  return text.replace(/\.|\?|!|,|;/, '').toLowerCase() ;
 };
 
 export default removePunctuation;

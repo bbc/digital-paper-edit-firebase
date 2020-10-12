@@ -1,0 +1,3 @@
+#!/bin/bash
+export GOOGLE_APPLICATION_CREDENTIALS=gcp-credentials.json
+firebase -P dev functions:shell

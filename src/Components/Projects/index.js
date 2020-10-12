@@ -1,80 +1,101 @@
+import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Breadcrumb from '@bbc/digital-paper-edit-react-components/Breadcrumb';
+import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 import CustomFooter from '../lib/CustomFooter';
 import ItemsContainer from '../lib/ItemsContainer';
 import Collection from '../Firebase/Collection';
 import { withAuthorization } from '../Session';
 import { PROJECTS } from '../../constants/routes';
 
-const Projects = props => {
+const Projects = (props) => {
   const [ uid, setUid ] = useState();
+  const [ email, setEmail ] = useState();
   const [ loading, setIsLoading ] = useState(false);
   const [ items, setItems ] = useState([]);
+
   const type = 'Project';
-  const api = new Collection(props.firebase.db, PROJECTS);
+  const projectsCollection = new Collection(props.firebase, PROJECTS);
+  const usersCollection = new Collection(props.firebase, '/users');
 
-  const createProject = async item => {
-    item.users = [ uid ];
-    const docRef = await api.postItem(item);
+  const createLabel = async (projectId, label) => {
+    const labelsCollection = new Collection(
+      props.firebase,
+      `/projects/${ projectId }/labels`
+    );
+    const labelDocRef = await labelsCollection.postItem(label);
 
-    item.url = `/projects/${ docRef.id }`;
+    labelDocRef.update({
+      id: labelDocRef.id,
+    });
+  };
+
+  const createProject = async (item) => {
+    const docRef = await projectsCollection.postItem(item);
     docRef.update({
-      url: item.url
+      url: `/projects/${ docRef.id }`,
     });
 
-    item.display = true;
-
-    return item;
+    const defaultLabel = {
+      label: 'Default',
+      color: 'yellow',
+      value: 'yellow',
+      description: '',
+    };
+    createLabel(docRef.id, defaultLabel);
   };
 
-  const updateProject = async (id, item) => {
-    await api.putItem(id, item);
-    item.display = true;
-
-    return item;
+  const updateProject = (id, item) => {
+    projectsCollection.putItem(id, item);
   };
 
-  const handleSave = async item => {
+  const handleSave = (item) => {
+    item.display = true;
+
     if (item.id) {
-      return await updateProject(item.id, item);
+      updateProject(item.id, item);
     } else {
-      return await createProject(item);
+      item.users = [ uid ];
+      item.url = '';
+      createProject(item);
+      setItems(() => [ ...items, item ]);
     }
   };
 
-  const deleteProject = async id => {
+  const deleteProject = async (id) => {
     try {
-      await api.deleteItem(id);
+      await projectsCollection.deleteItem(id);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   };
 
-  const handleDelete = id => {
+  const handleDelete = (id) => {
     deleteProject(id);
   };
 
   useEffect(() => {
     const getUserProjects = async () => {
+      setIsLoading(true);
       try {
-        api.userRef(uid).onSnapshot(snapshot => {
-          const projects = snapshot.docs.map(doc => {
+        projectsCollection.userRef(uid).onSnapshot((snapshot) => {
+          const projects = snapshot.docs.map((doc) => {
             return { ...doc.data(), id: doc.id, display: true };
           });
           setItems(projects);
         });
       } catch (error) {
-        console.log('Error getting documents: ', error);
+        console.error('Error getting documents: ', error);
       }
     };
 
     const authListener = props.firebase.onAuthUserListener(
-      authUser => {
+      (authUser) => {
         if (authUser) {
           setUid(authUser.uid);
+          setEmail(authUser.email);
         }
       },
       () => setUid()
@@ -82,22 +103,39 @@ const Projects = props => {
 
     if (uid && !loading) {
       getUserProjects(uid);
-      setIsLoading(true);
     }
 
     return () => {
       authListener();
     };
-  }, [ api, items, loading, props.firebase, uid ]);
+  }, [ projectsCollection, items, loading, props.firebase, uid ]);
+
+  useEffect(() => {
+    const updateUser = (item) => {
+      usersCollection.putItem(uid, item);
+    };
+
+    const updateUserProjects = async () => {
+      const item = {
+        'projects': items.map((project) => project.id),
+        'email': email
+      };
+      updateUser(item);
+    };
+
+    if (uid && items.length > 0) {
+      updateUserProjects();
+    }
+
+    return () => {};
+  }, [ usersCollection, items, props.firebase, uid, email ]);
 
   const breadcrumbItems = [
     {
       name: `${ type }s`,
-      link: `/${ type }s`
-    }
+      link: `/${ type }s`,
+    },
   ];
-
-  console.log(items);
 
   return (
     <>
@@ -128,5 +166,11 @@ const Projects = props => {
   );
 };
 
-const condition = authUser => !!authUser;
+Projects.propTypes = {
+  firebase: PropTypes.shape({
+    onAuthUserListener: PropTypes.func,
+  }),
+};
+
+const condition = (authUser) => !!authUser;
 export default withAuthorization(condition)(Projects);
