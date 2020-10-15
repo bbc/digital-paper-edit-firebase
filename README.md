@@ -20,10 +20,10 @@ When manually adding changes to the changes from a fork - there are challenges o
 
 ```javascript
 [
-  ("@bbc/aes31-adl-composer": "^1.0.1"),
-  ("@bbc/digital-paper-edit-storybook": "^1.3.2"),
-  ("@bbc/fcpx-xml-composer": "^1.0.0"),
-  ("@bbc/react-transcript-editor": "^1.4.0"),
+  ('@bbc/aes31-adl-composer': '^1.0.1'),
+  ('@bbc/digital-paper-edit-storybook': '^1.3.2'),
+  ('@bbc/fcpx-xml-composer': '^1.0.0'),
+  ('@bbc/react-transcript-editor': '^1.4.0'),
 ];
 ```
 
@@ -74,14 +74,14 @@ REACT_APP_PROTOTYPE_BY_LINK="http://bbcnewslabs.co.uk"
 
 ```js
 let firebaseConfig = {
-  apiKey: "api-key",
-  authDomain: "project-id.firebaseapp.com",
-  databaseURL: "https://project-id.firebaseio.com",
-  projectId: "project-id",
-  storageBucket: "project-id.appspot.com",
-  messagingSenderId: "sender-id",
-  appId: "app-id",
-  measurementId: "G-measurement-id",
+  apiKey: 'api-key',
+  authDomain: 'project-id.firebaseapp.com',
+  databaseURL: 'https://project-id.firebaseio.com',
+  projectId: 'project-id',
+  storageBucket: 'project-id.appspot.com',
+  messagingSenderId: 'sender-id',
+  appId: 'app-id',
+  measurementId: 'G-measurement-id',
 };
 ```
 
@@ -97,7 +97,19 @@ gsutil cors set cors.json gs://dev-digital-paper-edit
 
 ## Local Development
 
-You must setup the Firebase credentials in order to develop the project - as mentioned in above [section](#Firebase-specific-configuration). If you are BBC staff, please sign into the corporate GCP account. Firebase can be free, but some parts of the app may not work.
+You must setup the Firebase credentials in order to develop the project - as mentioned in above [section](#Firebase-specific-configuration).
+
+Install firebase on your system for local development
+
+```
+npm install -g firebase-tools
+```
+
+for background check official firebase docs [and/or this notes on using firebase with react](https://textav.gitbook.io/firebase-react-notes/react-+-firebase/firebase-create-react-app-setup)
+
+ <!-- If you are BBC staff, please sign into the corporate GCP account. Firebase can be free, but some parts of the app may not work.
+  -->
+
 In root of the project (`cd digital-paper-edit-firebase`):
 
 ```sh

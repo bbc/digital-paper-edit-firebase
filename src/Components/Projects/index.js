@@ -1,176 +1,190 @@
-import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
+import ListPage from '../lib/ListPage';
+import ItemFormModal from '../lib/ItemFormModal';
+import CustomBreadcrumb from '../lib/CustomBreadcrumb';
 import CustomFooter from '../lib/CustomFooter';
-import ItemsContainer from '../lib/ItemsContainer';
-import Collection from '../Firebase/Collection';
-import { withAuthorization } from '../Session';
-import { PROJECTS } from '../../constants/routes';
-
-const Projects = (props) => {
-  const [ uid, setUid ] = useState();
-  const [ email, setEmail ] = useState();
-  const [ loading, setIsLoading ] = useState(false);
-  const [ items, setItems ] = useState([]);
-
-  const type = 'Project';
-  const projectsCollection = new Collection(props.firebase, PROJECTS);
-  const usersCollection = new Collection(props.firebase, '/users');
-
-  const createLabel = async (projectId, label) => {
-    const labelsCollection = new Collection(
-      props.firebase,
-      `/projects/${ projectId }/labels`
-    );
-    const labelDocRef = await labelsCollection.postItem(label);
-
-    labelDocRef.update({
-      id: labelDocRef.id,
-    });
-  };
-
-  const createProject = async (item) => {
-    const docRef = await projectsCollection.postItem(item);
-    docRef.update({
-      url: `/projects/${ docRef.id }`,
-    });
-
-    const defaultLabel = {
-      label: 'Default',
-      color: 'yellow',
-      value: 'yellow',
+import ApiWrapper from '../../ApiWrapper/index.js';
+import { HashRouter } from 'react-router-dom';
+import { faFolder } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+class Projects extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      items: [],
+      isNewItemModalShow: false,
+      title: '',
       description: '',
+      itemId: null,
     };
-    createLabel(docRef.id, defaultLabel);
-  };
-
-  const updateProject = (id, item) => {
-    projectsCollection.putItem(id, item);
-  };
-
-  const handleSave = (item) => {
-    item.display = true;
-
-    if (item.id) {
-      updateProject(item.id, item);
-    } else {
-      item.users = [ uid ];
-      item.url = '';
-      createProject(item);
-      setItems(() => [ ...items, item ]);
-    }
-  };
-
-  const deleteProject = async (id) => {
+    this.handleDeleteItem = this.handleDeleteItem.bind(this);
+  }
+  async componentDidMount() {
+    console.log('componentDidMount');
     try {
-      await projectsCollection.deleteItem(id);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+      // TODO: do we need to add user id in request?
+      console.log('result', '1');
+      const result = await ApiWrapper.getAllProjects();
+      console.log('result', '2', result);
+      if (result) {
+        // add a display property for component cards search
+        const tmpList = result.map(project => {
+          project.display = true;
 
-  const handleDelete = (id) => {
-    deleteProject(id);
-  };
-
-  useEffect(() => {
-    const getUserProjects = async () => {
-      setIsLoading(true);
-      try {
-        projectsCollection.userRef(uid).onSnapshot((snapshot) => {
-          const projects = snapshot.docs.map((doc) => {
-            return { ...doc.data(), id: doc.id, display: true };
-          });
-          setItems(projects);
+          return project;
         });
-      } catch (error) {
-        console.error('Error getting documents: ', error);
+        this.setState({ items: tmpList });
       }
-    };
+    } catch (e) {
+      console.log('Error with ApiWrapper.getAllProjects', e);
+    }
+    // TODO: some error handling
+  }
 
-    const authListener = props.firebase.onAuthUserListener(
-      (authUser) => {
-        if (authUser) {
-          setUid(authUser.uid);
-          setEmail(authUser.email);
+  // The form works both for new/create and edit/update
+  handleSaveItem = item => {
+    if (!item.id) {
+      ApiWrapper.createProject(item).then(response => {
+        if (response.status === 'ok') {
+          // Server returns project with UID generated server side
+          const projects = [...this.state.items];
+          // need to add display true attribute for search to the new project
+          const newProject = response.project;
+          newProject.display = true;
+          projects.push(response.project);
+          this.setState({
+            isNewItemModalShow: false,
+            items: projects,
+            // reset item form
+            title: '',
+            itemId: null,
+            description: '',
+          });
         }
-      },
-      () => setUid()
-    );
-
-    if (uid && !loading) {
-      getUserProjects(uid);
+      });
+    } else {
+      ApiWrapper.updateProject(item.id, item).then(response => {
+        if (response.status === 'ok') {
+          const project = response.project;
+          // need to add display true attribute for search to the new project
+          project.display = true;
+          // // Server returns project with UID generated server side
+          const { items } = this.state;
+          this.findItemById(items, item);
+          const projectIndex = this.state.items.findIndex(element => element.id === project.id);
+          items[projectIndex] = project;
+          this.setState({
+            isNewItemModalShow: false,
+            items: items,
+            // reset item form
+            title: '',
+            itemId: null,
+            description: '',
+          });
+        }
+      });
     }
+  };
 
-    return () => {
-      authListener();
-    };
-  }, [ projectsCollection, items, loading, props.firebase, uid ]);
+  findItemById = (list, id) => {
+    const result = list.filter(p => {
+      return p.id === id;
+    });
 
-  useEffect(() => {
-    const updateUser = (item) => {
-      usersCollection.putItem(uid, item);
-    };
+    return result[0];
+  };
 
-    const updateUserProjects = async () => {
-      const item = {
-        'projects': items.map((project) => project.id),
-        'email': email
-      };
-      updateUser(item);
-    };
+  handleEditItem = itemId => {
+    const item = this.findItemById(this.state.items, itemId);
+    this.setState({
+      title: item.title,
+      itemId: item.id,
+      description: item.description,
+      isNewItemModalShow: true,
+    });
+    console.log('edit item', item);
+  };
 
-    if (uid && items.length > 0) {
-      updateUserProjects();
+  async handleDeleteItem(itemId) {
+    const result = await ApiWrapper.deleteProject(itemId);
+    if (result.ok) {
+      const newItemsList = this.state.items.filter(p => {
+        return p.id !== itemId;
+      });
+      this.setState({ items: newItemsList });
+    } else {
+      // TODO: some error handling, error message saying something went wrong
     }
+  }
 
-    return () => {};
-  }, [ usersCollection, items, props.firebase, uid, email ]);
+  showLinkPathToItem = id => {
+    return `/projects/${id}`;
+  };
 
-  const breadcrumbItems = [
-    {
-      name: `${ type }s`,
-      link: `/${ type }s`,
-    },
-  ];
+  handleUpdateList = list => {
+    this.setState({ items: list });
+  };
 
-  return (
-    <>
-      <Container
-        data-testid="projectsContainer"
-        style={ { marginBottom: '5em', marginTop: '1em' } }
-      >
-        <Row>
-          <Col sm={ 12 }>
-            <Breadcrumb
-              data-testid="projectsBreadcrumb"
-              items={ breadcrumbItems }
+  handleShowCreateNewItemForm = () => {
+    // return '/projects/new';
+    this.setState({ isNewItemModalShow: true });
+  };
+
+  handleCloseModal = () => {
+    this.setState({
+      title: '',
+      itemId: null,
+      description: '',
+      isNewItemModalShow: false,
+    });
+  };
+
+  render() {
+    return (
+      <>
+        <HashRouter>
+          <Container style={{ marginBottom: '5em', marginTop: '1em' }}>
+            <Row>
+              <Col sm={12} md={12} ld={12} xl={12}>
+                <CustomBreadcrumb
+                  items={[
+                    {
+                      name: 'Projects',
+                    },
+                  ]}
+                />
+              </Col>
+            </Row>
+            <ListPage
+              model={'Project'}
+              items={this.state.items}
+              icon={<FontAwesomeIcon icon={faFolder} color="#007bff" />}
+              handleShowCreateNewItemForm={this.handleShowCreateNewItemForm}
+              deleteItem={this.createNew}
+              editItem={this.createNew}
+              handleEdit={this.handleEditItem}
+              handleDelete={this.handleDeleteItem}
+              showLinkPath={this.showLinkPathToItem}
+              handleUpdateList={this.handleUpdateList}
             />
-          </Col>
-        </Row>
-        {items ? (
-          <ItemsContainer
-            key={ type }
-            model={ type }
-            items={ items }
-            handleSave={ handleSave }
-            handleDelete={ handleDelete }
-          />
-        ) : null}
-      </Container>
-      <CustomFooter />
-    </>
-  );
-};
+            <ItemFormModal
+              title={this.state.title}
+              description={this.state.description}
+              id={this.state.itemId}
+              modalTitle={this.state.itemId ? 'Edit Project' : 'New Project'}
+              show={this.state.isNewItemModalShow}
+              handleCloseModal={this.handleCloseModal}
+              handleSaveForm={this.handleSaveItem}
+            />
+          </Container>
+          <CustomFooter />
+        </HashRouter>
+      </>
+    );
+  }
+}
 
-Projects.propTypes = {
-  firebase: PropTypes.shape({
-    onAuthUserListener: PropTypes.func,
-  }),
-};
-
-const condition = (authUser) => !!authUser;
-export default withAuthorization(condition)(Projects);
+export default Projects;

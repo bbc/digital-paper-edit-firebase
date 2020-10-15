@@ -1,7 +1,6 @@
 {
   "projects": {
-    "default": "newslabs-dev-aa20",
-    "dev": "newslabs-dev-aa20",
-    "prod": "newslabs-prod-1a3c"
+    "default": "dj-con-innovation-dpe-web-poc",
+    "staging": "dj-con-innovation-dpe-web-poc"
   }
 }

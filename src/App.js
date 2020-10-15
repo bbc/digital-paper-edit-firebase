@@ -1,115 +1,124 @@
-import PropTypes from 'prop-types';
-import React, { useState, useEffect } from 'react';
+// import React, { Component, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { Switch, Route, HashRouter } from 'react-router-dom';
 import 'bootstrap-css-only/css/bootstrap.css';
+// TODO: Note: Replace ^[theme]^ (examples: materia, darkly, slate, cosmo, spacelab, and superhero. See https://bootswatch.com for current theme names.)
+// https://www.npmjs.com/package/react-bootstrap-theme-switcher
+// import 'bootswatch/dist/litera/bootstrap.min.css';
+import CustomAlert from './Components/lib/CustomAlert';
 import Container from 'react-bootstrap/Container';
-import Routes from './Routes';
-import SignOutButton from './Components/SignOut';
-import { withAuthentication } from './Components/Session';
 import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 import Alert from 'react-bootstrap/Alert';
-import HelpOverlayTrigger from './HelpOverlayTrigger';
-import Collection from './Components/Firebase/Collection';
+import Skeleton from '@material-ui/lab/Skeleton';
+import CustomNavbar from './CustomNavbar';
+import firebase, { db } from './Firebase.js';
 
-const App = (props) => {
+const Projects = lazy(() => import('./Components/Projects/index.js'));
+const Project = lazy(() => import('./Components/Projects/Project.js'));
+const TranscriptCorrect = lazy(() => import('./Components/Transcripts/TranscriptCorrect.js'));
+const PaperEdit = lazy(() => import('./Components/PaperEdits/PaperEdit'));
+
+const demoWarningMessage = (
+  <>
+    <p>
+      {' '}
+      This is a demo version of the app{' '}
+      <Alert.Link href="https://github.com/pietrop/digital-paper-edit-client" target="_blank" rel="noopener noreferrer">
+        see project Github repository for more info
+      </Alert.Link>
+      .{' '}
+    </p>
+    <p>This is a read-only demo you can only play around with existing projects!</p>
+  </>
+);
+
+const NoMatch = () => {
+  return <h1>There was an error loading the page you requested</h1>;
+};
+
+function App(props) {
+  // constructor(props) {
+  //   super(props);
+
+  //   // firebase.auth.onAuthStateChanged((user) => this.setState(user));
+  // }
+  // TODO: remove unused rootes
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {});
+
+  const handleUserChange = (isUserSignedIn) => {
+    setUser(isUserSignedIn);
+  };
+  // eslint-disable-next-line class-methods-use-this
+  // render() {
+  let envWarning = null;
   let offlineWarning = null;
-  const [ authUser, setAuthUser ] = useState();
-  const [ user, setUser ] = useState();
 
-  useEffect(() => {
-    const authListener = props.firebase.auth.onAuthStateChanged((user) =>
-      setAuthUser(user)
+  if (process.env.REACT_APP_NODE_ENV === 'demo') {
+    envWarning = (
+      <Container>
+        <CustomAlert variant={'warning'} heading={'Demo mode'} message={demoWarningMessage} />
+      </Container>
     );
-
-    return () => {
-      authListener();
-    };
-  }, [ props.firebase.auth ]);
-
-  useEffect(() => {
-    const userCollection = new Collection(props.firebase, '/users');
-    const getUser = async () => {
-      const userItem = await userCollection.getItem(authUser.uid);
-      setUser(userItem);
-    };
-
-    if (authUser) {
-      getUser();
-    }
-
-    return () => {
-    };
-  }, [ props.firebase, authUser ]);
+  }
 
   if (!navigator.onLine) {
     offlineWarning = (
       <>
         <br />
         <Container>
-          <Alert variant={ 'warning' }>
-            <Alert.heading>Offline warning</Alert.heading>
-            You don`&apos;`t seem to be connected to the internet
-          </Alert>
+          <CustomAlert variant={'warning'} heading={'Offline warning'} message={"You don't seem to be connected to the internet "} />
         </Container>
       </>
     );
   }
 
-  let AppContainer;
+  return (
+    <>
+      {envWarning}
 
-  if (authUser) {
-    AppContainer = (
-      <>
-        {offlineWarning}
-        <Container style={ { marginBottom: '1em', marginTop: '1em' } }>
-          <Row>
-            <Col xs={ 5 }>
-              <h1> Digital Paper Edit </h1>
-            </Col>
-            <Col md={ { offset: 1, span: 3 } }>
-              Signed in as: <br></br>
-              <strong>
-                {user && user.role === 'ADMIN' ? <a href="#admin">{authUser.email}</a> : authUser.email}
-              </strong>
-            </Col>
-            <Col md={ { span: 3 } }>
-              <SignOutButton /> <HelpOverlayTrigger />
-            </Col>
-          </Row>
+      {offlineWarning}
+
+      <CustomNavbar firebase={firebase} handleUserChange={handleUserChange} />
+      {user ? (
+        <HashRouter>
+          <Suspense
+            fallback={
+              <Container>
+                <br />
+                <Row>
+                  <Skeleton variant="rect" width={'100%'} height={50} />
+                </Row>
+                <br />
+                <Row>
+                  <Skeleton variant="rect" width={'100%'} height={600} />
+                </Row>
+              </Container>
+            }
+          >
+            <Switch>
+              <Route exact path="/" component={Projects} />
+              <Route exact path="/projects" component={Projects} />
+              <Route exact path="/projects/:projectId" component={Project} />
+              <Route exact path="/projects/:projectId/transcripts/:transcriptId/correct" component={TranscriptCorrect} />
+              <Route exact path="/projects/:projectId/paperedits/:papereditId" component={PaperEdit} />
+              <Route component={NoMatch} />
+            </Switch>
+          </Suspense>
+        </HashRouter>
+      ) : (
+        <Container>
+          <br />
+          {/* <CustomNotice variant={'info'} title={'Login'} description={'You need to login'} /> */}
+          <p className="text-center">
+            <i>You need to login</i>
+          </p>
         </Container>
-        <Routes authUser={ authUser } />
-      </>
-    );
-  } else {
-    AppContainer = (
-      <>
-        <Container style={ { marginBottom: '2em', marginTop: '1em' } }>
-          <Row>
-            <Col xs={ 5 }>
-              <h1> Digital Paper Edit </h1>
-            </Col>
-            <Col md={ { offset: 1, span: 3 } }>
-              Please <a href="/">sign in</a> or request login details by clicking the help button!
-            </Col>
-            <Col md={ { span: 3 } }>
-              <HelpOverlayTrigger />
-            </Col>
-          </Row>
-        </Container>
-        <Routes />
-      </>
-    );
-  }
+      )}
+    </>
+  );
+  // }
+}
 
-  return <>{AppContainer}</>;
-};
-
-App.propTypes = {
-  firebase: PropTypes.shape({
-    auth: PropTypes.shape({
-      onAuthStateChanged: PropTypes.func,
-    }),
-  }),
-};
-
-export default withAuthentication(App);
+export default App;

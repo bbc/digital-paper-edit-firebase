@@ -1,38 +1,21 @@
+// rules_version = '2';
+// service cloud.firestore {
+//   match /databases/{database}/documents {
+//     match /transcripts/{document=**} {
+//       allow read, write: if request.auth.uid != null;
+//     }
+//   }
+// }
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-  	match /apps/{appName} {
-
-    function readWriteAccess() {
-      return get(/databases/$(database)/documents/apps/digital-paper-edit/users/$(request.auth.uid)).data.access == "READWRITE";
-		}
-
-    function isAdmin() {
-      return get(/databases/$(database)/documents/apps/digital-paper-edit/users/$(request.auth.uid)).data.role == "ADMIN";
-		}
-    
-      match /users/{document=**} {
-        allow read, write: if isAdmin()
+    match /{document=**} {
+      function isValidEmail(){
+       return ((request.auth.token.email.matches('.*@wsj[.]com$') || request.auth.token.email.matches('.*@dowjones[].]com$')) && 
+        request.auth.token.email_verified)
       }
-      
-  		match /users/{userId}/{document=**} {
-         allow read, write: if readWriteAccess() || request.auth.uid == userId;
-      }
-      
-      match /projects/{document=**} {    
-	      allow read, write
-      }
-      
-    function isOnProject(pId) {
-      return request.auth.uid in get(/databases/$(database)/documents/apps/digital-paper-edit/projects/$(pId)).data.users;
+      allow read, write: if isValidEmail();
     }
-      match /projects/{pId} {    
-        allow read, write: if isOnProject(pId) || isAdmin();        
-      }
-
-      match /projects/{pId}/{document=**} {
-        allow read, write: if isOnProject(pId) || isAdmin();        
-			} 
-  	}
-	}
+  }
 }
