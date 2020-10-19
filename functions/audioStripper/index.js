@@ -1,6 +1,10 @@
 const ffmpeg = require("fluent-ffmpeg");
 const { getStorageSignedUrl } = require("../utils/firebase");
 
+const {
+  updateTranscription
+} = require("../utils/firebase");
+
 // Will NOT work for MP4 Streams
 // https://stackoverflow.com/questions/23002316/ffmpeg-pipe0-could-not-find-codec-parameters/40028894#40028894
 const convertStreamToAudio = (inputStream, outputStream) => {
@@ -36,7 +40,7 @@ const convertStreamToAudio = (inputStream, outputStream) => {
   });
 };
 
-exports.createHandler = async (snap, bucket, context) => {
+exports.createHandler = async (admin, snap, bucket, context) => {
   const { userId, itemId } = context.params;
   const { projectId, originalName, duration } = snap.data();
 
@@ -64,6 +68,10 @@ exports.createHandler = async (snap, bucket, context) => {
     console.log(`[START] Streaming, transforming file ${sourceUrl} to audio`);
     await convertStreamToAudio(sourceUrl[0], writeStream);
   } catch (err) {
+    await updateTranscription(admin, itemId, projectId, {
+        status: "error",
+        message: "Could not strip audio! Please reupload the file.",
+    });
     return console.error(
       "[ERROR] Could not stream / transform audio file: ",
       err

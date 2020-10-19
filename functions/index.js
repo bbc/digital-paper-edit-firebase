@@ -40,7 +40,7 @@ exports.dpeOnCreateFirestoreUploadStripAndUploadAudio = functions
   .runWith(maxRuntimeOpts)
   .firestore.document("apps/digital-paper-edit/users/{userId}/uploads/{itemId}")
   .onCreate((snap, context) =>
-    audioStripper.createHandler(snap, bucket, context)
+    audioStripper.createHandler(admin, snap, bucket, context)
   );
 
 const runSchedule = config.aws.api.transcriber.schedule || "every 60 minutes";

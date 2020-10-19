@@ -7,6 +7,7 @@ const {
   getProjectsCollection,
   getTranscriptsCollection,
   getTranscriptsInProgress,
+  updateTranscription
 } = require("../utils/firebase");
 
 const psttAdapter = require("./psttAdapter");
@@ -97,11 +98,6 @@ const getProjectTranscripts = async (admin, execTimestamp) => {
     )
   );
   return projectTranscripts;
-};
-
-const updateTranscription = async (admin, transcriptId, projectId, update) => {
-  const docRef = getTranscriptsCollection(admin, projectId).doc(transcriptId);
-  await docRef.update(update);
 };
 
 const getUserfromJob = (usersAudioData, jobId) => {

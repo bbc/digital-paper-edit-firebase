@@ -26,6 +26,11 @@ const getTranscriptsWithStatus = (admin, projectId, status) => {
   );
 }
 
+const updateTranscription = async (admin, transcriptId, projectId, update) => {
+  const docRef = getTranscriptsCollection(admin, projectId).doc(transcriptId);
+  await docRef.update(update);
+};
+
 const getTranscriptsInProgress = (admin, projectId) => {
   return getTranscriptsWithStatus(admin, projectId, 'in-progress')
 };
@@ -78,3 +83,4 @@ exports.getTranscriptsInProgress = getTranscriptsInProgress;
 exports.getTranscriptsWithStatus = getTranscriptsWithStatus;
 exports.getTranscriptsCollection = getTranscriptsCollection;
 exports.getStorageSignedUrl = getStorageSignedUrl;
+exports.updateTranscription = updateTranscription;
