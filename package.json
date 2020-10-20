@@ -78,6 +78,7 @@
     "deploy:dev:hosting": "rimraf build && npm run build && firebase deploy -P dev --only hosting:dj-con-Innovation-dpe-web-poc",
     "deploy:prod:hosting": "rimraf build && npm run build && firebase deploy -P prod --only hosting:dj-con-Innovation-dpe-web-poc",
     "deploy:functions": "firebase deploy --only functions",
+    "deploy:functions:createTranscript": "firebase deploy --only functions:createTranscript",
     "publish:prep": "npm run build && cp package.json ./build/package.json && cp README.md ./build/README.md && rimraf ./build/db",
     "publish:public": "npm run publish:prep && npm publish build --access public"
   },

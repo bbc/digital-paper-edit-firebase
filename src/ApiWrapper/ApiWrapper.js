@@ -229,97 +229,97 @@ class ApiWrapper {
     const uploadTask = fileRef.put(selectedFile);
 
     return new Promise((resolve, reject) => {
-      // https://firebase.google.com/docs/storage/web/upload-files
-      // Listen for state changes, errors, and completion of the upload.
-      // https://firebase.google.com/docs/storage/web/upload-files
-      // Listen for state changes, errors, and completion of the upload.
-      db.collection('projects')
-        .doc(projectId)
-        .collection('transcripts')
-        .add({
-          projectId,
-          title,
-          description,
-          type,
-          clipName,
-          storageRefName,
-          status: 'in-progress',
-          created: firebase.firestore.FieldValue.serverTimestamp(),
-          updated: firebase.firestore.FieldValue.serverTimestamp(),
-        })
-        .then(docRef => {
-          console.log('Document written with ID: ', docRef.id);
-          const response = {};
-          response.status = 'ok';
-          response.transcriptId = docRef.id;
-          response.transcript = {
-            id: docRef.id,
-            projectId,
-            title,
-            description,
-            clipName,
-            display: true,
-            // TODO: should get status info from response
-            status: 'in-progress',
-          };
+      // First upload the file
+      // then create the firestore entity
+      // to avoid race condition, with the cloud function
+      // that is triggered on transcript create. In case media is not availabel coz still uploading.
 
-          uploadTask.on(
-            firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
-            function(snapshot) {
-              // setIsUploading(true);
-              // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-              var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              console.log('Upload is ' + progress + '% done');
-              // setUploadProgress(progress);
-              switch (snapshot.state) {
-                case firebase.storage.TaskState.PAUSED: // or 'paused'
-                  console.log('Upload is paused');
-                  break;
-                case firebase.storage.TaskState.RUNNING: // or 'running'
-                  console.log('Upload is running');
-                  break;
-                default:
-                  console.error('Error with upload to firebase');
-                  break;
-              }
-            },
-            function(error) {
-              // setIsUploading(false);
-              // A full list of error codes is available at
-              // https://firebase.google.com/docs/storage/web/handle-errors
-              switch (error.code) {
-                case 'storage/unauthorized':
-                  // User doesn't have permission to access the object
-                  console.error(error.code);
-                  break;
-                case 'storage/canceled':
-                  // User canceled the upload
-                  console.error(error.code);
-                  break;
-                case 'storage/unknown':
-                  // Unknown error occurred, inspect error.serverResponse
-                  console.error(error.code);
-                  break;
-                default:
-                  console.error('Error with upload to firebase', error);
-                  break;
-              }
-            },
-            () => {
-              // Upload completed successfully, now we can get the download URL
-              uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
-                console.log('File available at', downloadURL);
-                this.updateTranscript(projectId, docRef.id, {}, { downloadURL });
+      // https://firebase.google.com/docs/storage/web/upload-files
+      // Listen for state changes, errors, and completion of the upload.
+      // https://firebase.google.com/docs/storage/web/upload-files
+      // Listen for state changes, errors, and completion of the upload.
+      uploadTask.on(
+        firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+        function(snapshot) {
+          // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+          var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log('Upload is ' + progress + '% done');
+          // setUploadProgress(progress);
+          switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED: // or 'paused'
+              console.log('Upload is paused');
+              break;
+            case firebase.storage.TaskState.RUNNING: // or 'running'
+              console.log('Upload is running');
+              break;
+            default:
+              console.error('Error with upload to firebase');
+              break;
+          }
+        },
+        function(error) {
+          // A full list of error codes is available at
+          // https://firebase.google.com/docs/storage/web/handle-errors
+          switch (error.code) {
+            case 'storage/unauthorized':
+              // User doesn't have permission to access the object
+              console.error(error.code);
+              break;
+            case 'storage/canceled':
+              // User canceled the upload
+              console.error(error.code);
+              break;
+            case 'storage/unknown':
+              // Unknown error occurred, inspect error.serverResponse
+              console.error(error.code);
+              break;
+            default:
+              console.error('Error with upload to firebase', error);
+              break;
+          }
+        },
+        () => {
+          // Upload completed successfully, now we can get the download URL
+          uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
+            const newTranscript = {
+              projectId,
+              title,
+              description,
+              type,
+              clipName,
+              storageRefName,
+              downloadURL,
+              display: true,
+              paragraphs: [],
+              words: [],
+              status: 'in-progress',
+              created: firebase.firestore.FieldValue.serverTimestamp(),
+              updated: firebase.firestore.FieldValue.serverTimestamp(),
+            };
+            // create firebase entity
+            db.collection('projects')
+              .doc(projectId)
+              .collection('transcripts')
+              .add(newTranscript)
+              .then(docRef => {
+                console.log('Document written with ID: ', docRef.id);
+                const response = {};
+                response.status = 'ok';
+                response.transcriptId = docRef.id;
+                response.transcript = {
+                  ...newTranscript,
+                  id: docRef.id,
+                };
+                resolve(response);
+              })
+              .catch(function(error) {
+                console.error('Error adding document: ', error);
+                reject(error);
               });
-            }
-          );
-
-          resolve(response);
-        })
-        .catch(function(error) {
-          console.error('Error adding document: ', error);
-          reject(error);
-        });
+            // end - create firebase entity
+          });
+        }
+      );
     });
   }
 

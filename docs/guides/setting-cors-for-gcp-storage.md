@@ -3,11 +3,16 @@
 ```json
 [
   {
-    "origin": ["https://dj-con-innovation-dpe-web-poc.web.app"],
-    "method": ["GET", "POST"],
-    "maxAgeSeconds": 3600
+    "origin": ["https://dj-con-innovation-dpe-web-poc.web.app", "http://localhost:3000"],
+    "method": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["*"]
   }
 ]
+```
+
+```json
+[{ "maxAgeSeconds": 3600, "method": ["GET"], "origin": ["*"] }]
 ```
 
 [install gsutil](https://cloud.google.com/storage/docs/gsutil_install)
