@@ -28,7 +28,7 @@ exports.createHandler = async (req, res, admin, functions) => {
           // TODO: save data to firestore
           // resp.response.result
           console.log('transcript');
-          const transcript = gcpToDpe(resp.response);
+          const transcript = gcpToDpe(resp);
           // console.log('transcript', transcript);
           console.log('transcript gcpToDpe');
           const { paragraphs, words } = transcript;

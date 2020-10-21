@@ -37,10 +37,21 @@ exports.createHandler = async (change, context, admin, AUDIO_EXTENSION, SAMPLE_R
       enableAutomaticPunctuation: true,
       // https://cloud.google.com/speech-to-text/docs/multiple-voices
       enableSpeakerDiarization: true,
+      diarizationConfig: {
+        enableSpeakerDiarization: true,
+        //  If not set, the default value is 2.
+        // minSpeakerCount: 2,
+        //  If not set, the default value is 6.
+        // maxSpeakerCount: 3,
+      },
       encoding: 'OGG_OPUS',
       // in RecognitionConfig must either be unspecified or match the value in the FLAC header `16000`;
       sampleRateHertz: Number(SAMPLE_RATE_HERTZ).toString(),
       languageCode: 'en-US',
+      // https://cloud.google.com/speech-to-text/docs/multiple-languages
+      // alternativeLanguageCodes: ['es-ES', 'en-US'],
+      // https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig
+      // model: 'video'
     },
     audio: {
       uri: `gs://${bucket}/${audioForSttRef}`,

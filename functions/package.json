@@ -21,7 +21,7 @@
     "firebase-admin": "^8.13.0",
     "firebase-functions": "^3.11.0",
     "fluent-ffmpeg": "^2.1.2",
-    "gcp-to-dpe": "^1.0.3",
+    "gcp-to-dpe": "^2.0.3",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {
