@@ -22,16 +22,18 @@ exports.createHandler = async (req, res, admin, functions) => {
     return fetch(operationUrlEndPoint)
       .then(response => response.json())
       .then(async resp => {
-        console.log(resp);
-        if (res.done && res.response) {
+        console.log('resp');
+        // console.log(resp);
+        if (resp.done && resp.response) {
           // TODO: save data to firestore
-          // res.response.result
+          // resp.response.result
           console.log('transcript');
-          const transcript = gcpToDpe(res.response);
+          const transcript = gcpToDpe(resp.response);
           // console.log('transcript', transcript);
           console.log('transcript gcpToDpe');
           const { paragraphs, words } = transcript;
           console.log('transcript words');
+          console.log('docPath', docPath);
           admin
             .firestore()
             .doc(docPath)
@@ -47,6 +49,7 @@ exports.createHandler = async (req, res, admin, functions) => {
             );
           return res.sendStatus(200);
         } else {
+          console.log('else, not ready - trying task again!');
           //TODO: run cloud task
           const project = admin.instanceId().app.options.projectId;
           // https://firebase.google.com/docs/functions/locations
