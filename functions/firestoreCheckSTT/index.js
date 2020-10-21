@@ -34,7 +34,8 @@ exports.createHandler = async (req, res, admin, functions) => {
           const { paragraphs, words } = transcript;
           console.log('transcript words');
           console.log('docPath', docPath);
-          admin
+
+          await admin
             .firestore()
             .doc(docPath)
             .set(
@@ -47,6 +48,7 @@ exports.createHandler = async (req, res, admin, functions) => {
                 merge: true,
               }
             );
+          console.log('admin write');
           return res.sendStatus(200);
         } else {
           console.log('else, not ready - trying task again!');
@@ -67,7 +69,7 @@ exports.createHandler = async (req, res, admin, functions) => {
           // Epoch, also known as Unix timestamps, is the number of seconds (not milliseconds!) that have elapsed since January 1, 1970 at 00:00:00 GMT
           const secondsSinceEpoch = getSecondsSinceEpoch(timeFromNowWhenToCheckAgainAsDate);
 
-          admin
+          await admin
             .firestore()
             .doc(docPath)
             .set(

@@ -26,8 +26,8 @@ exports.createTranscript = functions
   });
 
 // function to retrieve STT data from GCP STT operation
-// does this   .runWith(MAX_RUNTIME_OPTS) ?
-exports.firestoreCheckSTT = functions.https.onRequest(async (req, res) => {
+// does this    ?
+exports.firestoreCheckSTT = functions.runWith(MAX_RUNTIME_OPTS).https.onRequest(async (req, res) => {
   return await firestoreCheckSTTHandler.createHandler(req, res, admin, functions);
 });
 
