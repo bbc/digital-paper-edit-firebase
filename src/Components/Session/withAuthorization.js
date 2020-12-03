@@ -13,7 +13,7 @@ const withAuthorization = condition => Component => {
   const WithAuthorization = props => {
 
     useEffect(() => {
-      const listener = props.firebase.onAuthUserListener(
+      let listener = props.firebase.onAuthUserListener(
         authUser => {
           if (!condition(authUser)) {
             props.history.push(ROUTES.SIGN_IN);
@@ -24,6 +24,7 @@ const withAuthorization = condition => Component => {
 
       return () => {
         listener();
+        listener = null;
       };
     }, [ props.firebase, props.history ]);
 
