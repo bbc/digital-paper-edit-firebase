@@ -8,6 +8,7 @@
     "@bbc/digital-paper-edit-storybook": "^1.17.0",
     "@bbc/fcpx-xml-composer": "^1.0.0",
     "@bbc/react-transcript-editor": "^1.4.0",
+    "@datapunt/matomo-tracker-react": "^0.3.1",
     "@fortawesome/fontawesome-svg-core": "^1.2.15",
     "@fortawesome/free-solid-svg-icons": "^5.7.2",
     "@fortawesome/react-fontawesome": "^0.1.5",

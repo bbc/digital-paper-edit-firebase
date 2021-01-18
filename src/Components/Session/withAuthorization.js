@@ -5,6 +5,7 @@ import { compose } from 'recompose';
 
 import AuthUserContext from './context';
 import { withFirebase } from '../Firebase';
+import { withAnalytics } from '../Analytics';
 import * as ROUTES from '../../constants/routes';
 
 // with Authorization called before each route
@@ -17,6 +18,8 @@ const withAuthorization = condition => Component => {
         authUser => {
           if (!condition(authUser)) {
             props.history.push(ROUTES.SIGN_IN);
+          } else {
+            props.setAnalyticsUserId(`${ authUser.uid } ${ authUser.email }`);
           }
         },
         () => props.history.push(ROUTES.SIGN_IN)
@@ -25,7 +28,7 @@ const withAuthorization = condition => Component => {
       return () => {
         listener();
       };
-    }, [ props.firebase, props.history ]);
+    }, [ props.firebase, props.history, props.setAnalyticsUserId ]);
 
     return (
       <AuthUserContext.Consumer>
@@ -39,7 +42,7 @@ const withAuthorization = condition => Component => {
     history: PropTypes.any
   };
 
-  return compose(withRouter, withFirebase)(WithAuthorization);
+  return compose(withRouter, withFirebase, withAnalytics)(WithAuthorization);
 };
 
 export default withAuthorization;

@@ -5,7 +5,7 @@ import Card from 'react-bootstrap/Card';
 import SearchBar from '../../SearchBar'; // move to same folder + rename to SearchTool
 import Collection from '../../../../Firebase/Collection';
 import TranscriptMenu from '../../TranscriptMenu';
-import getTimeFromUserWordsSelection from '../../get-user-selection.js';
+import { getTimeFromWords, getUserWordsSelection } from '../../get-user-selection.js';
 import paragraphWithAnnotations from '../../Paragraphs/add-annotations-to-words-in-paragraphs.js';
 import removePunctuation from '../../../../../Util/remove-punctuation';
 import { decompressAsync } from '../../../../../Util/gzip';
@@ -315,6 +315,7 @@ const TranscriptTabContent = (props) => {
     if (e.target.type !== 'checkbox') {
       const text = e.target.value;
       if (text) {
+        props.trackEvent({ category: 'paperEditor', action: `handleSearch ${ text }` });
         setSearchString(text);
       } else {
         setSearchString('');
@@ -362,8 +363,9 @@ const TranscriptTabContent = (props) => {
     });
   };
 
-  const handleCreateAnnotation = (e) => {
-    const selection = getTimeFromUserWordsSelection();
+  const handleCreateAnnotation = () => {
+    const words = getUserWordsSelection();
+    const selection = getTimeFromWords(words);
     if (selection) {
       const activeLabel = labels.find((label) => label.active);
       if (activeLabel) {
@@ -376,6 +378,7 @@ const TranscriptTabContent = (props) => {
       createAnnotation(newAnnotation);
       setAnnotations(() => [ ...annotations, newAnnotation ]);
       setProcessingParagraphs(false);
+      props.trackEvent({ category: 'paperEditor', action: `handleCreateAnnotation ${ selection.labelId } ${ words.toString() } ` });
     } else {
       alert('Select some text in the transcript to highlight ');
     }
@@ -388,6 +391,7 @@ const TranscriptTabContent = (props) => {
 
     AnnotationsCollection.deleteItem(annotationId);
     setProcessingParagraphs(false);
+    props.trackEvent({ category: 'paperEditor', action: `handleDeleteAnnotation ${ annotationId }} ` });
   };
 
   const handleEditAnnotation = (annotationId) => {
@@ -407,6 +411,8 @@ const TranscriptTabContent = (props) => {
     } else {
       alert('all good nothing changed');
     }
+
+    props.trackEvent({ category: 'paperEditor', action: `handleEditAnnotation ${ annotationId }} ` });
   };
 
   const createLabel = async (newLabel) => {
