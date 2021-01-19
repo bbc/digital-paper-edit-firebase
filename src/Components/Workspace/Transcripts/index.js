@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 
-const Transcripts = ({ projectId, firebase }) => {
+const Transcripts = ({ projectId, firebase, trackEvent }) => {
   const TYPE = 'Transcript';
   const UPLOADFOLDER = 'uploads';
 
@@ -90,7 +90,7 @@ const Transcripts = ({ projectId, firebase }) => {
 
   const handleDelete = (id) => {
     deleteTranscript(id);
-    props.trackEvent({ category: 'transcripts', action: `handleDelete ${ id }` });
+    trackEvent({ category: 'transcripts', action: `handleDelete ${ id }` });
   };
 
   // storage
@@ -191,7 +191,7 @@ const Transcripts = ({ projectId, firebase }) => {
       item.id = newTranscript.id;
     }
 
-    props.trackEvent({ category: 'transcripts', action: `handleSave ${ item.id }` });
+    trackEvent({ category: 'transcripts', action: `handleSave ${ item.id }` });
   };
 
   return (
