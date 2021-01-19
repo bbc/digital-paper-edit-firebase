@@ -178,6 +178,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
       handleSaveProgrammeScript(updatedWords);
     }
+    props.trackEvent({ category: 'paperEditor programmeScript', action: `handleDelete ${ i }` });
   };
 
   const handleEdit = (i) => {
@@ -192,6 +193,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
       handleSaveProgrammeScript(newElements);
     }
+    props.trackEvent({ category: 'paperEditor programmeScript', action: `handleEdit ${ newText }` });
   };
 
   const onSortEnd = ({ oldIndex, newIndex }) => {
@@ -201,6 +203,7 @@ const ProgrammeScriptContainer = (props) => {
     setElements(updatedWords);
     setResetPreview(true);
     handleSaveProgrammeScript(updatedWords);
+    props.trackEvent({ category: 'paperEditor programmeScript', action: `onSortEnd from:${ oldIndex } to:${ newIndex }` });
   };
 
   const getInsertElementIndex = () => {
@@ -394,6 +397,7 @@ const ProgrammeScriptContainer = (props) => {
       const wordCurrentTime = e.target.dataset.start;
       setCurrentTime(wordCurrentTime);
     }
+    props.trackEvent({ category: 'paperEditor programmeScript', action: 'handleDblClick' });
   };
 
   const handleAddElement = (elementType) => {

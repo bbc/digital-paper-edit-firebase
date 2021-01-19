@@ -44,6 +44,11 @@ const WorkspaceView = props => {
     return () => {};
   }, [ id, projects ]);
 
+  const onSelect = (tab) => {
+    props.trackEvent({ category: 'workspace', action: `handleSelect ${ tab }` });
+    setActive(tab);
+  };
+
   return (
     <>
       <Container style={ { marginBottom: '5em', marginTop: '1em' } }>
@@ -56,7 +61,7 @@ const WorkspaceView = props => {
         <Tabs
           id="controlled-tab-example"
           activeKey={ active }
-          onSelect={ tab => setActive(tab) }
+          onSelect={ onSelect }
         >
           <Tab eventKey="transcripts" title="Transcripts">
             <Container style={ { marginBottom: '5em', marginTop: '1em' } }>

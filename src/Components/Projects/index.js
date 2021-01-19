@@ -62,6 +62,7 @@ const Projects = (props) => {
       createProject(item);
       setItems(() => [ ...items, item ]);
     }
+    props.trackEvent({ category: 'project', action: 'handleSave' });
   };
 
   const deleteProject = async (id) => {
@@ -74,6 +75,7 @@ const Projects = (props) => {
 
   const handleDelete = (id) => {
     deleteProject(id);
+    props.trackEvent({ category: 'project', action: 'handleDelete' });
   };
 
   useEffect(() => {

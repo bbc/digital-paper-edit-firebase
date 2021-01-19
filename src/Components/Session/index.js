@@ -5,5 +5,5 @@ import withAuthorization from './withAuthorization';
 export {
   AuthUserContext,
   withAuthentication,
-  withAuthorization
+  withAuthorization,
 };
