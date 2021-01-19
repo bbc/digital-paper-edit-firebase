@@ -315,7 +315,7 @@ const TranscriptTabContent = (props) => {
     if (e.target.type !== 'checkbox') {
       const text = e.target.value;
       if (text) {
-        props.trackEvent({ category: 'paperEditor', action: `handleSearch ${ text }` });
+        props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleSearch ${ text }` });
         setSearchString(text);
       } else {
         setSearchString('');
@@ -378,7 +378,7 @@ const TranscriptTabContent = (props) => {
       createAnnotation(newAnnotation);
       setAnnotations(() => [ ...annotations, newAnnotation ]);
       setProcessingParagraphs(false);
-      props.trackEvent({ category: 'paperEditor', action: `handleCreateAnnotation ${ selection.labelId } ${ words.toString() } ` });
+      props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleCreateAnnotation ${ selection.labelId } ${ words.toString() } ` });
     } else {
       alert('Select some text in the transcript to highlight ');
     }
@@ -391,7 +391,7 @@ const TranscriptTabContent = (props) => {
 
     AnnotationsCollection.deleteItem(annotationId);
     setProcessingParagraphs(false);
-    props.trackEvent({ category: 'paperEditor', action: `handleDeleteAnnotation ${ annotationId }} ` });
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleDeleteAnnotation ${ annotationId }} ` });
   };
 
   const handleEditAnnotation = (annotationId) => {
@@ -412,7 +412,7 @@ const TranscriptTabContent = (props) => {
       alert('all good nothing changed');
     }
 
-    props.trackEvent({ category: 'paperEditor', action: `handleEditAnnotation ${ annotationId }} ` });
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleEditAnnotation ${ annotationId }} ` });
   };
 
   const createLabel = async (newLabel) => {
@@ -429,11 +429,13 @@ const TranscriptTabContent = (props) => {
     const tempLabels = labels;
     tempLabels.push(newLabel);
     setLabels(tempLabels);
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: 'label create ' });
   };
 
   const onLabelUpdate = (labelId, updatedLabel) => {
     setLabels(() => [ ...tempLabels, updatedLabel ]);
     LabelsCollection.putItem(labelId, updatedLabel);
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `label update ${ labelId } ${ updatedLabel }` });
   };
 
   const onLabelDelete = (labelId) => {
@@ -441,6 +443,7 @@ const TranscriptTabContent = (props) => {
     tempLabels.splice(labelId, 1);
     setLabels(tempLabels);
     LabelsCollection.deleteItem(labelId);
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `label delete ${ labelId }` });
   };
 
   const updateLabelSelection = (e, labelId) => {
@@ -452,6 +455,7 @@ const TranscriptTabContent = (props) => {
     const activeLabel = tempLabels.find((label) => label.id === labelId);
     activeLabel.active = true;
     setLabels(tempLabels);
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `label select ${ labelId }` });
   };
 
   const cardBodyHeight = mediaType.startsWith('audio') ? '100vh' : '60vh';

@@ -90,6 +90,7 @@ const Transcripts = ({ projectId, firebase }) => {
 
   const handleDelete = (id) => {
     deleteTranscript(id);
+    props.trackEvent({ category: 'transcripts', action: `handleDelete ${ id }` });
   };
 
   // storage
@@ -186,7 +187,11 @@ const Transcripts = ({ projectId, firebase }) => {
       newTranscript.update({
         url: genUrl(newTranscript.id),
       });
+
+      item.id = newTranscript.id;
     }
+
+    props.trackEvent({ category: 'transcripts', action: `handleSave ${ item.id }` });
   };
 
   return (

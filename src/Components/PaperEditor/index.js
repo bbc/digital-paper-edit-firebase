@@ -103,12 +103,14 @@ const PaperEditor = (props) => {
     if (isProgramScriptShown) {
       setIsTranscriptsShown(!isTranscriptsShown);
     }
+    props.trackEvent({ category: 'paperEditor', action: `handleToggle transcripts: ${ isTranscriptsShown } programScripts: ${ isProgramScriptShown }` });
   };
 
   const toggleProgramScript = () => {
     if (isTranscriptsShown) {
       setIsProgramScriptShown(!isProgramScriptShown);
     }
+    props.trackEvent({ category: 'paperEditor', action: `handleToggle transcripts: ${ isTranscriptsShown } programScripts: ${ isProgramScriptShown }` });
   };
 
   const toggleButton = (text, isShown, toggle) => {

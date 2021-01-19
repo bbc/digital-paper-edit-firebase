@@ -195,6 +195,8 @@ const TranscriptEditor = ({ match, firebase }) => {
         </Alert>
       );
     }
+
+    props.trackEvent({ category: 'transcriptEditor', action: 'handleSave' });
   };
 
   return (
