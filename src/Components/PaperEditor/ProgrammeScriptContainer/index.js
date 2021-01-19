@@ -178,7 +178,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
       handleSaveProgrammeScript(updatedWords);
     }
-    props.trackEvent({ category: 'paperEditor programmeScript', action: `handleEditAnnotation ${ annotationId }` });
+    props.trackEvent({ category: 'paperEditor programmeScript', action: `handleDelete ${ i }` });
   };
 
   const handleEdit = (i) => {
