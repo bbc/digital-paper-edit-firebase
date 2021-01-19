@@ -391,7 +391,7 @@ const TranscriptTabContent = (props) => {
 
     AnnotationsCollection.deleteItem(annotationId);
     setProcessingParagraphs(false);
-    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleDeleteAnnotation ${ annotationId }} ` });
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleDeleteAnnotation ${ annotationId } ` });
   };
 
   const handleEditAnnotation = (annotationId) => {
@@ -412,7 +412,7 @@ const TranscriptTabContent = (props) => {
       alert('all good nothing changed');
     }
 
-    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleEditAnnotation ${ annotationId }} ` });
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleEditAnnotation ${ annotationId } ` });
   };
 
   const createLabel = async (newLabel) => {
