@@ -175,16 +175,13 @@ const PaperEditor = (props) => {
   }
 
   let ProgrammeScriptEl = null;
-  if (transcripts) {
-    ProgrammeScriptEl = (
-      <ProgrammeScriptContainer
-        projectId={ projectId }
-        papereditId={ papereditId }
-        transcripts={ transcripts }
-        videoHeight={ videoHeight }
-      />
-    );
-  }
+  ProgrammeScriptEl = (
+    <ProgrammeScriptContainer
+      projectId={ projectId }
+      papereditId={ papereditId }
+      videoHeight={ videoHeight }
+    />
+  );
 
   const transcriptsColumn = (el) => {
     const display = isTranscriptsShown ? 'block' : 'none';
@@ -277,9 +274,10 @@ const PaperEditor = (props) => {
 };
 
 PaperEditor.propTypes = {
-  match: PropTypes.any,
-  videoHeight: PropTypes.any,
   firebase: PropTypes.any,
+  match: PropTypes.any,
+  trackEvent: PropTypes.func,
+  videoHeight: PropTypes.any
 };
 
 const condition = (authUser) => !!authUser;

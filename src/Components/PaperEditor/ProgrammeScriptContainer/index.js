@@ -7,7 +7,7 @@ import Button from 'react-bootstrap/Button';
 import arrayMove from 'array-move';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faShare } from '@fortawesome/free-solid-svg-icons';
 
 import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 
@@ -33,7 +33,6 @@ import PropTypes from 'prop-types';
 const Article = React.lazy(() => import('./Article'));
 
 const ProgrammeScriptContainer = (props) => {
-  const transcripts = props.transcripts;
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
   const firebase = props.firebase;
@@ -42,20 +41,28 @@ const ProgrammeScriptContainer = (props) => {
   const [ title, setTitle ] = useState('');
   const [ resetPreview, setResetPreview ] = useState(false);
   const [ currentTime, setCurrentTime ] = useState();
+  const [ transcripts, setTranscripts ] = useState();
+
+  const [ fetchTranscripts, setFetchTranscripts ] = useState(false);
 
   // Video Context Preview
   const [ width, setWidth ] = useState(150);
   const [ playlist, setPlaylist ] = useState([]);
   const previewCardRef = useRef();
 
-  const PaperEditsCollection = new Collection(
+  const PaperEdits = new Collection(
     firebase,
     `/projects/${ projectId }/paperedits`
   );
 
+  const Transcriptions = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/transcripts`
+  );
+
   const createPaperEdits = async (paperEdit) => {
     try {
-      await PaperEditsCollection.putItem(papereditsId, paperEdit);
+      await PaperEdits.putItem(papereditsId, paperEdit);
       console.log('Successfully saved');
     } catch (error) {
       console.error('Error saving document', error);
@@ -84,7 +91,7 @@ const ProgrammeScriptContainer = (props) => {
   useEffect(() => {
     const getPaperEdit = async () => {
       try {
-        const paperEdit = await PaperEditsCollection.getItem(papereditsId);
+        const paperEdit = await PaperEdits.getItem(papereditsId);
         setTitle(paperEdit.title);
 
         const newElements = paperEdit.elements
@@ -106,7 +113,31 @@ const ProgrammeScriptContainer = (props) => {
     if (!elements) {
       getPaperEdit();
     }
-  }, [ PaperEditsCollection, elements, papereditsId ]);
+  }, [ PaperEdits, elements, papereditsId ]);
+
+  useEffect(() => {
+    const getTranscripts = async () => {
+      setFetchTranscripts(true);
+      try {
+        const paperEdits = elements.filter((element) => element.type === 'paper-cut');
+        const trs = await Promise.all(paperEdits.map((async paperEdit => {
+          const tr = await Transcriptions.getItem(paperEdit.transcriptId);
+
+          return { id: paperEdit.transcriptId, ...tr };
+        })));
+        console.log(trs);
+        setTranscripts(trs);
+      } catch (error) {
+        console.error('Error getting documents: ', error);
+      }
+    };
+
+    if (resetPreview && elements && elements.length > 0 && !transcripts && !fetchTranscripts) {
+      getTranscripts();
+    }
+
+    return () => {};
+  }, [ Transcriptions, transcripts, elements, fetchTranscripts, resetPreview ]);
 
   useEffect(() => {
     const getPlaylistItem = (element) => ({
@@ -119,8 +150,8 @@ const ProgrammeScriptContainer = (props) => {
       return await firebase.storage.storage.ref(item.ref).getDownloadURL();
     };
 
-    const getPlaylist = async (els) => {
-      const paperEdits = els.filter((element) => element.type === 'paper-cut');
+    const getPlaylist = async () => {
+      const paperEdits = elements.filter((element) => element.type === 'paper-cut');
 
       const results = paperEdits.reduce(
         (prevResult, paperEdit) => {
@@ -149,7 +180,7 @@ const ProgrammeScriptContainer = (props) => {
       setPlaylist(playlistItems);
     };
 
-    if (resetPreview && elements && elements.length > 0) {
+    if (resetPreview && elements && elements.length > 0 && transcripts) {
       getPlaylist(elements);
       setResetPreview(false);
     }
@@ -468,11 +499,15 @@ const ProgrammeScriptContainer = (props) => {
               />
             </Col>
             <Col sm={ 12 } md={ 3 }>
-              <ExportDropdown
-                transcripts={ transcripts }
-                title={ title }
-                elements={ elements }
-              ></ExportDropdown>
+              {transcripts ?
+                <ExportDropdown
+                  transcripts={ transcripts }
+                  title={ title }
+                  elements={ elements }
+                />
+                : (<Button variant="outline-secondary" disabled>
+                  <FontAwesomeIcon icon={ faShare } /> Export
+                </Button>)}
             </Col>
           </Row>
         </Card.Header>
@@ -497,7 +532,6 @@ const ProgrammeScriptContainer = (props) => {
 ProgrammeScriptContainer.propTypes = {
   firebase: PropTypes.any,
   match: PropTypes.any,
-  transcripts: PropTypes.any,
 };
 
 const condition = (authUser) => !!authUser;

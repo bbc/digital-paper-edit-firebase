@@ -38,6 +38,7 @@ const Paragraph = (props) => {
   const getWordWithAnnotations = (word) => {
     const wordEl = (
       <Word
+        key={ `word-${ word.id }-${ word.end }` }
         transcriptId={ transcriptId }
         speaker={ speaker }
         word={ word }
@@ -48,6 +49,7 @@ const Paragraph = (props) => {
     if (word.annotation) {
       return (
         <AnnotationOverlayTrigger
+          key={ `annotation-${ word.annotation.labelId }-${ word.id }-${ word.end }` }
           words={ wordEl }
           labels={ labels }
           annotation={ word.annotation }
