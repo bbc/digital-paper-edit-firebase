@@ -42,6 +42,7 @@ const ProgrammeScriptContainer = (props) => {
   const [ resetPreview, setResetPreview ] = useState(false);
   const [ currentTime, setCurrentTime ] = useState();
   const [ transcripts, setTranscripts ] = useState();
+  const [ paperEdits, setPaperEdits ] = useState();
 
   const [ fetchTranscripts, setFetchTranscripts ] = useState(false);
 
@@ -105,6 +106,7 @@ const ProgrammeScriptContainer = (props) => {
         newElements.push(insertElement);
         setElements(newElements);
         setResetPreview(true);
+        setPaperEdits(newElements.filter((element) => element.type === 'paper-cut'));
       } catch (error) {
         console.error('Error getting paper edits: ', error);
       }
@@ -119,25 +121,23 @@ const ProgrammeScriptContainer = (props) => {
     const getTranscripts = async () => {
       setFetchTranscripts(true);
       try {
-        const paperEdits = elements.filter((element) => element.type === 'paper-cut');
         const trs = await Promise.all(paperEdits.map((async paperEdit => {
           const tr = await Transcriptions.getItem(paperEdit.transcriptId);
 
           return { id: paperEdit.transcriptId, ...tr };
         })));
-        console.log(trs);
         setTranscripts(trs);
       } catch (error) {
         console.error('Error getting documents: ', error);
       }
     };
 
-    if (resetPreview && elements && elements.length > 0 && !transcripts && !fetchTranscripts) {
+    if (resetPreview && paperEdits && !transcripts && !fetchTranscripts) {
       getTranscripts();
     }
 
     return () => {};
-  }, [ Transcriptions, transcripts, elements, fetchTranscripts, resetPreview ]);
+  }, [ Transcriptions, transcripts, fetchTranscripts, resetPreview, paperEdits ]);
 
   useEffect(() => {
     const getPlaylistItem = (element) => ({
@@ -151,12 +151,9 @@ const ProgrammeScriptContainer = (props) => {
     };
 
     const getPlaylist = async () => {
-      const paperEdits = elements.filter((element) => element.type === 'paper-cut');
-
       const results = paperEdits.reduce(
-        (prevResult, paperEdit) => {
-          const transcriptId = paperEdit.transcriptId;
-          const transcript = transcripts.find((tr) => tr.id === transcriptId);
+        (prevResult, paperEdit, index) => {
+          const transcript = transcripts[index];
           const playlistItem = getPlaylistItem(paperEdit);
           playlistItem.ref = transcript.media.ref;
           playlistItem.start = prevResult.startTime;
@@ -180,11 +177,11 @@ const ProgrammeScriptContainer = (props) => {
       setPlaylist(playlistItems);
     };
 
-    if (resetPreview && elements && elements.length > 0 && transcripts) {
-      getPlaylist(elements);
+    if (resetPreview && paperEdits && transcripts) {
+      getPlaylist();
       setResetPreview(false);
     }
-  }, [ elements, resetPreview, firebase.storage.storage, transcripts ]);
+  }, [ resetPreview, firebase.storage.storage, transcripts, paperEdits ]);
 
   useEffect(() => {
     const updateVideoContextWidth = () => {
@@ -506,7 +503,7 @@ const ProgrammeScriptContainer = (props) => {
                   elements={ elements }
                 />
                 : (<Button variant="outline-secondary" disabled>
-                  <FontAwesomeIcon icon={ faShare } /> Export
+                  <FontAwesomeIcon icon={ faShare } /> Export disabled while Media is loading
                 </Button>)}
             </Col>
           </Row>

@@ -9,8 +9,10 @@ import PropTypes from 'prop-types';
 import { withAuthorization } from '../../Session';
 import TranscriptNavItem from './TranscriptNavItem';
 import TranscriptTabPane from './TranscriptTabPane';
+import { useState, useEffect } from 'react';
 
 const TranscriptsContainer = ({ transcripts, projectId, firebase }) => {
+  const [ activeKey, setActiveKey ] = useState();
   const transcriptsElNav = transcripts.map((transcript) => (
     <TranscriptNavItem
       key={ transcript.id }
@@ -19,6 +21,7 @@ const TranscriptsContainer = ({ transcripts, projectId, firebase }) => {
       status={ transcript.status }
     />
   ));
+
   const transcriptsElTab = transcripts.map((transcript) => (
     <TranscriptTabPane
       key={ transcript.id }
@@ -30,42 +33,54 @@ const TranscriptsContainer = ({ transcripts, projectId, firebase }) => {
       firebase={ firebase }
     />
   ));
-  const getDefaultActiveKey = () => {
-    const doneItem = transcripts.find(transcript => transcript.status === 'done');
-    if (doneItem) {
-      return doneItem.id;
-    } else {
-      return 'first';
+
+  useEffect(() => {
+    const getDefaultActiveKey = () => {
+      const transcript = transcripts.find(t => t.status === 'done');
+      if (transcript) {
+        setActiveKey(transcript.id);
+      }
+    };
+    if (transcripts) {
+      getDefaultActiveKey();
     }
-  };
+
+    return () => {
+      setActiveKey('first');
+    };
+  }, [ transcripts ]);
 
   return (
     <>
-      <Tab.Container
-        defaultActiveKey={ getDefaultActiveKey() }
-      >
-        <Row>
-          <Col sm={ 3 }>
-            <h2
-              className={ [ 'text-truncate', 'text-muted' ].join(' ') }
-              title={ 'Transcripts' }
-            >
-              Transcripts
-            </h2>
-            <hr />
+      {transcripts && activeKey ?
+        <Tab.Container
+          defaultActiveKey={ activeKey }
+        >
+          <Row>
+            <Col sm={ 3 }>
+              <h2
+                className={ [ 'text-truncate', 'text-muted' ].join(' ') }
+                title={ 'Transcripts' }
+              >
+                Transcripts
+              </h2>
+              <hr />
 
-            <Nav variant="pills" className="flex-column">
-              {transcriptsElNav}
-            </Nav>
-          </Col>
-          <Col sm={ 9 }>
-            <Tab.Content>
-              {transcriptsElTab}
-            </Tab.Content>
-          </Col>
-        </Row>
-      </Tab.Container>
+              <Nav variant="pills" className="flex-column">
+                {transcriptsElNav}
+              </Nav>
+            </Col>
+            <Col sm={ 9 }>
+              <Tab.Content>
+                {transcriptsElTab}
+              </Tab.Content>
+            </Col>
+          </Row>
+        </Tab.Container> :
+        null
+      }
     </>
+
   );
 };
 
