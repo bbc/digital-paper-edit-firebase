@@ -178,6 +178,48 @@ const ProgrammeScriptContainer = (props) => {
   };
 
   useEffect(() => {
+    const getTranscripts = async (trIds) => {
+      try {
+        if (!transcripts) {
+          const trs = await Promise.all(trIds.map((async trId => {
+            const transcript = await Transcriptions.getItem(trId);
+
+            return { id: trId, ...transcript };
+          })));
+          setTranscripts(trs);
+        } else {
+          const trs = await Promise.all(trIds.map((async trId => {
+            let transcript = (transcripts.find(t => t.id == trId));
+            if (transcript) {
+              return transcript;
+            }
+
+            transcript = await Transcriptions.getItem(trId);
+
+            return { id: trId, ...transcript };
+          })));
+          setTranscripts(trs);
+        }
+      } catch (error) {
+        console.error('Error getting documents: ', error);
+      }
+    };
+
+    if (paperEdits) {
+      if (!transcripts ) {
+        const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
+        getTranscripts(trIds);
+      } else {
+        const newTranscripts = paperEdits.filter(pe => !transcripts.find(tr => tr.id == pe.transcriptId ));
+        if (newTranscripts.length > 0) {
+          const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
+          getTranscripts(trIds);
+        }
+      }
+    }
+
+  }, [ Transcriptions, paperEdits, transcripts ]);
+  useEffect(() => {
     const getPlaylistItem = (element) => ({
       type: 'video',
       sourceStart: element.start,
