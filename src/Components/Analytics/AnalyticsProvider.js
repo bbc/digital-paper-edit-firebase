@@ -49,7 +49,7 @@ export const withAnalytics = Component => {
           customDimensions: customDimensions
         }
       );
-    }, []);
+    }, [ customDimensions, props.location.pathname, trackPageView ]);
 
     return (<Component { ...props } setAnalyticsUserId={ setAnalyticsUserId } trackPageView={ trackPageView } trackEvent={ trackEvent } />);
   };
