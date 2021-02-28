@@ -189,7 +189,7 @@ const ProgrammeScriptContainer = (props) => {
           setTranscripts(trs);
         } else {
           const trs = await Promise.all(trIds.map((async trId => {
-            let transcript = (transcripts.find(t => t.id == trId));
+            let transcript = (transcripts.find(t => t.id === trId));
             if (transcript) {
               return transcript;
             }
@@ -210,7 +210,7 @@ const ProgrammeScriptContainer = (props) => {
         const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
         getTranscripts(trIds);
       } else {
-        const newTranscripts = paperEdits.filter(pe => !transcripts.find(tr => tr.id == pe.transcriptId ));
+        const newTranscripts = paperEdits.filter(pe => !transcripts.find(tr => tr.id === pe.transcriptId ));
         if (newTranscripts.length > 0) {
           const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
           getTranscripts(trIds);
@@ -372,7 +372,7 @@ const ProgrammeScriptContainer = (props) => {
     const selectedWords = selection.words;
 
     // Recalcultates word timings to align with programme script playlist
-    selectedWords.map((word, i) => {
+    selectedWords.forEach((word, i) => {
       const wordStartTime =
         word.start - selection.start + playlistStartTime.startTime;
       const wordDuration = word.end - word.start;
@@ -430,7 +430,7 @@ const ProgrammeScriptContainer = (props) => {
         };
 
         // Recalcultates word timings to align with programme script playlist
-        paragraph.map((word, index) => {
+        paragraph.forEach((word, index) => {
           const newStart = word.start - transcriptStart + paperCutStart;
           const wordDuration = word.end - word.start;
           const newEnd = newStart + wordDuration;

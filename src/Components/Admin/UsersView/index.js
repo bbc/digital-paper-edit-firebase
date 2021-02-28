@@ -1,7 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
-import Container from 'react-bootstrap/Container';
-import CustomFooter from '../../lib/CustomFooter';
 import Collection from '../../Firebase/Collection';
 import { USERS } from '../../../constants/routes';
 import { withAuthorization } from '../../Session';
