@@ -56,7 +56,6 @@ const formatToADLEvent = (transcript, element) => {
       ? transcript.title
       : defaultReelName,
     clipName: `${ transcript.title }`,
-    path: transcript.fileName ? transcript.fileName : transcript.title,
     // TODO: frameRate should be pulled from the clips in the sequence
     // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
     // but again frameRate should not be hard coded
@@ -72,14 +71,6 @@ const formatToADLEvent = (transcript, element) => {
       : defaultSampleRate,
     label: ''
   };
-
-  // real path
-  // edit.path (default clipName)
-  // 	convertSetToArray(filePaths).forEach((path, i)=>{
-  // 	const index = i+1;
-  // 	edl+='\t(Index)\t'+str(index)+'\t(F)\t"URL:file://localhost/C:/Audio Files/'+ fileNames[path] +'"\tBBCSPEECHEDITOR'+str(index)+'\t_\t_\t"_"\t"_"\n';
-
-  // });
 
   return result;
 };
@@ -111,27 +102,4 @@ const getADLSq = (projectTitle, title, elements, transcripts) => {
 // https://www.npmjs.com/package/downloadjs
 // https://www.npmjs.com/package/edl_composer
 
-const formatEDLtoADL = (edlSq) => {
-  const firstElement = edlSq.events[0];
-  const result = writeEDL({
-    projectOriginator: 'Digital Paper Edit',
-    // TODO: it be good to change sequence for the ADL to be same schema
-    // as the one for EDL and FCPX - for now just adjusting
-    edits: edlSq.events.map(event => {
-      return {
-        start: event.startTime,
-        end: event.endTime,
-        clipName: event.clipName,
-        // TODO: could add a label if present
-        label: ''
-      };
-    }),
-    sampleRate: 48000, // should be 48000 default
-    frameRate: firstElement.fps,
-    projectName: edlSq.title
-  });
-
-  return result;
-};
-
-export { formatEDLtoADL, getEDLSq, getADLSq };
+export { getEDLSq, getADLSq };
