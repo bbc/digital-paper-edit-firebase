@@ -14,12 +14,13 @@ const Paragraphs = (props) => {
     displayParagraphs
   } = props;
 
-  const getParagraphEl = (paragraph, isSearchResult) => {
+  const getParagraphEl = (paragraph, searchResultIndex, isSearchResult) => {
     /**
      * Create a Paragraph containing words, with or without annotation (overlay)
      */
     return (
       <Paragraph
+        key={ `paragraph-${ transcriptId }-${ searchResultIndex }` }
         transcriptId={ transcriptId }
         labels={ labels }
         isSearchResult={ isSearchResult }
@@ -37,7 +38,7 @@ const Paragraphs = (props) => {
   const paragraphEls = paragraphs
     .filter((paragraph, displayIndex) => displayParagraphs[displayIndex])
     .map((paragraph, searchResultIndex) =>
-      getParagraphEl(paragraph, isSearchResults[searchResultIndex])
+      getParagraphEl(paragraph, searchResultIndex, isSearchResults[searchResultIndex])
     );
 
   return <>{paragraphEls}</>;

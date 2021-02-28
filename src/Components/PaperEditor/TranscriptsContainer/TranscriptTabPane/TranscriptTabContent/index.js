@@ -545,6 +545,7 @@ const TranscriptTabContent = (props) => {
           <Suspense fallback={ <div>Loading...</div> }>
             {annotatedParagraphs ? (
               <Paragraphs
+                key={ `${ transcriptId }-${ mediaRef }` }
                 transcriptId={ transcriptId }
                 paragraphs={ annotatedParagraphs }
                 labels={ labels }
