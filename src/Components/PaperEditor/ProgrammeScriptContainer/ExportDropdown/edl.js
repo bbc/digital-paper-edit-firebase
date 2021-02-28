@@ -24,8 +24,6 @@ const formatToEDLEvent = (transcript, element) => {
       : defaultSampleRate
   };
 
-  console.log('EDL - result 1', result);
-
   return result;
 };
 

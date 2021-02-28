@@ -66,7 +66,6 @@ const ExportDropdown = (props) => {
   const handleExportEDL = () => {
     const edlSq = getEDLSq(title, elements, transcripts);
     const edl = new EDL(edlSq);
-    console.log(edl.compose());
     downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
   };
 
