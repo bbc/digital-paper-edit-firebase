@@ -178,6 +178,7 @@ const PaperEditor = (props) => {
   ProgrammeScriptEl = (
     <ProgrammeScriptContainer
       projectId={ projectId }
+      projectTitle={ projectTitle }
       papereditId={ papereditId }
       videoHeight={ videoHeight }
     />

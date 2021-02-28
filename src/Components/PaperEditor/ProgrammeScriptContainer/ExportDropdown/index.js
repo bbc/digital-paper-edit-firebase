@@ -1,231 +1,49 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
-import EDL from 'edl_composer';
-import generateADL from '@bbc/aes31-adl-composer';
 import jsonToFCPX from '@bbc/fcpx-xml-composer';
 import downloadjs from 'downloadjs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faShare,
   faInfoCircle,
-  faFileExport
+  faFileExport,
 } from '@fortawesome/free-solid-svg-icons';
-import timecodes from 'node-timecodes';
+
+import ADLModal from './ExportModal/ADLModal';
+import MediaModal from './ExportModal/MediaModal';
+import EDL from 'edl_composer';
+import { getEDLSq, getADLSq } from './edl';
+import { formatJsonToText, getJson } from './json';
+import { useState } from 'react';
 
 const ExportDropdown = (props) => {
-
-  const defaultReelName = 'NA';
-  const defaultFps = 25;
-  const defaultTimecodeOffset = '00:00:00:00';
-  const defaultSampleRate = '16000';
 
   const title = props.title;
   const elements = props.elements;
   const transcripts = props.transcripts;
+  const projectTitle = props.projectTitle;
 
-  // /**
-  //  * Helper function to create json EDL for other EDL/ADL/FPCX export
-  //  */
+  const [ showADL, setShowADL ] = useState(false);
+  const [ showMedia, setShowMedia ] = useState(false);
 
-  const getCurrentTranscript = (element) => transcripts.find(tr => {
-    return tr.id === element.transcriptId;
-  });
-  const getSequenceJsonEDL = () => {
-    const edlSq = {
-      title: title,
-      events: []
-    };
+  const [ urls, setUrls ] = useState([]);
 
-    const programmeScriptPaperCuts = elements
-      .map(element => {
-        if (element.type === 'paper-cut') {
-          // Get clipName for current transcript
-
-          const currentTranscript = getCurrentTranscript(element);
-
-          const result = {
-            startTime: element.start,
-            endTime: element.end,
-            reelName: currentTranscript.metadata
-              ? currentTranscript.metadata.reelName
-              : defaultReelName,
-            clipName: `${ currentTranscript.clipName }`,
-            // TODO: frameRate should be pulled from the clips in the sequence
-            // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
-            // but again frameRate should not be hard coded
-            fps: currentTranscript.metadata
-              ? currentTranscript.metadata.fps
-              : defaultFps,
-            // TODO: if there is an offset this should added here, for now hard coding 0
-            offset: currentTranscript.metadata
-              ? currentTranscript.metadata.timecode
-              : defaultTimecodeOffset,
-            sampleRate: currentTranscript.metadata
-              ? currentTranscript.metadata.sampleRate
-              : defaultSampleRate
-          };
-
-          console.log('EDL - result 1', result);
-
-          return result;
-        }
-
-        return null;
-      })
-      .filter(el => {
-        return el !== null;
-      });
-    // adding ids to EDL
-    const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
-      (el, index) => {
-        el.id = index + 1;
-
-        return el;
-      }
-    );
-    edlSq.events.push(...programmeScriptPaperCutsWithId);
-
-    console.log('EDL Seq', edlSq);
-
-    return edlSq;
-  };
-
-  // https://www.npmjs.com/package/downloadjs
-  // https://www.npmjs.com/package/edl_composer
-
-  const handleExportEDL = () => {
-    const edlSq = getSequenceJsonEDL();
-    const edl = new EDL(edlSq);
-    console.log(edl.compose());
-    downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
-  };
-
-  const handleExportADL = () => {
-    const edlSq = getSequenceJsonEDL();
-    if (edlSq.events.length === 0) {
-      alert('Cannot export empty paper edit ADL');
-
-      return;
-    }
-    const firstElement = edlSq.events[0];
-    const result = generateADL({
-      projectOriginator: 'Digital Paper Edit',
-      // TODO: it be good to change sequence for the ADL to be same schema
-      // as the one for EDL and FCPX - for now just adjusting
-      edits: edlSq.events.map(event => {
-        return {
-          start: event.startTime,
-          end: event.endTime,
-          clipName: event.clipName,
-          // TODO: could add a label if present
-          label: ''
-        };
-      }),
-      sampleRate: firstElement.sampleRate,
-      frameRate: firstElement.fps,
-      projectName: edlSq.title
-    });
-    console.log('ADL Result', result);
-    downloadjs(result, `${ title }.adl`, 'text/plain');
-  };
+  const handleCloseADL = () => setShowADL(false);
+  const handleShowADL = () => setShowADL(true);
+  const handleCloseMedia = () => setShowMedia(false);
+  const handleShowMedia = () => setShowMedia(true);
 
   const handleExportFCPX = () => {
     // alert('this function has not been implemented yet');
-    const edlSq = getSequenceJsonEDL();
+    const edlSq = getEDLSq(title, elements, transcripts);
     const result = jsonToFCPX(edlSq);
     console.log('FCPX result', result);
     downloadjs(result, `${ title }.fcpxml`, 'text/plain');
   };
 
-  const getProgrammeScriptJson = () => {
-    // alert('this function has not been implemented yet');
-    const edlSq = {
-      title: title,
-      events: []
-    };
-
-    const programmeScriptPaperCuts = elements
-      .map(element => {
-        if (element.type === 'paper-cut') {
-          console.log('paper-cut::', element);
-          // Get clipName for current transcript
-          const currentTranscript = getCurrentTranscript(element);
-
-          const result = {
-            ...element,
-            startTime: element.start,
-            endTime: element.end,
-            reelName: currentTranscript.metadata
-              ? currentTranscript.metadata.reelName
-              : defaultReelName,
-            clipName: `${ currentTranscript.clipName }`,
-            // TODO: frameRate should be pulled from the clips in the sequence
-            // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
-            // but again frameRate should not be hard coded
-            fps: currentTranscript.metadata
-              ? currentTranscript.metadata.fps
-              : defaultFps,
-            sampleRate: currentTranscript.metadata
-              ? currentTranscript.metadata.sampleRate
-              : defaultSampleRate,
-            offset: currentTranscript.metadata
-              ? currentTranscript.metadata.timecode
-              : defaultTimecodeOffset
-          };
-
-          return result;
-        } else {
-          return element;
-        }
-      })
-      .filter(el => {
-        return el !== null;
-      });
-    // adding ids to EDL
-    const programmeScriptPaperCutsWithId = programmeScriptPaperCuts.map(
-      (el, index) => {
-        el.id = index + 1;
-
-        return el;
-      }
-    );
-    edlSq.events.push(...programmeScriptPaperCutsWithId);
-    console.log(edlSq);
-
-    return edlSq;
-  };
-
-  const programmeScriptJsonToText = edlsqJson => {
-    const edlTitle = `# ${ edlsqJson.title }\n\n`;
-    const body = edlsqJson.events.map(event => {
-      console.log('EDL events', event);
-      if (event.type === 'title') {
-        return `## ${ event.text }`;
-      } else if (event.type === 'voice-over') {
-        return `_${ event.text }_`;
-      } else if (event.type === 'note') {
-        return `[ ${ event.text }]`;
-      } else if (event.type === 'paper-cut') {
-        return `${ timecodes.fromSeconds(
-          event.startTime
-        ) }\t${ timecodes.fromSeconds(event.endTime) }\t${ event.speaker }\t-\t${
-          event.clipName
-        }     \n${ event.words
-          .map(word => {
-            return word.text;
-          })
-          .join(' ') }`;
-      }
-
-      return null;
-    });
-
-    return `${ edlTitle }${ body.join('\n\n') }`;
-  };
-
   const handleExportJson = () => {
-    const programmeScriptJson = getProgrammeScriptJson();
+    const programmeScriptJson = getJson(title, elements, transcripts);
     const programmeScriptText = JSON.stringify(programmeScriptJson, null, 2);
     downloadjs(
       programmeScriptText,
@@ -235,14 +53,46 @@ const ExportDropdown = (props) => {
   };
 
   const handleExportTxt = () => {
-    const programmeScriptJson = getProgrammeScriptJson();
-    const programmeScriptText = programmeScriptJsonToText(programmeScriptJson);
+    const programmeScriptJson = getJson(title, elements, transcripts);
+    const programmeScriptText = formatJsonToText(programmeScriptJson);
     console.log('Programme Script Text: ', programmeScriptText);
     downloadjs(
       programmeScriptText,
       `${ title }.txt`,
       'text/plain'
     );
+  };
+
+  const handleExportEDL = () => {
+    const edlSq = getEDLSq(title, elements, transcripts);
+    const edl = new EDL(edlSq);
+    console.log(edl.compose());
+    downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
+  };
+
+  const generateADL = () => {
+    const result = getADLSq(projectTitle, title, elements, transcripts);
+    downloadjs(result, `${ projectTitle }-${ title }.adl`, 'text/plain');
+  };
+
+  const handleExportADL = () => {
+    handleShowADL();
+  };
+
+  const getMediaUrl = async (item) => {
+    return props.handleGetMediaUrl(item);
+  };
+
+  const handleDownloadMedia = async () => {
+    const trUrls = await Promise.all(transcripts.map(async tr => {
+      return {
+        name: tr.title,
+        fileName: tr.title,
+        url: await getMediaUrl(tr.media)
+      };
+    }));
+    setUrls(trUrls);
+    handleShowMedia();
   };
 
   return (
@@ -262,7 +112,7 @@ const ExportDropdown = (props) => {
           title="export ADL, audio decision list, to import the programme script as a sequence in audio editing software such as SADiE"
         >
           <FontAwesomeIcon icon={ faFileExport } />
-          ADL - Audio <FontAwesomeIcon icon={ faInfoCircle } />
+          ADL - Audio / SaDiE <FontAwesomeIcon icon={ faInfoCircle } />
         </Dropdown.Item>
         <Dropdown.Item
           onClick={ handleExportFCPX }
@@ -292,6 +142,14 @@ const ExportDropdown = (props) => {
         >
           Json <FontAwesomeIcon icon={ faInfoCircle } />
         </Dropdown.Item>
+        <Dropdown.Item
+          onClick={ handleDownloadMedia }
+          title="save original media files">
+          Download Media files <FontAwesomeIcon icon={ faInfoCircle } />
+        </Dropdown.Item>
+
+        <ADLModal show={ showADL } handleClick={ generateADL } transcripts={ transcripts } handleClose={ handleCloseADL } ></ADLModal>
+        {urls.length > 0 ? <MediaModal urls={ urls } show={ showMedia } handleClose={ handleCloseMedia } ></MediaModal> : null}
       </Dropdown.Menu>
     </Dropdown>
   );
