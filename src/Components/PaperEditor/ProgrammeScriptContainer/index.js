@@ -14,8 +14,8 @@ import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 
-import ExportDropdown from './ExportDropdown/index';
-import ElementsDropdown from './ElementsDropdown/index';
+import ExportDropdown from './ExportDropdown';
+import ElementsDropdown from './ElementsDropdown';
 import getDataFromUserWordsSelection from './get-data-from-user-selection';
 import {
   divideWordsSelectionsIntoParagraphs,
@@ -35,6 +35,7 @@ const Article = React.lazy(() => import('./Article'));
 const ProgrammeScriptContainer = (props) => {
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
+  const projectTitle = props.projectTitle;
   const firebase = props.firebase;
 
   const [ elements, setElements ] = useState();
@@ -141,6 +142,53 @@ const ProgrammeScriptContainer = (props) => {
           setTranscripts(trs);
         } else {
           const trs = await Promise.all(trIds.map((async trId => {
+            let transcript = (transcripts.find(t => t.id === trId));
+            if (transcript) {
+              return transcript;
+            }
+
+            transcript = await Transcriptions.getItem(trId);
+
+            return { id: trId, ...transcript };
+          })));
+          setTranscripts(trs);
+        }
+      } catch (error) {
+        console.error('Error getting documents: ', error);
+      }
+    };
+
+    if (paperEdits) {
+      if (!transcripts ) {
+        const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
+        getTranscripts(trIds);
+      } else {
+        const newTranscripts = paperEdits.filter(pe => !transcripts.find(tr => tr.id === pe.transcriptId ));
+        if (newTranscripts.length > 0) {
+          const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
+          getTranscripts(trIds);
+        }
+      }
+    }
+
+  }, [ Transcriptions, paperEdits, transcripts ]);
+
+  const handleGetMediaUrl = async(item) => {
+    return await firebase.storage.storage.ref(item.ref).getDownloadURL();
+  };
+
+  useEffect(() => {
+    const getTranscripts = async (trIds) => {
+      try {
+        if (!transcripts) {
+          const trs = await Promise.all(trIds.map((async trId => {
+            const transcript = await Transcriptions.getItem(trId);
+
+            return { id: trId, ...transcript };
+          })));
+          setTranscripts(trs);
+        } else {
+          const trs = await Promise.all(trIds.map((async trId => {
             let transcript = (transcripts.find(t => t.id == trId));
             if (transcript) {
               return transcript;
@@ -185,7 +233,7 @@ const ProgrammeScriptContainer = (props) => {
     const getPlaylist = async () => {
       const results = paperEdits.reduce(
         (prevResult, paperEdit) => {
-          const transcript = transcripts.find(t => t.id == paperEdit.transcriptId);
+          const transcript = transcripts.find(t => t.id === paperEdit.transcriptId);
           if (transcript) {
             const playlistItem = getPlaylistItem(paperEdit);
             playlistItem.ref = transcript.media.ref;
@@ -534,9 +582,11 @@ const ProgrammeScriptContainer = (props) => {
             <Col sm={ 12 } md={ 3 }>
               {transcripts ?
                 <ExportDropdown
+                  projectTitle={ projectTitle }
                   transcripts={ transcripts }
                   title={ title }
                   elements={ elements }
+                  handleGetMediaUrl = { handleGetMediaUrl }
                 />
                 : (<Button variant="outline-secondary" disabled>
                   <FontAwesomeIcon icon={ faShare } /> Export
@@ -569,6 +619,8 @@ const ProgrammeScriptContainer = (props) => {
 ProgrammeScriptContainer.propTypes = {
   firebase: PropTypes.any,
   match: PropTypes.any,
+  projectTitle: PropTypes.any,
+  trackEvent: PropTypes.func
 };
 
 const condition = (authUser) => !!authUser;
