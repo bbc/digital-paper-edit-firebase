@@ -53,7 +53,7 @@ const formatToADLEvent = (transcript, element) => {
     reelName: transcript.title
       ? transcript.title
       : defaultReelName,
-    clipName: `${ transcript.title }`,
+    clipName: transcript.fileName ? transcript.fileName : transcript.title,
     // TODO: frameRate should be pulled from the clips in the sequence
     // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
     // but again frameRate should not be hard coded
