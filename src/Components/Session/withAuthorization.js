@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
-import { compose } from 'recompose';
+import { compose } from '@shakacode/recompose';
 
 import AuthUserContext from './context';
 import { withFirebase } from '../Firebase';
