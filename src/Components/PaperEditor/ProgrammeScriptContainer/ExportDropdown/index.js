@@ -158,6 +158,8 @@ const ExportDropdown = (props) => {
 
 ExportDropdown.propTypes = {
   elements: PropTypes.any,
+  handleGetMediaUrl: PropTypes.func,
+  projectTitle: PropTypes.any,
   title: PropTypes.any,
   transcripts: PropTypes.any
 };

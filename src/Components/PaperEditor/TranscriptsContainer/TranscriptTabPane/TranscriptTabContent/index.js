@@ -266,12 +266,12 @@ const TranscriptTabContent = (props) => {
     };
 
     const setAllDisplays = (display) => {
-      const displayAllParagraphs = annotatedParagraphs.map((p) => display);
+      const displayAllParagraphs = annotatedParagraphs.map(() => display);
       setDisplayParagraphs(displayAllParagraphs);
     };
 
     const setAllSearchResults = (searchResult) => {
-      const searchResults = annotatedParagraphs.map((p) => searchResult);
+      const searchResults = annotatedParagraphs.map(() => searchResult);
       setIsSearchResults(searchResults);
     };
 

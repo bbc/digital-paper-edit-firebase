@@ -4,7 +4,7 @@
 
 const colourStyles = {
   control: styles => ({ ...styles, backgroundColor: 'white' }),
-  option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+  option: (styles, { data, isDisabled }) => {
     // const color = chroma(data.color);
 
     const tmpBackgroundColor = null;// 'black;
@@ -75,11 +75,11 @@ const colourStyles = {
       borderColor: data.color,
     };
   },
-  multiValueLabel: (styles, { data }) => ({
+  multiValueLabel: (styles) => ({
     ...styles,
     // color: data.color
   }),
-  multiValueRemove: (styles, { data }) => ({
+  multiValueRemove: (styles) => ({
     ...styles,
     // color: data.color,
     // ':hover': {
