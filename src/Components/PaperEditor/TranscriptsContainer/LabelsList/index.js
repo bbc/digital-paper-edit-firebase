@@ -37,7 +37,7 @@ const LabelsList = (props) => {
     }
   };
 
-  const handleEdit = (id, e) => {
+  const handleEdit = (id) => {
     const labelToEdit = labels.filter((label) => label.id === id);
     onLabelUpdate(labelToEdit.id, labelToEdit);
   };

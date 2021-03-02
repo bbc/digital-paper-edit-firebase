@@ -69,8 +69,9 @@ const ExportDropdown = (props) => {
     downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
   };
 
-  const generateADL = () => {
-    const result = getADLSq(projectTitle, title, elements, transcripts);
+  const generateADL = (data) => {
+    const trWithFNames = transcripts.map(tr => ( { ...tr, fileName: data[tr.id] }));
+    const result = getADLSq(projectTitle, title, elements, trWithFNames);
     downloadjs(result, `${ projectTitle }-${ title }.adl`, 'text/plain');
   };
 
@@ -147,7 +148,7 @@ const ExportDropdown = (props) => {
           Download Media files <FontAwesomeIcon icon={ faInfoCircle } />
         </Dropdown.Item>
 
-        <ADLModal show={ showADL } handleClick={ generateADL } transcripts={ transcripts } handleClose={ handleCloseADL } ></ADLModal>
+        <ADLModal show={ showADL } onSubmit={ generateADL } transcripts={ transcripts } handleClose={ handleCloseADL } ></ADLModal>
         {urls.length > 0 ? <MediaModal urls={ urls } show={ showMedia } handleClose={ handleCloseMedia } ></MediaModal> : null}
       </Dropdown.Menu>
     </Dropdown>
@@ -157,6 +158,8 @@ const ExportDropdown = (props) => {
 
 ExportDropdown.propTypes = {
   elements: PropTypes.any,
+  handleGetMediaUrl: PropTypes.func,
+  projectTitle: PropTypes.any,
   title: PropTypes.any,
   transcripts: PropTypes.any
 };

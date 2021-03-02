@@ -330,11 +330,11 @@ const ProgrammeScriptContainer = (props) => {
   const getTranscriptSelectionStartTime = (insertIndex) => {
     const prevElements = elements.slice(0, insertIndex);
 
-    const paperEdits = prevElements.filter(
+    const pes = prevElements.filter(
       (element) => element.type === 'paper-cut'
     );
 
-    const totalDuration = paperEdits.reduce(
+    const totalDuration = pes.reduce(
       (prevResult, paperEdit) => {
         const paperEditDuration = paperEdit.end - paperEdit.start;
         prevResult.startTime += paperEditDuration;
