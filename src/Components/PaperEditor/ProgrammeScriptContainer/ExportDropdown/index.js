@@ -70,8 +70,8 @@ const ExportDropdown = (props) => {
   };
 
   const generateADL = (data) => {
-    const trWithFNames = transcripts.map(tr => ( { ...tr, fileName: data[tr.id] }));
-    const result = getADLSq(projectTitle, title, elements, trWithFNames);
+    const updatedTranscripts = transcripts.map(tr => ( { ...tr, ...data[tr.id] }));
+    const result = getADLSq(projectTitle, title, elements, updatedTranscripts);
     downloadjs(result, `${ projectTitle }-${ title }.adl`, 'text/plain');
   };
 
