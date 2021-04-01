@@ -11,7 +11,7 @@ import TranscriptNavItem from './TranscriptNavItem';
 import TranscriptTabPane from './TranscriptTabPane';
 import { useState, useEffect } from 'react';
 
-const TranscriptsContainer = ({ transcripts, projectId, firebase, trackEvent }) => {
+const TranscriptsContainer = ({ transcripts, projectId, firebase }) => {
   const [ activeKey, setActiveKey ] = useState();
   const transcriptsElNav = transcripts.map((transcript) => (
     <TranscriptNavItem
@@ -31,7 +31,6 @@ const TranscriptsContainer = ({ transcripts, projectId, firebase, trackEvent }) 
       title={ transcript.title }
       projectId={ projectId }
       firebase={ firebase }
-      trackEvent={ trackEvent }
     />
   ));
 
@@ -89,7 +88,6 @@ TranscriptsContainer.propTypes = {
   projectId: PropTypes.any,
   transcripts: PropTypes.any,
   firebase: PropTypes.any,
-  trackEvent: PropTypes.func
 };
 
 const condition = (authUser) => !!authUser;

@@ -7,7 +7,7 @@ import { Suspense } from 'react';
 const TranscriptTabContent = React.lazy(() => import('./TranscriptTabContent'));
 
 const TranscriptTabPane = (props) => {
-  const { transcriptId, groupedc, media, title, projectId, firebase, trackEvent } = props;
+  const { transcriptId, groupedc, media, title, projectId, firebase } = props;
 
   return (
     <Tab.Pane eventKey={ transcriptId }>
@@ -19,7 +19,6 @@ const TranscriptTabPane = (props) => {
           groupedc={ groupedc }
           media={ media }
           firebase={ firebase }
-          trackEvent={ trackEvent }
         />
       </Suspense>
     </Tab.Pane>
@@ -33,7 +32,6 @@ TranscriptTabPane.propTypes = {
   projectId: PropTypes.any,
   title: PropTypes.any,
   transcriptId: PropTypes.any,
-  trackEvent: PropTypes.func
 };
 
 export default TranscriptTabPane;

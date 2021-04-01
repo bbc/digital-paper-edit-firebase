@@ -208,7 +208,6 @@ const Transcripts = ({ projectId, firebase, trackEvent }) => {
 Transcripts.propTypes = {
   projectId: PropTypes.any,
   firebase: PropTypes.any,
-  trackEvent: PropTypes.func
 };
 
 const condition = (authUser) => !!authUser;
