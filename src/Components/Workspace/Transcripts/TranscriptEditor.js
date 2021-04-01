@@ -274,6 +274,7 @@ TranscriptEditor.propTypes = {
       transcriptId: PropTypes.any,
     }),
   }),
+  trackEvent: PropTypes.func
 };
 
 const condition = (authUser) => !!authUser;
