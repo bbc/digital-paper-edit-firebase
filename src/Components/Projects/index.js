@@ -1,20 +1,29 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Breadcrumb from '@bbc/digital-paper-edit-storybook/Breadcrumb';
 import CustomFooter from '../lib/CustomFooter';
 import ItemsContainer from '../lib/ItemsContainer';
 import Collection from '../Firebase/Collection';
 import { withAuthorization } from '../Session';
 import { PROJECTS } from '../../constants/routes';
+import { faCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Button from 'react-bootstrap/Button';
+
+import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
+
+import { initialFormState, formReducer, createOrUpdateItem } from '../../Util/formReducer';
 
 const Projects = (props) => {
   const [ uid, setUid ] = useState();
   const [ email, setEmail ] = useState();
   const [ loading, setIsLoading ] = useState(false);
   const [ items, setItems ] = useState([]);
+  const [ showModal, setShowModal ] = useState(false);
+  const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
+  const [ modalTitle, setModalTitle ] = useState('');
 
   const type = 'Project';
   const projectsCollection = new Collection(props.firebase, PROJECTS);
@@ -51,6 +60,20 @@ const Projects = (props) => {
     projectsCollection.putItem(id, item);
   };
 
+  const createOrUpdateProject = async (item) => {
+    const updatedItem = { ...item };
+    updatedItem.display = true;
+    const paperEdit = await createOrUpdateItem(updatedItem, createProject, updateProject);
+
+    return paperEdit;
+  };
+
+  const handleSaveForm = (item) => {
+    createOrUpdateProject(item);
+    setShowModal(false);
+    dispatchForm({ type: 'reset' });
+  };
+
   const handleSave = (item) => {
     item.display = true;
 
@@ -76,6 +99,16 @@ const Projects = (props) => {
   const handleDelete = (id) => {
     deleteProject(id);
     props.trackEvent({ category: 'project', action: 'handleDelete' });
+  };
+
+  const handleEdit = (itemId) => {
+    setModalTitle(formData.id ? `Edit ${ type }` : `New ${ type }`);
+    const item = items.find(i => i.id === itemId);
+    dispatchForm({
+      type: 'update',
+      payload: item
+    });
+    setShowModal(true);
   };
 
   useEffect(() => {
@@ -132,12 +165,13 @@ const Projects = (props) => {
     return () => {};
   }, [ usersCollection, items, props.firebase, uid, email ]);
 
-  const breadcrumbItems = [
-    {
-      name: `${ type }s`,
-      link: `/${ type }s`,
-    },
-  ];
+  const toggleShowModal = () => {
+    setShowModal(!showModal);
+  };
+
+  const handleOnHide = () => {
+    setShowModal(false);
+  };
 
   return (
     <>
@@ -146,24 +180,47 @@ const Projects = (props) => {
         style={ { marginBottom: '5em', marginTop: '1em' } }
       >
         <Row>
-          <Col sm={ 12 }>
-            <Breadcrumb
-              data-testid="projectsBreadcrumb"
-              items={ breadcrumbItems }
-            />
+          <Col sm={ 2 }>
+            <Button
+              onClick={ toggleShowModal }
+              variant="outline-secondary"
+              size="sm"
+              block
+            >
+              <FontAwesomeIcon icon={ faCircle } /> New Project
+            </Button>
           </Col>
         </Row>
-        {items ? (
-          <ItemsContainer
-            key={ type }
-            model={ type }
-            items={ items }
-            handleSave={ handleSave }
-            handleDelete={ handleDelete }
-          />
-        ) : null}
+        <hr></hr>
+        <Row style={ { marginBottom: '15px' } }>
+          <Col>
+            <h2>Projects</h2>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            {items ? (
+              <ItemsContainer
+                key={ type }
+                model={ type }
+                items={ items }
+                handleSave={ handleSave }
+                handleDelete={ handleDelete }
+                handleEdit={ handleEdit }
+              />
+            ) : null}
+          </Col>
+        </Row>
       </Container>
       <CustomFooter />
+      <FormModal
+        { ...formData }
+        modalTitle={ modalTitle }
+        showModal={ showModal }
+        handleOnHide={ handleOnHide }
+        handleSaveForm={ handleSaveForm }
+        type={ type }
+      />
     </>
   );
 };

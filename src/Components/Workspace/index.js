@@ -13,27 +13,11 @@ import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import {
+  faArrowLeft,
   faCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import Container from 'react-bootstrap/Container';
-
-const initialFormState = {
-  title: '',
-  description: '',
-  id: null
-};
-
-const formReducer = (state = initialFormState, { type, payload }) => {
-  switch (type) {
-  case 'update':
-    return { ...state, ...payload };
-  case 'reset': {
-    return { initialFormState };
-  }
-  default:
-    return state;
-  }
-};
+import { createCollectionItem, createOrUpdateItem, deleteCollectionItem, formReducer, initialFormState, updateCollectionItem, updateItems } from '../../Util/formReducer';
 
 const WorkspaceView = props => {
   const projects = new Collection(props.firebase, PROJECTS);
@@ -97,39 +81,6 @@ const WorkspaceView = props => {
     return () => {};
   }, [ id, projects ]);
 
-  const createCollectionItem = async (item, collection) => {
-    const docRef = await collection.postItem(item);
-
-    const update = {
-      id: docRef.id,
-      url: `${ collection.name }/${ docRef.id }`,
-    };
-    docRef.update(update);
-
-    return { ...item, ...update };
-  };
-
-  const updateCollectionItem = (item, collection) => collection.putItem(item.id, item);
-
-  const updateItems = (item, items) => {
-    const itemsToUpdate = [ ...items ];
-
-    const updateItem = items.find(i => i.id === item.id);
-    const updateIndex = items.indexOf(updateItem);
-
-    itemsToUpdate[updateIndex] = { ...updateItem }.update(item);
-
-    return itemsToUpdate;
-  };
-
-  const deleteCollectionItem = async (docId, collection) => {
-    try {
-      await collection.deleteItem(docId);
-    } catch (e) {
-      console.error('Failed to delete item:', e);
-    }
-  };
-
   // modal
 
   const createPaperEdit = async (item) => {
@@ -147,15 +98,8 @@ const WorkspaceView = props => {
     setPaperEditItems(updateItems(item, paperEditItems));
   };
 
-  const handleSaveForm = () => {
-  // const handleSaveForm = (item) => {
-    // createOrUpdateFn(formData);
-    setShowModal(false);
-    dispatchForm({ type: 'reset' });
-  };
-
-  const handleEditItem = (itemId, items) => {
-    // setModalTitle(formData.id ? `Edit ${ type }` : `New ${ type }`);
+  const handleEditItem = (itemId, items, type) => {
+    setModalTitle(formData.id ? `Edit ${ type }` : `New ${ type }`);
     const item = items.find(i => i.id === itemId);
     dispatchForm({
       type: 'update',
@@ -191,30 +135,35 @@ const WorkspaceView = props => {
       setIsLoading(true);
     }
 
-  }, [ loading ]);
+  }, [ TranscriptsCollection.collectionRef, loading ]);
 
   // general
 
-  const createOrUpdateItem = async (item, create, update) => {
+  const createOrUpdateCollectionItem = async (item, create, update) => {
     const updatedItem = { ...item };
     updatedItem.display = true;
 
-    if (updatedItem.id) {
-      update(updatedItem.id, updatedItem);
-
-    } else {
+    if (!updatedItem.id) {
       updatedItem.url = '';
       updatedItem.projectId = id;
-      updatedItem = create(item);
     }
+    updatedItem = await createOrUpdateItem(item, create, update);
 
     return updatedItem;
   };
 
   const createOrUpdatePaperEdit = async (item) => {
-    const paperEdit = await createOrUpdateItem(item, createPaperEdit, updatePaperEdit);
+    const paperEdit = await createOrUpdateCollectionItem(item, createPaperEdit, updatePaperEdit);
 
     return paperEdit;
+  };
+
+  const handleSaveForm = (item) => {
+  // const handleSaveForm = (item) => {
+    // createOrUpdateFn(formData);
+    createOrUpdatePaperEdit(item);
+    setShowModal(false);
+    dispatchForm({ type: 'reset' });
   };
 
   const handleDeleteItem = (item, deleteFn) => {
@@ -251,6 +200,13 @@ const WorkspaceView = props => {
   return (
     <Container style={ { marginBottom: '5em' } }>
       <Row>
+        <Col sm={ 2 }>
+          <a href="#">
+            <Button size="sm">
+              <FontAwesomeIcon icon={ faArrowLeft } /> Back to Projects
+            </Button>
+          </a>
+        </Col>
         <Col sm={ 3 }>
           <Button
             onClick={ toggleShowModal }
@@ -288,7 +244,7 @@ const WorkspaceView = props => {
           {paperEditItems ? (
             <PaperEdits
               items={ paperEditItems }
-              handleEditItem={ (item) => handleEditItem(item, createOrUpdatePaperEdit) }
+              handleEditItem={ (item) => handleEditItem(item, createOrUpdatePaperEdit, 'paper-edit') }
               handleDeleteItem={ (item) => handleDeleteItem(item, deletePaperEdit) }
               handleDuplicateItem={ (item) => handleDuplicateItem(item, updatePaperEdit) }
             />
