@@ -172,6 +172,7 @@ Projects.propTypes = {
   firebase: PropTypes.shape({
     onAuthUserListener: PropTypes.func,
   }),
+  trackEvent: PropTypes.func
 };
 
 const condition = (authUser) => !!authUser;

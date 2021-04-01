@@ -87,7 +87,8 @@ WorkspaceView.propTypes = {
     params: PropTypes.shape({
       projectId: PropTypes.any
     })
-  })
+  }),
+  trackEvent: PropTypes.func
 };
 const condition = authUser => !!authUser;
 export default withAuthorization(condition)(WorkspaceView);
