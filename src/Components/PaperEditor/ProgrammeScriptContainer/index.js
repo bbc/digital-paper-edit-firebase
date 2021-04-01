@@ -7,15 +7,15 @@ import Button from 'react-bootstrap/Button';
 import arrayMove from 'array-move';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faShare, faSave } from '@fortawesome/free-solid-svg-icons';
 
 import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 
 import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 
-import ExportDropdown from './ExportDropdown/index';
-import ElementsDropdown from './ElementsDropdown/index';
+import ExportDropdown from './ExportDropdown';
+import ElementsDropdown from './ElementsDropdown';
 import getDataFromUserWordsSelection from './get-data-from-user-selection';
 import {
   divideWordsSelectionsIntoParagraphs,
@@ -33,30 +33,40 @@ import PropTypes from 'prop-types';
 const Article = React.lazy(() => import('./Article'));
 
 const ProgrammeScriptContainer = (props) => {
-  const transcripts = props.transcripts;
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
+  const projectTitle = props.projectTitle;
   const firebase = props.firebase;
 
   const [ elements, setElements ] = useState();
   const [ title, setTitle ] = useState('');
   const [ resetPreview, setResetPreview ] = useState(false);
   const [ currentTime, setCurrentTime ] = useState();
+  const [ transcripts, setTranscripts ] = useState();
+  const [ paperEdits, setPaperEdits ] = useState();
+
+  const [ saved, setSaved ] = useState(true);
 
   // Video Context Preview
   const [ width, setWidth ] = useState(150);
   const [ playlist, setPlaylist ] = useState([]);
   const previewCardRef = useRef();
 
-  const PaperEditsCollection = new Collection(
+  const PaperEdits = new Collection(
     firebase,
     `/projects/${ projectId }/paperedits`
   );
 
+  const Transcriptions = new Collection(
+    props.firebase,
+    `/projects/${ projectId }/transcripts`
+  );
+
   const createPaperEdits = async (paperEdit) => {
     try {
-      await PaperEditsCollection.putItem(papereditsId, paperEdit);
+      await PaperEdits.putItem(papereditsId, paperEdit);
       console.log('Successfully saved');
+      setResetPreview(true);
     } catch (error) {
       console.error('Error saving document', error);
     }
@@ -64,6 +74,7 @@ const ProgrammeScriptContainer = (props) => {
 
   const handleSaveProgrammeScript = (els) => {
     if (els) {
+      setSaved(false);
       const newElements = JSON.parse(JSON.stringify(els));
       const insertPointElement = newElements.find((el) => el.type === 'insert');
 
@@ -78,13 +89,14 @@ const ProgrammeScriptContainer = (props) => {
       };
 
       createPaperEdits(paperEdit);
+      setSaved(true);
     }
   };
 
   useEffect(() => {
     const getPaperEdit = async () => {
       try {
-        const paperEdit = await PaperEditsCollection.getItem(papereditsId);
+        const paperEdit = await PaperEdits.getItem(papereditsId);
         setTitle(paperEdit.title);
 
         const newElements = paperEdit.elements
@@ -106,8 +118,107 @@ const ProgrammeScriptContainer = (props) => {
     if (!elements) {
       getPaperEdit();
     }
-  }, [ PaperEditsCollection, elements, papereditsId ]);
+  }, [ PaperEdits, elements, papereditsId ]);
 
+  useEffect(() => {
+    if (elements) {
+      const pe = elements.filter((element) => element.type === 'paper-cut');
+
+      if (!paperEdits || (JSON.stringify(pe) !== JSON.stringify(paperEdits))) {
+        setPaperEdits(pe);
+      }
+    }
+  }, [ elements, paperEdits ]);
+
+  useEffect(() => {
+    const getTranscripts = async (trIds) => {
+      try {
+        if (!transcripts) {
+          const trs = await Promise.all(trIds.map((async trId => {
+            const transcript = await Transcriptions.getItem(trId);
+
+            return { id: trId, ...transcript };
+          })));
+          setTranscripts(trs);
+        } else {
+          const trs = await Promise.all(trIds.map((async trId => {
+            let transcript = (transcripts.find(t => t.id === trId));
+            if (transcript) {
+              return transcript;
+            }
+
+            transcript = await Transcriptions.getItem(trId);
+
+            return { id: trId, ...transcript };
+          })));
+          setTranscripts(trs);
+        }
+      } catch (error) {
+        console.error('Error getting documents: ', error);
+      }
+    };
+
+    if (paperEdits) {
+      if (!transcripts ) {
+        const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
+        getTranscripts(trIds);
+      } else {
+        const newTranscripts = paperEdits.filter(pe => !transcripts.find(tr => tr.id === pe.transcriptId ));
+        if (newTranscripts.length > 0) {
+          const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
+          getTranscripts(trIds);
+        }
+      }
+    }
+
+  }, [ Transcriptions, paperEdits, transcripts ]);
+
+  const handleGetMediaUrl = async(item) => {
+    return await firebase.storage.storage.ref(item.ref).getDownloadURL();
+  };
+
+  useEffect(() => {
+    const getTranscripts = async (trIds) => {
+      try {
+        if (!transcripts) {
+          const trs = await Promise.all(trIds.map((async trId => {
+            const transcript = await Transcriptions.getItem(trId);
+
+            return { id: trId, ...transcript };
+          })));
+          setTranscripts(trs);
+        } else {
+          const trs = await Promise.all(trIds.map((async trId => {
+            let transcript = (transcripts.find(t => t.id === trId));
+            if (transcript) {
+              return transcript;
+            }
+
+            transcript = await Transcriptions.getItem(trId);
+
+            return { id: trId, ...transcript };
+          })));
+          setTranscripts(trs);
+        }
+      } catch (error) {
+        console.error('Error getting documents: ', error);
+      }
+    };
+
+    if (paperEdits) {
+      if (!transcripts ) {
+        const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
+        getTranscripts(trIds);
+      } else {
+        const newTranscripts = paperEdits.filter(pe => !transcripts.find(tr => tr.id === pe.transcriptId ));
+        if (newTranscripts.length > 0) {
+          const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
+          getTranscripts(trIds);
+        }
+      }
+    }
+
+  }, [ Transcriptions, paperEdits, transcripts ]);
   useEffect(() => {
     const getPlaylistItem = (element) => ({
       type: 'video',
@@ -119,18 +230,18 @@ const ProgrammeScriptContainer = (props) => {
       return await firebase.storage.storage.ref(item.ref).getDownloadURL();
     };
 
-    const getPlaylist = async (els) => {
-      const paperEdits = els.filter((element) => element.type === 'paper-cut');
-
+    const getPlaylist = async () => {
       const results = paperEdits.reduce(
         (prevResult, paperEdit) => {
-          const transcriptId = paperEdit.transcriptId;
-          const transcript = transcripts.find((tr) => tr.id === transcriptId);
-          const playlistItem = getPlaylistItem(paperEdit);
-          playlistItem.ref = transcript.media.ref;
-          playlistItem.start = prevResult.startTime;
-          prevResult.playlist.push(playlistItem);
-          prevResult.startTime += playlistItem.duration;
+          const transcript = transcripts.find(t => t.id === paperEdit.transcriptId);
+          if (transcript) {
+            const playlistItem = getPlaylistItem(paperEdit);
+            playlistItem.ref = transcript.media.ref;
+            playlistItem.start = prevResult.startTime;
+            prevResult.playlist.push(playlistItem);
+            prevResult.startTime += playlistItem.duration;
+
+          }
 
           return prevResult;
         },
@@ -147,13 +258,14 @@ const ProgrammeScriptContainer = (props) => {
       );
 
       setPlaylist(playlistItems);
+      setResetPreview(false);
     };
 
-    if (resetPreview && elements && elements.length > 0) {
-      getPlaylist(elements);
-      setResetPreview(false);
+    if (resetPreview && paperEdits && transcripts) {
+      getPlaylist();
     }
-  }, [ elements, resetPreview, firebase.storage.storage, transcripts ]);
+
+  }, [ firebase.storage.storage, transcripts, paperEdits, resetPreview ]);
 
   useEffect(() => {
     const updateVideoContextWidth = () => {
@@ -178,6 +290,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
       handleSaveProgrammeScript(updatedWords);
     }
+    props.trackEvent({ category: 'paperEditor programmeScript', action: `handleDelete ${ i }` });
   };
 
   const handleEdit = (i) => {
@@ -192,6 +305,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
       handleSaveProgrammeScript(newElements);
     }
+    props.trackEvent({ category: 'paperEditor programmeScript', action: `handleEdit ${ newText }` });
   };
 
   const onSortEnd = ({ oldIndex, newIndex }) => {
@@ -201,6 +315,7 @@ const ProgrammeScriptContainer = (props) => {
     setElements(updatedWords);
     setResetPreview(true);
     handleSaveProgrammeScript(updatedWords);
+    props.trackEvent({ category: 'paperEditor programmeScript', action: `onSortEnd from:${ oldIndex } to:${ newIndex }` });
   };
 
   const getInsertElementIndex = () => {
@@ -215,11 +330,11 @@ const ProgrammeScriptContainer = (props) => {
   const getTranscriptSelectionStartTime = (insertIndex) => {
     const prevElements = elements.slice(0, insertIndex);
 
-    const paperEdits = prevElements.filter(
+    const pes = prevElements.filter(
       (element) => element.type === 'paper-cut'
     );
 
-    const totalDuration = paperEdits.reduce(
+    const totalDuration = pes.reduce(
       (prevResult, paperEdit) => {
         const paperEditDuration = paperEdit.end - paperEdit.start;
         prevResult.startTime += paperEditDuration;
@@ -257,7 +372,7 @@ const ProgrammeScriptContainer = (props) => {
     const selectedWords = selection.words;
 
     // Recalcultates word timings to align with programme script playlist
-    selectedWords.map((word, i) => {
+    selectedWords.forEach((word, i) => {
       const wordStartTime =
         word.start - selection.start + playlistStartTime.startTime;
       const wordDuration = word.end - word.start;
@@ -315,7 +430,7 @@ const ProgrammeScriptContainer = (props) => {
         };
 
         // Recalcultates word timings to align with programme script playlist
-        paragraph.map((word, index) => {
+        paragraph.forEach((word, index) => {
           const newStart = word.start - transcriptStart + paperCutStart;
           const wordDuration = word.end - word.start;
           const newEnd = newStart + wordDuration;
@@ -394,6 +509,7 @@ const ProgrammeScriptContainer = (props) => {
       const wordCurrentTime = e.target.dataset.start;
       setCurrentTime(wordCurrentTime);
     }
+    props.trackEvent({ category: 'paperEditor programmeScript', action: 'handleDblClick' });
   };
 
   const handleAddElement = (elementType) => {
@@ -464,11 +580,21 @@ const ProgrammeScriptContainer = (props) => {
               />
             </Col>
             <Col sm={ 12 } md={ 3 }>
-              <ExportDropdown
-                transcripts={ transcripts }
-                title={ title }
-                elements={ elements }
-              ></ExportDropdown>
+              {transcripts ?
+                <ExportDropdown
+                  projectTitle={ projectTitle }
+                  transcripts={ transcripts }
+                  title={ title }
+                  elements={ elements }
+                  handleGetMediaUrl = { handleGetMediaUrl }
+                />
+                : (<Button variant="outline-secondary" disabled>
+                  <FontAwesomeIcon icon={ faShare } /> Export
+                </Button>)}
+            </Col>
+
+            <Col sm={ 12 } md={ 4 }>{saved ? <Button disabled variant="outline-secondary"><FontAwesomeIcon icon={ faSave } /> Saved</Button> :
+              (<Button variant="outline-secondary" onClick={ () => handleSaveProgrammeScript(elements) }><FontAwesomeIcon icon={ faSave } /> Save</Button>)}
             </Col>
           </Row>
         </Card.Header>
@@ -493,7 +619,8 @@ const ProgrammeScriptContainer = (props) => {
 ProgrammeScriptContainer.propTypes = {
   firebase: PropTypes.any,
   match: PropTypes.any,
-  transcripts: PropTypes.any,
+  projectTitle: PropTypes.any,
+  trackEvent: PropTypes.func
 };
 
 const condition = (authUser) => !!authUser;

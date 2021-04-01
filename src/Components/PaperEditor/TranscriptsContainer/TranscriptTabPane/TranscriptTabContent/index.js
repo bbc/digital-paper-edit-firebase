@@ -5,7 +5,7 @@ import Card from 'react-bootstrap/Card';
 import SearchBar from '../../SearchBar'; // move to same folder + rename to SearchTool
 import Collection from '../../../../Firebase/Collection';
 import TranscriptMenu from '../../TranscriptMenu';
-import getTimeFromUserWordsSelection from '../../get-user-selection.js';
+import { getTimeFromWords, getUserWordsSelection } from '../../get-user-selection.js';
 import paragraphWithAnnotations from '../../Paragraphs/add-annotations-to-words-in-paragraphs.js';
 import removePunctuation from '../../../../../Util/remove-punctuation';
 import { decompressAsync } from '../../../../../Util/gzip';
@@ -266,12 +266,12 @@ const TranscriptTabContent = (props) => {
     };
 
     const setAllDisplays = (display) => {
-      const displayAllParagraphs = annotatedParagraphs.map((p) => display);
+      const displayAllParagraphs = annotatedParagraphs.map(() => display);
       setDisplayParagraphs(displayAllParagraphs);
     };
 
     const setAllSearchResults = (searchResult) => {
-      const searchResults = annotatedParagraphs.map((p) => searchResult);
+      const searchResults = annotatedParagraphs.map(() => searchResult);
       setIsSearchResults(searchResults);
     };
 
@@ -315,6 +315,7 @@ const TranscriptTabContent = (props) => {
     if (e.target.type !== 'checkbox') {
       const text = e.target.value;
       if (text) {
+        props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleSearch ${ text }` });
         setSearchString(text);
       } else {
         setSearchString('');
@@ -362,8 +363,9 @@ const TranscriptTabContent = (props) => {
     });
   };
 
-  const handleCreateAnnotation = (e) => {
-    const selection = getTimeFromUserWordsSelection();
+  const handleCreateAnnotation = () => {
+    const words = getUserWordsSelection();
+    const selection = getTimeFromWords(words);
     if (selection) {
       const activeLabel = labels.find((label) => label.active);
       if (activeLabel) {
@@ -376,6 +378,7 @@ const TranscriptTabContent = (props) => {
       createAnnotation(newAnnotation);
       setAnnotations(() => [ ...annotations, newAnnotation ]);
       setProcessingParagraphs(false);
+      props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleCreateAnnotation ${ selection.labelId } ${ words.toString() } ` });
     } else {
       alert('Select some text in the transcript to highlight ');
     }
@@ -388,6 +391,7 @@ const TranscriptTabContent = (props) => {
 
     AnnotationsCollection.deleteItem(annotationId);
     setProcessingParagraphs(false);
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleDeleteAnnotation ${ annotationId } ` });
   };
 
   const handleEditAnnotation = (annotationId) => {
@@ -407,6 +411,8 @@ const TranscriptTabContent = (props) => {
     } else {
       alert('all good nothing changed');
     }
+
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleEditAnnotation ${ annotationId } ` });
   };
 
   const createLabel = async (newLabel) => {
@@ -423,11 +429,13 @@ const TranscriptTabContent = (props) => {
     const tempLabels = labels;
     tempLabels.push(newLabel);
     setLabels(tempLabels);
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: 'label create ' });
   };
 
   const onLabelUpdate = (labelId, updatedLabel) => {
     setLabels(() => [ ...tempLabels, updatedLabel ]);
     LabelsCollection.putItem(labelId, updatedLabel);
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `label update ${ labelId } ${ updatedLabel }` });
   };
 
   const onLabelDelete = (labelId) => {
@@ -435,6 +443,7 @@ const TranscriptTabContent = (props) => {
     tempLabels.splice(labelId, 1);
     setLabels(tempLabels);
     LabelsCollection.deleteItem(labelId);
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `label delete ${ labelId }` });
   };
 
   const updateLabelSelection = (e, labelId) => {
@@ -446,6 +455,7 @@ const TranscriptTabContent = (props) => {
     const activeLabel = tempLabels.find((label) => label.id === labelId);
     activeLabel.active = true;
     setLabels(tempLabels);
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `label select ${ labelId }` });
   };
 
   const cardBodyHeight = mediaType.startsWith('audio') ? '100vh' : '60vh';
@@ -535,6 +545,7 @@ const TranscriptTabContent = (props) => {
           <Suspense fallback={ <div>Loading...</div> }>
             {annotatedParagraphs ? (
               <Paragraphs
+                key={ `${ transcriptId }-${ mediaRef }` }
                 transcriptId={ transcriptId }
                 paragraphs={ annotatedParagraphs }
                 labels={ labels }

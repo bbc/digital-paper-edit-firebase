@@ -103,12 +103,14 @@ const PaperEditor = (props) => {
     if (isProgramScriptShown) {
       setIsTranscriptsShown(!isTranscriptsShown);
     }
+    props.trackEvent({ category: 'paperEditor', action: `handleToggle transcripts: ${ isTranscriptsShown } programScripts: ${ isProgramScriptShown }` });
   };
 
   const toggleProgramScript = () => {
     if (isTranscriptsShown) {
       setIsProgramScriptShown(!isProgramScriptShown);
     }
+    props.trackEvent({ category: 'paperEditor', action: `handleToggle transcripts: ${ isTranscriptsShown } programScripts: ${ isProgramScriptShown }` });
   };
 
   const toggleButton = (text, isShown, toggle) => {
@@ -173,16 +175,14 @@ const PaperEditor = (props) => {
   }
 
   let ProgrammeScriptEl = null;
-  if (transcripts) {
-    ProgrammeScriptEl = (
-      <ProgrammeScriptContainer
-        projectId={ projectId }
-        papereditId={ papereditId }
-        transcripts={ transcripts }
-        videoHeight={ videoHeight }
-      />
-    );
-  }
+  ProgrammeScriptEl = (
+    <ProgrammeScriptContainer
+      projectId={ projectId }
+      projectTitle={ projectTitle }
+      papereditId={ papereditId }
+      videoHeight={ videoHeight }
+    />
+  );
 
   const transcriptsColumn = (el) => {
     const display = isTranscriptsShown ? 'block' : 'none';
@@ -275,9 +275,10 @@ const PaperEditor = (props) => {
 };
 
 PaperEditor.propTypes = {
-  match: PropTypes.any,
-  videoHeight: PropTypes.any,
   firebase: PropTypes.any,
+  match: PropTypes.any,
+  trackEvent: PropTypes.func,
+  videoHeight: PropTypes.any
 };
 
 const condition = (authUser) => !!authUser;

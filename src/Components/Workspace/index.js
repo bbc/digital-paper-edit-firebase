@@ -3,13 +3,13 @@ import React, { useState, useEffect, useReducer } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import CustomFooter from '../lib/CustomFooter';
-import Transcripts from './Transcripts';
+// import Transcripts from './Transcripts';
 import PaperEdits from './PaperEdits';
 import Button from 'react-bootstrap/Button';
 import Collection from '../Firebase/Collection';
 import { PROJECTS } from '../../constants/routes';
 import { withAuthorization } from '../Session';
-
+import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import {
@@ -37,13 +37,10 @@ const formReducer = (state = initialFormState, { type, payload }) => {
 
 const WorkspaceView = props => {
   const projects = new Collection(props.firebase, PROJECTS);
-  const PaperEditsCollection = new Collection(
-    props.firebase,
-    `/projects/${ id }/paperedits`
-  );
 
   const id = props.match.params.projectId;
   const [ title, setTitle ] = useState('Project Title');
+  const [ uid, setUid ] = useState();
 
   const firebase = props.firebase;
   const [ loading, setIsLoading ] = useState(false);
@@ -55,7 +52,33 @@ const WorkspaceView = props => {
   const [ paperEditItems, setPaperEditItems ] = useState([]);
   const [ loadingPE, setIsloadingPE ] = useState(false);
 
+  const PaperEditsCollection = new Collection(
+    props.firebase,
+    `/projects/${ id }/paperedits`
+  );
+
+  const TranscriptsCollection = new Collection(
+    props.firebase,
+    `/projects/${ id }/transcripts`
+  );
+
+  const [ transcriptItems, setTranscriptItems ] = useState([]);
+
   // search to move here
+  useEffect(() => {
+    const authListener = firebase.onAuthUserListener(
+      (authUser) => {
+        if (authUser) {
+          setUid(authUser.uid);
+        }
+      },
+      () => setUid()
+    );
+
+    return () => {
+      authListener();
+    };
+  }, [ firebase ]);
 
   useEffect(() => {
     const getProjectName = async () => {
@@ -97,9 +120,9 @@ const WorkspaceView = props => {
     return itemsToUpdate;
   };
 
-  const deleteCollectionItem = async (id, collection) => {
+  const deleteCollectionItem = async (docId, collection) => {
     try {
-      await collection.deleteItem(id);
+      await collection.deleteItem(docId);
     } catch (e) {
       console.error('Failed to delete item:', e);
     }
@@ -122,14 +145,15 @@ const WorkspaceView = props => {
     setPaperEditItems(updateItems(item, paperEditItems));
   };
 
-  const handleSaveForm = (item) => {
-    createOrUpdateFn(formData);
+  const handleSaveForm = () => {
+  // const handleSaveForm = (item) => {
+    // createOrUpdateFn(formData);
     setShowModal(false);
     dispatchForm({ type: 'reset' });
   };
 
   const handleEditItem = (itemId, items) => {
-    setModalTitle(formData.id ? `Edit ${ type }` : `New ${ type }`);
+    // setModalTitle(formData.id ? `Edit ${ type }` : `New ${ type }`);
     const item = items.find(i => i.id === itemId);
     dispatchForm({
       type: 'update',
@@ -160,30 +184,12 @@ const WorkspaceView = props => {
       }
     };
 
-    const authListener = firebase.onAuthUserListener(
-      (authUser) => {
-        if (authUser) {
-          setUid(authUser.uid);
-        }
-      },
-      () => setUid()
-    );
-
     if (!loading) {
       getTranscripts();
       setIsLoading(true);
     }
 
-    return () => {
-      authListener();
-    };
-  }, [
-    TranscriptsCollection.collectionRef,
-    transcriptItems,
-    loading,
-    firebase,
-    uploadTasks,
-  ]);
+  }, [ loading ]);
 
   // general
 
@@ -215,7 +221,7 @@ const WorkspaceView = props => {
 
   const handleDuplicateItem = (item, updateFn) => {
     const clone = { ...item };
-
+    updateFn(clone);
   };
 
   useEffect(() => {
@@ -294,7 +300,8 @@ const WorkspaceView = props => {
         showModal={ showModal }
         handleOnHide={ handleOnHide }
         handleSaveForm={ handleSaveForm }
-        type={ type }
+        type={ 'paper-edit' }
+        // type={ type }
       />
     </Container>
   );
@@ -306,7 +313,8 @@ WorkspaceView.propTypes = {
     params: PropTypes.shape({
       projectId: PropTypes.any
     })
-  })
+  }),
+  trackEvent: PropTypes.func
 };
 const condition = authUser => !!authUser;
 export default withAuthorization(condition)(WorkspaceView);

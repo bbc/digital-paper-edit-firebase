@@ -25,7 +25,7 @@ function parseWordElDataset(wordEl) {
    * @param {*} e - browser event
    * @returns - an object with start and end time - eg {stat: "23.03", end: "39.61"}
    */
-function getDataFromUserWordsSelection(e) {
+function getDataFromUserWordsSelection() {
   if (!window.getSelection().isCollapsed) {
     const selection = window.getSelection();
     const countSelectedRanges = selection.rangeCount;

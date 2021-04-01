@@ -18,7 +18,7 @@ const ReactTranscriptEditor = React.lazy(() =>
   import('@bbc/react-transcript-editor')
 );
 
-const TranscriptEditor = ({ match, firebase }) => {
+const TranscriptEditor = ({ match, firebase, trackEvent }) => {
   const projectId = match.params.projectId;
   const transcriptId = match.params.transcriptId;
 
@@ -195,6 +195,8 @@ const TranscriptEditor = ({ match, firebase }) => {
         </Alert>
       );
     }
+
+    trackEvent({ category: 'transcriptEditor', action: 'handleSave' });
   };
 
   return (

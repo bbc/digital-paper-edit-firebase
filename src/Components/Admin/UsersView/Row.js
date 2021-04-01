@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 
 import Collection from '../../Firebase/Collection';
 import { PROJECTS } from '../../../constants/routes';
-import { updateDescOrder, getISOTime } from '../../../Util/time';
+import { getISOTime } from '../../../Util/time';
 
 const Row = props => {
   const Projects = new Collection(props.firebase, PROJECTS);
