@@ -580,6 +580,7 @@ TranscriptTabContent.propTypes = {
   projectId: PropTypes.any,
   title: PropTypes.any,
   transcriptId: PropTypes.any,
+  trackEvent: PropTypes.func
 };
 
 export default React.memo(TranscriptTabContent);
