@@ -7,7 +7,7 @@ import Button from 'react-bootstrap/Button';
 import arrayMove from 'array-move';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faShare, faSave, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faShare, faSave } from '@fortawesome/free-solid-svg-icons';
 
 import PreviewCanvas from '@bbc/digital-paper-edit-storybook/PreviewCanvas';
 
@@ -90,23 +90,6 @@ const ProgrammeScriptContainer = (props) => {
 
       createPaperEdits(paperEdit);
       setSaved(true);
-    };
-  };
-
-  const handleClearProgrammeScript = () => {
-    const confirmDelete = window.confirm('Are you sure you want to delete?');
-    if (confirmDelete) {
-      const newList = [
-        {
-          type: 'insert',
-          text: 'Insert point to add selection',
-        }
-      ];
-      setElements(newList);
-      setResetPreview(true);
-
-      handleSaveProgrammeScript(newList);
-      props.trackEvent({ category: 'paperEditor programmeScript', action: 'handleDelete all elements' });
     }
   };
 
@@ -582,7 +565,7 @@ const ProgrammeScriptContainer = (props) => {
         </Card.Header>
         <Card.Header>
           <Row noGutters>
-            <Col>
+            <Col sm={ 12 } md={ 3 }>
               <Button
                 variant="outline-secondary"
                 onClick={ handleTransfer }
@@ -591,12 +574,12 @@ const ProgrammeScriptContainer = (props) => {
                 <FontAwesomeIcon icon={ faPlus } /> Selection
               </Button>
             </Col>
-            <Col>
+            <Col sm={ 12 } md={ 2 }>
               <ElementsDropdown
                 handleAdd={ handleAddElement }
               />
             </Col>
-            <Col>
+            <Col sm={ 12 } md={ 3 }>
               {transcripts ?
                 <ExportDropdown
                   projectTitle={ projectTitle }
@@ -610,12 +593,8 @@ const ProgrammeScriptContainer = (props) => {
                 </Button>)}
             </Col>
 
-            <Col>{saved ? <Button disabled variant="outline-secondary"><FontAwesomeIcon icon={ faSave } /> Saved</Button> :
+            <Col sm={ 12 } md={ 4 }>{saved ? <Button disabled variant="outline-secondary"><FontAwesomeIcon icon={ faSave } /> Saved</Button> :
               (<Button variant="outline-secondary" onClick={ () => handleSaveProgrammeScript(elements) }><FontAwesomeIcon icon={ faSave } /> Save</Button>)}
-            </Col>
-
-            <Col>
-              <Button variant="outline-secondary" onClick={ handleClearProgrammeScript }><FontAwesomeIcon icon={ faTimes } /> Clear</Button>
             </Col>
           </Row>
         </Card.Header>
