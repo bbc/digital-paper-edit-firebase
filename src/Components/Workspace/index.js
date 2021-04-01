@@ -64,6 +64,8 @@ const WorkspaceView = props => {
 
   const [ transcriptItems, setTranscriptItems ] = useState([]);
 
+  console.log(setModalTitle, uid, transcriptItems);
+
   // search to move here
   useEffect(() => {
     const authListener = firebase.onAuthUserListener(

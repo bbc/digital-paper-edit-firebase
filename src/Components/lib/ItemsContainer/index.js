@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect } from 'react';
+// import React, { useState, useEffect, useReducer } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Button from 'react-bootstrap/Button';
+// import Button from 'react-bootstrap/Button';
 import PropTypes from 'prop-types';
 
-import { anyInText } from '../../../Util/in-text';
+// import { anyInText } from '../../../Util/in-text';
 import { getISOTime } from '../../../Util/time';
 // import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
-import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
+// import SearchBar from '@bbc/digital-paper-edit-storybook/SearchBar';
 
 import ProjectRow from '@bbc/digital-paper-edit-storybook/ProjectRow';
 import TranscriptRow from '@bbc/digital-paper-edit-storybook/TranscriptRow';
@@ -81,6 +82,10 @@ const ItemsContainer = props => {
 
   // generic
 
+  const handleEditItem = id => {
+    props.handleEdit(id);
+  };
+
   const handleDeleteItem = id => {
     props.handleDelete(id);
   };
@@ -137,17 +142,17 @@ const ItemsContainer = props => {
     <>
       <Row>
         <Col sm={ 9 }>
-          <SearchBar handleSearch={ handleSearch } />
+          {/* <SearchBar handleSearch={ handleSearch } /> */}
         </Col>
         <Col xs={ 12 } sm={ 3 }>
-          <Button
+          {/* <Button
             onClick={ toggleShowModal }
             variant="outline-secondary"
             size="sm"
             block
           >
             New {type}
-          </Button>
+          </Button> */}
         </Col>
       </Row>
 
