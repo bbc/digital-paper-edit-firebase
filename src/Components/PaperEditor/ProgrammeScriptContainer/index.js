@@ -106,7 +106,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
 
       handleSaveProgrammeScript(newList);
-      props.trackEvent({ category: 'paperEditor programmeScript', action: 'handleDelete all elements' });
+      props.trackEvent({ category: 'paperEditor programmeScript', action: 'handleClearProgrammeScript' });
     }
   };
 
