@@ -16,24 +16,15 @@ const formReducer = (state = initialFormState, { type, payload }) => {
   }
 };
 
-const createOrUpdateItem = async (item, create, update) => {
-  const updatedItem = { ...item };
-  if (updatedItem.id) {
-    update(updatedItem);
-  } else {
-    updatedItem = await create(item);
-  }
-
-  return updatedItem;
-};
-
 const createOrUpdateCollectionItem = async (item, create, update) => {
   const updatedItem = { ...item };
 
   if (!updatedItem.id) {
     updatedItem.url = '';
+    updatedItem = await create(item);
+  } else {
+    await update(updatedItem);
   }
-  updatedItem = await createOrUpdateItem(item, create, update);
 
   return updatedItem;
 };
@@ -45,6 +36,7 @@ const createCollectionItem = async (item, collection) => {
     id: docRef.id,
     url: `${ collection.name }/${ docRef.id }`,
   };
+
   await docRef.update(update);
 
   return { ...item, ...update };
@@ -98,7 +90,7 @@ const handleDuplicateItem = (item, createFn) => {
   createFn(item);
 };
 
-export { formReducer, initialFormState, createOrUpdateItem,
+export { formReducer, initialFormState,
   deleteCollectionItem, handleDeleteItem, handleDuplicateItem,
   updateItems, updateCollectionItem, createCollectionItem,
   createOrUpdateCollectionItem, incrementCopyName };

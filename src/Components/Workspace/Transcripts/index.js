@@ -6,10 +6,12 @@ import { formatISOObj } from '../../../Util/time';
 
 const Transcripts = (props) => {
   const items = props.items;
+  const uploadTasks = props.uploadTasks;
 
   const TranscriptRows = items.map(item => {
     const key = `card-transcript-${ item.id }`;
     const { created, updated } = formatISOObj(item);
+    const progress = uploadTasks.get(item.id);
 
     return (
       <>
@@ -18,9 +20,14 @@ const Transcripts = (props) => {
           id={ item.id }
           title={ item.title }
           url={ item.url ? item.url : '' }
-          created={ created }
-          updated={ updated }
+          created={ created ? created : 'NA' }
+          updated={ updated ? updated : 'NA' }
+          message={ item.message }
+          mediaDuration={ item.mediaDuration }
+          transcriptionDuration={ item.transcriptionDuration }
+          status={ item.status }
           key={ key }
+          progress={ progress }
           handleEditItem={ props.handleEditItem }
           handleDeleteItem={ props.handleDeleteItem }
         />
@@ -45,9 +52,13 @@ Transcripts.propTypes = {
   firebase: PropTypes.any,
   handleDeleteItem: PropTypes.any,
   handleEditItem: PropTypes.any,
-  items: PropTypes.any,
+  items: PropTypes.shape({
+    length: PropTypes.number,
+    map: PropTypes.func
+  }),
   projectId: PropTypes.any,
-  trackEvent: PropTypes.func
+  trackEvent: PropTypes.func,
+  uploadTasks: PropTypes.any
 };
 
 const condition = (authUser) => !!authUser;

@@ -81,7 +81,7 @@ const Projects = (props) => {
   };
 
   const duplicateProject = async (item) => {
-    let newItem = items.find(i => i.id === item.id);
+    let newItem = { ...items.find(i => i.id === item.id) };
     newItem.title = incrementCopyName(newItem.title, items.map(p => p.title));
     newItem = await createCollectionItem(newItem, ProjectsCollection);
     setItems(() => [ newItem, ...items ]);
@@ -181,8 +181,8 @@ const Projects = (props) => {
           id={ item.id }
           title={ item.title }
           url={ item.url ? item.url : '' }
-          created={ created }
-          updated={ updated }
+          created={ created ? created : 'NA' }
+          updated={ updated ? updated : 'NA' }
           key={ key }
           handleDuplicateItem={ (itemId) => handleDuplicateItem({ id: itemId }, duplicateProject) }
           handleEditItem={ (itemId) => handleEdit(itemId) }

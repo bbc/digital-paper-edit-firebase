@@ -39,9 +39,13 @@ const getISOTime = (sec) => {
   return date.toISOString();
 };
 
+const getISODay = (time) => {
+  return getISOTime(time.seconds).split('T')[0];
+};
+
 const formatISOObj = (item) => {
-  const created = item.created ? getISOTime(item.created.seconds).split('T')[0] : 'NA';
-  const updated = item.updated ? getISOTime(item.updated.seconds).split('T')[0] : 'NA';
+  const created = item.created ? getISODay(item.created) : 0;
+  const updated = item.updated ? getISODay(item.updated) : 0;
 
   return { created, updated };
 

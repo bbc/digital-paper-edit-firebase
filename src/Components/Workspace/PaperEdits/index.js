@@ -19,8 +19,8 @@ const PaperEdits = (props) => {
           id={ item.id }
           title={ item.title }
           url={ item.url ? item.url : '' }
-          created={ created }
-          updated={ updated }
+          created={ created ? created : 'NA' }
+          updated={ updated ? updated : 'NA' }
           key={ key }
           handleDuplicateItem={ props.handleDuplicateItem }
           handleEditItem={ props.handleEditItem }

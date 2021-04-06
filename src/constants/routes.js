@@ -11,5 +11,7 @@ export const PROJECTS = '/projects';
 export const WORKSPACE = '/projects/:projectId';
 export const PAPER_EDITOR = '/projects/:projectId/paperedits/:papereditId';
 export const TRANSCRIPT_EDITOR =
+  '/projects/:projectId/transcripts/:transcriptId';
+export const TRANSCRIPT_EDITOR_CORRECT =
   '/projects/:projectId/transcripts/:transcriptId/correct';
 export const USERS = '/users';

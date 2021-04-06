@@ -18,7 +18,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import Container from 'react-bootstrap/Container';
 import { createCollectionItem, createOrUpdateCollectionItem,
-  deleteCollectionItem, formReducer, handleDeleteItem, handleDuplicateItem, incrementCopyName, initialFormState, updateCollectionItem, updateItems } from '../../Util/formReducer';
+  deleteCollectionItem, formReducer, handleDeleteItem, handleDuplicateItem,
+  incrementCopyName, initialFormState, updateCollectionItem, updateItems } from '../../Util/formReducer';
 
 const WorkspaceView = props => {
   const UPLOADFOLDER = 'uploads';
@@ -102,7 +103,7 @@ const WorkspaceView = props => {
   };
 
   const duplicatePaperEdit = async (item) => {
-    let newItem = paperEditItems.find(i => i.id === item.id);
+    let newItem = { ...paperEditItems.find(i => i.id === item.id) };
     newItem.title = incrementCopyName(newItem.title, paperEditItems.map(p => p.title));
     newItem = await createCollectionItem(newItem, PaperEditsCollection);
     setPaperEditItems(() => [ newItem, ...paperEditItems ]);
@@ -125,12 +126,16 @@ const WorkspaceView = props => {
     await updateCollectionItem(newItem, TranscriptsCollection);
     setTranscriptItems(updateItems(newItem, transcriptItems));
     props.trackEvent({ category: 'transcripts', action: `handleUpdate ${ item.id }` });
+
+    return newItem;
   };
 
   const createTranscript = async (item) => {
     const newItem = await createCollectionItem(item, TranscriptsCollection);
     setTranscriptItems(() => [ newItem, ...transcriptItems ]);
     props.trackEvent({ category: 'transcripts', action: `handleCreate ${ item.id }` });
+
+    return newItem;
   };
 
   const deleteTranscript = async (item) => {
@@ -168,7 +173,7 @@ const WorkspaceView = props => {
     newTasks.delete(taskId);
     setUploadTasks(newTasks);
 
-    updateTranscript(taskId, { status: 'error' });
+    updateTranscript({ id: taskId, status: 'error' });
   };
 
   const handleUploadComplete = (taskId) => {
@@ -177,7 +182,7 @@ const WorkspaceView = props => {
     newTasks.delete(taskId);
     setUploadTasks(newTasks);
 
-    updateTranscript(taskId, { status: 'in-progress' });
+    updateTranscript({ id: taskId, status: 'in-progress' });
   };
 
   const getUploadPath = (taskId) => {
@@ -285,20 +290,19 @@ const WorkspaceView = props => {
     return paperEdit;
   };
 
-  const genUrl = (trId) => {
-    return `/projects/${ id }/transcripts/${ trId }/correct`;
-  };
-
   const createOrUpdateTranscript = async (item) => {
     let newTranscript = { ...item, projectId: id };
     delete newTranscript.display;
 
     if (newTranscript.id) {
-      newTranscript = createOrUpdateCollectionItem(newTranscript, createTranscript,
+      newTranscript = await createOrUpdateCollectionItem(newTranscript, createTranscript,
         updateTranscript);
 
     } else {
-      newTranscript = createOrUpdateCollectionItem({
+      const file = newTranscript.file;
+      delete newTranscript.file;
+
+      newTranscript = await createOrUpdateCollectionItem({
         ...newTranscript,
         title: newTranscript.title,
         projectId: id,
@@ -306,8 +310,7 @@ const WorkspaceView = props => {
         status: 'uploading',
       }, createTranscript, updateTranscript);
 
-      asyncUploadFile(newTranscript.id, newTranscript.file);
-      newTranscript = { ...newTranscript, url: genUrl(newTranscript.id) };
+      asyncUploadFile(newTranscript.id, file);
     }
 
     newTranscript.display = true;
@@ -316,6 +319,7 @@ const WorkspaceView = props => {
   };
 
   const handleSavePaperEditForm = (item) => {
+    console.log(item);
     createOrUpdatePaperEdit(item);
     setShowPEModal(false);
     dispatchPEForm({ type: 'reset' });
@@ -410,6 +414,7 @@ const WorkspaceView = props => {
           {transcriptItems ? (
             <Transcripts
               items={ transcriptItems }
+              uploadTasks={ uploadTasks }
               handleEditItem={ (itemId) => handleEditTranscript(itemId) }
               handleDeleteItem={ (itemId) => handleDeleteItem({ id: itemId }, deleteTranscript) }
             />
@@ -418,7 +423,9 @@ const WorkspaceView = props => {
       </Row>
       <CustomFooter />
       <FormModal
-        { ...formPEData }
+        title={ formPEData.title }
+        description={ formPEData.description ? formPEData.description : initialFormState.description }
+        id={ formPEData.id ? formPEData.id : initialFormState.id }
         modalTitle={ modalPETitle }
         showModal={ showPEModal }
         handleOnHide={ handleOnPEHide }
@@ -426,7 +433,9 @@ const WorkspaceView = props => {
         type={ 'paper-edit' }
       />
       <FormModal
-        { ...formTData }
+        title={ formTData.title }
+        description={ formTData.description ? formTData.description : initialFormState.description }
+        id={ formTData.id ? formTData.id : initialFormState.id }
         modalTitle={ modalTTitle }
         showModal={ showTModal }
         handleOnHide={ handleOnTHide }
