@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 // import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
-import { formatISOObj } from '../../../Util/time';
+import { formatDates } from '../../../Util/time';
 import ProjectRow from '@bbc/digital-paper-edit-storybook/ProjectRow';
 
 const PaperEdits = (props) => {
@@ -10,10 +10,10 @@ const PaperEdits = (props) => {
 
   const PaperEditRows = items.map(item => {
     const key = `card-paper-edit-${ item.id }`;
-    const { created, updated } = formatISOObj(item);
+    const { created, updated } = formatDates(item);
 
     return (
-      <>
+      <div key={ key }>
         <ProjectRow
           description={ item.description }
           id={ item.id }
@@ -21,13 +21,12 @@ const PaperEdits = (props) => {
           url={ item.url ? item.url : '' }
           created={ created ? created : 'NA' }
           updated={ updated ? updated : 'NA' }
-          key={ key }
           handleDuplicateItem={ props.handleDuplicateItem }
           handleEditItem={ props.handleEditItem }
           handleDeleteItem={ props.handleDeleteItem }
         />
         <hr style={ { color: 'grey' } } />
-      </>
+      </div>
     );
   });
 

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withAuthorization } from '../../Session';
 import TranscriptRow from '@bbc/digital-paper-edit-storybook/TranscriptRow';
-import { formatISOObj } from '../../../Util/time';
+import { formatDates } from '../../../Util/time';
 
 const Transcripts = (props) => {
   const items = props.items;
@@ -10,7 +10,7 @@ const Transcripts = (props) => {
 
   const TranscriptRows = items.map(item => {
     const key = `card-transcript-${ item.id }`;
-    const { created, updated } = formatISOObj(item);
+    const { created, updated } = formatDates(item);
     const progress = uploadTasks.get(item.id);
 
     return (

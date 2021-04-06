@@ -17,9 +17,10 @@ import {
   faCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import Container from 'react-bootstrap/Container';
+import { formReducer, incrementCopyName, initialFormState, } from '../../Util/form';
 import { createCollectionItem, createOrUpdateCollectionItem,
-  deleteCollectionItem, formReducer, handleDeleteItem, handleDuplicateItem,
-  incrementCopyName, initialFormState, updateCollectionItem, updateItems } from '../../Util/formReducer';
+  deleteCollectionItem, handleDeleteItem, handleDuplicateItem,
+  updateCollectionItem, updateItems } from '../../Util/collection';
 
 const WorkspaceView = props => {
   const UPLOADFOLDER = 'uploads';
@@ -391,7 +392,7 @@ const WorkspaceView = props => {
       <hr></hr>
       <Row style={ { marginBottom: '15px' } }>
         <Col>
-          <h2>&quot;{title}&quot;</h2>
+          <h2>Project: &quot;{title}&quot;</h2>
         </Col>
       </Row>
       <Row>

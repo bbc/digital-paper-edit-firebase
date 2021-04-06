@@ -1,22 +1,24 @@
 import PropTypes from 'prop-types';
 import React, { useState, useEffect, useReducer } from 'react';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 import CustomFooter from '../lib/CustomFooter';
 import Collection from '../Firebase/Collection';
 import { withAuthorization } from '../Session';
 import { PROJECTS } from '../../constants/routes';
+import { formReducer, incrementCopyName, initialFormState, } from '../../Util/form';
+import { createCollectionItem, createOrUpdateCollectionItem,
+  deleteCollectionItem, handleDeleteItem, handleDuplicateItem,
+  updateCollectionItem, updateItems } from '../../Util/collection';
+import { formatDates } from '../../Util/time';
+
 import { faCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
 
 import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
-
-import { initialFormState, formReducer, createOrUpdateCollectionItem,
-  updateCollectionItem, updateItems, incrementCopyName, createCollectionItem,
-  handleDuplicateItem, handleDeleteItem, deleteCollectionItem } from '../../Util/formReducer';
-import { formatISOObj } from '../../Util/time';
 import ProjectRow from '@bbc/digital-paper-edit-storybook/ProjectRow';
 
 const Projects = (props) => {
@@ -172,10 +174,10 @@ const Projects = (props) => {
 
   const ProjectRows = items.map(item => {
     const key = `card-project-${ item.id }`;
-    const { created, updated } = formatISOObj(item);
+    const { created, updated } = formatDates(item);
 
     return (
-      <>
+      <div key={ key }>
         <ProjectRow
           description={ item.description }
           id={ item.id }
@@ -183,47 +185,41 @@ const Projects = (props) => {
           url={ item.url ? item.url : '' }
           created={ created ? created : 'NA' }
           updated={ updated ? updated : 'NA' }
-          key={ key }
           handleDuplicateItem={ (itemId) => handleDuplicateItem({ id: itemId }, duplicateProject) }
           handleEditItem={ (itemId) => handleEdit(itemId) }
           handleDeleteItem={ (itemId) => handleDeleteItem({ id: itemId }, deleteProject) }
         />
         <hr style={ { color: 'grey' } } />
-      </>
+      </div>
     );
   });
 
   return (
-    <>
-      <Container
-        data-testid="projectsContainer"
-        style={ { marginBottom: '5em', marginTop: '1em' } }
-      >
-        <Row>
-          <Col sm={ 2 }>
-            <Button
-              onClick={ handleEdit }
-              variant="outline-secondary"
-              size="sm"
-              block
-            >
-              <FontAwesomeIcon icon={ faCircle } /> New Project
-            </Button>
-          </Col>
-        </Row>
-        <Row style={ { marginBottom: '15px' } }>
-          <Col>
-            <h2>Projects</h2>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            {items.length > 0 ? (
-              ProjectRows
-            ) : <i>There are no projects, create a new one to get started.</i>}
-          </Col>
-        </Row>
-      </Container>
+    <Container>
+      <Row>
+        <Col sm={ 2 }>
+          <Button
+            onClick={ handleEdit }
+            variant="outline-secondary"
+            size="sm"
+            block
+          >
+            <FontAwesomeIcon icon={ faCircle } /> New Project
+          </Button>
+        </Col>
+      </Row>
+      <hr></hr>
+      <Row style={ { marginBottom: '15px' } }>
+        <Col sm={ 6 }><h5>Projects</h5></Col>
+        <Col sm={ 4 }><h5>Created / Updated</h5></Col>
+      </Row>
+      <Row>
+        <Col>
+          {items.length > 0 ? (
+            ProjectRows
+          ) : <i>There are no projects, create a new one to get started.</i>}
+        </Col>
+      </Row>
       <CustomFooter />
       <FormModal
         { ...formData }
@@ -233,7 +229,7 @@ const Projects = (props) => {
         handleSaveForm={ handleSaveForm }
         type={ type }
       />
-    </>
+    </Container>
   );
 };
 

@@ -43,7 +43,7 @@ const getISODay = (time) => {
   return getISOTime(time.seconds).split('T')[0];
 };
 
-const formatISOObj = (item) => {
+const formatDates = (item) => {
   const created = item.created ? getISODay(item.created) : 0;
   const updated = item.updated ? getISODay(item.updated) : 0;
 
@@ -51,4 +51,4 @@ const formatISOObj = (item) => {
 
 };
 
-export { ToHumanReadable, ToDhmsCompact, getISOTime, updateDescOrder, formatISOObj };
+export { ToHumanReadable, ToDhmsCompact, getISOTime, updateDescOrder, formatDates };
