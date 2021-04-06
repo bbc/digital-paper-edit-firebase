@@ -52,10 +52,7 @@ Transcripts.propTypes = {
   firebase: PropTypes.any,
   handleDeleteItem: PropTypes.any,
   handleEditItem: PropTypes.any,
-  items: PropTypes.shape({
-    length: PropTypes.number,
-    map: PropTypes.func
-  }),
+  items: PropTypes.any,
   projectId: PropTypes.any,
   trackEvent: PropTypes.func,
   uploadTasks: PropTypes.any
