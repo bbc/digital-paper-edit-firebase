@@ -4,7 +4,6 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import CustomFooter from '../lib/CustomFooter';
-import ItemsContainer from '../lib/ItemsContainer';
 import Collection from '../Firebase/Collection';
 import { withAuthorization } from '../Session';
 import { PROJECTS } from '../../constants/routes';
@@ -14,7 +13,11 @@ import Button from 'react-bootstrap/Button';
 
 import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
 
-import { initialFormState, formReducer, createOrUpdateItem } from '../../Util/formReducer';
+import { initialFormState, formReducer, createOrUpdateCollectionItem,
+  updateCollectionItem, updateItems, incrementCopyName, createCollectionItem,
+  handleDuplicateItem, handleDeleteItem, deleteCollectionItem } from '../../Util/formReducer';
+import { formatISOObj } from '../../Util/time';
+import ProjectRow from '@bbc/digital-paper-edit-storybook/ProjectRow';
 
 const Projects = (props) => {
   const [ uid, setUid ] = useState();
@@ -26,15 +29,20 @@ const Projects = (props) => {
   const [ modalTitle, setModalTitle ] = useState('');
 
   const type = 'Project';
-  const projectsCollection = new Collection(props.firebase, PROJECTS);
-  const usersCollection = new Collection(props.firebase, '/users');
+  const ProjectsCollection = new Collection(props.firebase, PROJECTS);
 
-  const createLabel = async (projectId, label) => {
+  const createDefaultLabel = async (projectId) => {
+    const defaultLabel = {
+      label: 'Default',
+      color: 'yellow',
+      value: 'yellow',
+      description: '',
+    };
     const labelsCollection = new Collection(
       props.firebase,
       `/projects/${ projectId }/labels`
     );
-    const labelDocRef = await labelsCollection.postItem(label);
+    const labelDocRef = await labelsCollection.postItem(defaultLabel);
 
     labelDocRef.update({
       id: labelDocRef.id,
@@ -42,30 +50,42 @@ const Projects = (props) => {
   };
 
   const createProject = async (item) => {
-    const docRef = await projectsCollection.postItem(item);
-    docRef.update({
-      url: `/projects/${ docRef.id }`,
-    });
+    const newItem = await createCollectionItem(item, ProjectsCollection);
+    await createDefaultLabel(newItem.id);
+    props.trackEvent({ category: 'projects', action: `handleCreate ${ item.id }` });
 
-    const defaultLabel = {
-      label: 'Default',
-      color: 'yellow',
-      value: 'yellow',
-      description: '',
-    };
-    createLabel(docRef.id, defaultLabel);
+    return newItem;
   };
 
-  const updateProject = (id, item) => {
-    projectsCollection.putItem(id, item);
+  const updateProject = async (item) => {
+    const newItem = items.find(i => i.id === item.id);
+    newItem = { ...newItem, ...item };
+    await updateCollectionItem(newItem, ProjectsCollection);
+    setItems(updateItems(newItem, items));
+    props.trackEvent({ category: 'projects', action: `handleUpdate ${ item.id }` });
+
+    return newItem;
   };
 
   const createOrUpdateProject = async (item) => {
-    const updatedItem = { ...item };
-    updatedItem.display = true;
-    const paperEdit = await createOrUpdateItem(updatedItem, createProject, updateProject);
+    let newProject = { ...item };
+    delete newProject.display;
 
-    return paperEdit;
+    if (!newProject.id) {
+      newProject = { ...newProject, users: [ uid ] };
+    }
+    newProject = await createOrUpdateCollectionItem(newProject, createProject, updateProject);
+    newProject.display = true;
+
+    return newProject;
+  };
+
+  const duplicateProject = async (item) => {
+    let newItem = items.find(i => i.id === item.id);
+    newItem.title = incrementCopyName(newItem.title, items.map(p => p.title));
+    newItem = await createCollectionItem(newItem, ProjectsCollection);
+    setItems(() => [ newItem, ...items ]);
+    props.trackEvent({ category: 'projects', action: `handleDuplicate ${ item.id }` });
   };
 
   const handleSaveForm = (item) => {
@@ -74,31 +94,10 @@ const Projects = (props) => {
     dispatchForm({ type: 'reset' });
   };
 
-  const handleSave = (item) => {
-    item.display = true;
-
-    if (item.id) {
-      updateProject(item.id, item);
-    } else {
-      item.users = [ uid ];
-      item.url = '';
-      createProject(item);
-      setItems(() => [ ...items, item ]);
-    }
-    props.trackEvent({ category: 'project', action: 'handleSave' });
-  };
-
-  const deleteProject = async (id) => {
-    try {
-      await projectsCollection.deleteItem(id);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleDelete = (id) => {
-    deleteProject(id);
-    props.trackEvent({ category: 'project', action: 'handleDelete' });
+  const deleteProject = async (item) => {
+    await deleteCollectionItem(item.id, ProjectsCollection);
+    setItems(() => items.filter(i => i.id !== item.id));
+    props.trackEvent({ category: 'project', action: `handleDelete ${ item.id }` });
   };
 
   const handleEdit = (itemId) => {
@@ -112,10 +111,11 @@ const Projects = (props) => {
   };
 
   useEffect(() => {
+    const collection = new Collection(props.firebase, PROJECTS);
     const getUserProjects = async () => {
       setIsLoading(true);
       try {
-        projectsCollection.userRef(uid).onSnapshot((snapshot) => {
+        collection.userRef(uid).onSnapshot((snapshot) => {
           const projects = snapshot.docs.map((doc) => {
             return { ...doc.data(), id: doc.id, display: true };
           });
@@ -143,11 +143,12 @@ const Projects = (props) => {
     return () => {
       authListener();
     };
-  }, [ projectsCollection, items, loading, props.firebase, uid ]);
+  }, [ items, loading, props.firebase, uid ]);
 
   useEffect(() => {
+    const collection = new Collection(props.firebase, '/users');
     const updateUser = (item) => {
-      usersCollection.putItem(uid, item);
+      collection.putItem(uid, item);
     };
 
     const updateUserProjects = async () => {
@@ -163,15 +164,34 @@ const Projects = (props) => {
     }
 
     return () => {};
-  }, [ usersCollection, items, props.firebase, uid, email ]);
-
-  const toggleShowModal = () => {
-    setShowModal(!showModal);
-  };
+  }, [ items, props.firebase, uid, email ]);
 
   const handleOnHide = () => {
     setShowModal(false);
   };
+
+  const ProjectRows = items.map(item => {
+    const key = `card-project-${ item.id }`;
+    const { created, updated } = formatISOObj(item);
+
+    return (
+      <>
+        <ProjectRow
+          description={ item.description }
+          id={ item.id }
+          title={ item.title }
+          url={ item.url ? item.url : '' }
+          created={ created }
+          updated={ updated }
+          key={ key }
+          handleDuplicateItem={ (itemId) => handleDuplicateItem({ id: itemId }, duplicateProject) }
+          handleEditItem={ (itemId) => handleEdit(itemId) }
+          handleDeleteItem={ (itemId) => handleDeleteItem({ id: itemId }, deleteProject) }
+        />
+        <hr style={ { color: 'grey' } } />
+      </>
+    );
+  });
 
   return (
     <>
@@ -182,7 +202,7 @@ const Projects = (props) => {
         <Row>
           <Col sm={ 2 }>
             <Button
-              onClick={ toggleShowModal }
+              onClick={ handleEdit }
               variant="outline-secondary"
               size="sm"
               block
@@ -191,7 +211,6 @@ const Projects = (props) => {
             </Button>
           </Col>
         </Row>
-        <hr></hr>
         <Row style={ { marginBottom: '15px' } }>
           <Col>
             <h2>Projects</h2>
@@ -199,16 +218,9 @@ const Projects = (props) => {
         </Row>
         <Row>
           <Col>
-            {items ? (
-              <ItemsContainer
-                key={ type }
-                model={ type }
-                items={ items }
-                handleSave={ handleSave }
-                handleDelete={ handleDelete }
-                handleEdit={ handleEdit }
-              />
-            ) : null}
+            {items.length > 0 ? (
+              ProjectRows
+            ) : <i>There are no projects, create a new one to get started.</i>}
           </Col>
         </Row>
       </Container>

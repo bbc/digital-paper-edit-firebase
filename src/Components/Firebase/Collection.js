@@ -31,7 +31,8 @@ class Collection {
     try {
       const docRef = await this.collectionRef.add({
         ...data,
-        created: this.getServerTimestamp()
+        created: this.getServerTimestamp(),
+        updated: this.getServerTimestamp()
       });
       console.log('Document written with ID: ', docRef.id);
 
@@ -46,7 +47,10 @@ class Collection {
     try {
       await this.collectionRef
         .doc(id)
-        .set({ ...data, created: this.getServerTimestamp() });
+        .set({ ...data,
+          created: this.getServerTimestamp(),
+          updated: this.getServerTimestamp()
+        });
       console.log('Document written with ID: ', id);
     } catch (error) {
       console.error('Error adding document: ', error);

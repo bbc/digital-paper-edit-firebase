@@ -33,6 +33,7 @@ import PropTypes from 'prop-types';
 const Article = React.lazy(() => import('./Article'));
 
 const ProgrammeScriptContainer = (props) => {
+
   const papereditsId = props.match.params.papereditId;
   const projectId = props.match.params.projectId;
   const projectTitle = props.projectTitle;
@@ -51,18 +52,13 @@ const ProgrammeScriptContainer = (props) => {
   const [ width, setWidth ] = useState(150);
   const [ playlist, setPlaylist ] = useState([]);
   const previewCardRef = useRef();
-
   const PaperEdits = new Collection(
-    firebase,
+    props.firebase,
     `/projects/${ projectId }/paperedits`
   );
 
-  const Transcriptions = new Collection(
-    props.firebase,
-    `/projects/${ projectId }/transcripts`
-  );
-
   const createPaperEdits = async (paperEdit) => {
+
     try {
       await PaperEdits.putItem(papereditsId, paperEdit);
       console.log('Successfully saved');
@@ -94,9 +90,14 @@ const ProgrammeScriptContainer = (props) => {
   };
 
   useEffect(() => {
+    const collection = new Collection(
+      firebase,
+      `/projects/${ projectId }/paperedits`
+    );
+
     const getPaperEdit = async () => {
       try {
-        const paperEdit = await PaperEdits.getItem(papereditsId);
+        const paperEdit = await collection.getItem(papereditsId);
         setTitle(paperEdit.title);
 
         const newElements = paperEdit.elements
@@ -118,7 +119,7 @@ const ProgrammeScriptContainer = (props) => {
     if (!elements) {
       getPaperEdit();
     }
-  }, [ PaperEdits, elements, papereditsId ]);
+  }, [ elements, firebase, papereditsId, projectId ]);
 
   useEffect(() => {
     if (elements) {
@@ -131,11 +132,15 @@ const ProgrammeScriptContainer = (props) => {
   }, [ elements, paperEdits ]);
 
   useEffect(() => {
+    const collection = new Collection(
+      props.firebase,
+      `/projects/${ projectId }/transcripts`
+    );
     const getTranscripts = async (trIds) => {
       try {
         if (!transcripts) {
           const trs = await Promise.all(trIds.map((async trId => {
-            const transcript = await Transcriptions.getItem(trId);
+            const transcript = await collection.getItem(trId);
 
             return { id: trId, ...transcript };
           })));
@@ -147,7 +152,7 @@ const ProgrammeScriptContainer = (props) => {
               return transcript;
             }
 
-            transcript = await Transcriptions.getItem(trId);
+            transcript = await collection.getItem(trId);
 
             return { id: trId, ...transcript };
           })));
@@ -171,13 +176,17 @@ const ProgrammeScriptContainer = (props) => {
       }
     }
 
-  }, [ Transcriptions, paperEdits, transcripts ]);
+  }, [ paperEdits, projectId, props.firebase, transcripts ]);
 
   const handleGetMediaUrl = async(item) => {
     return await firebase.storage.storage.ref(item.ref).getDownloadURL();
   };
 
   useEffect(() => {
+    const Transcriptions = new Collection(
+      props.firebase,
+      `/projects/${ projectId }/transcripts`
+    );
     const getTranscripts = async (trIds) => {
       try {
         if (!transcripts) {
@@ -218,7 +227,7 @@ const ProgrammeScriptContainer = (props) => {
       }
     }
 
-  }, [ Transcriptions, paperEdits, transcripts ]);
+  }, [ paperEdits, projectId, props.firebase, transcripts ]);
   useEffect(() => {
     const getPlaylistItem = (element) => ({
       type: 'video',

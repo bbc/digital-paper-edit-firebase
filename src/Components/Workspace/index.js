@@ -3,7 +3,7 @@ import React, { useState, useEffect, useReducer } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import CustomFooter from '../lib/CustomFooter';
-// import Transcripts from './Transcripts';
+import Transcripts from './Transcripts';
 import PaperEdits from './PaperEdits';
 import Button from 'react-bootstrap/Button';
 import Collection from '../Firebase/Collection';
@@ -17,24 +17,32 @@ import {
   faCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import Container from 'react-bootstrap/Container';
-import { createCollectionItem, createOrUpdateItem, deleteCollectionItem, formReducer, initialFormState, updateCollectionItem, updateItems } from '../../Util/formReducer';
+import { createCollectionItem, createOrUpdateCollectionItem,
+  deleteCollectionItem, formReducer, handleDeleteItem, handleDuplicateItem, incrementCopyName, initialFormState, updateCollectionItem, updateItems } from '../../Util/formReducer';
 
 const WorkspaceView = props => {
-  const projects = new Collection(props.firebase, PROJECTS);
+  const UPLOADFOLDER = 'uploads';
+  const firebase = props.firebase;
 
   const id = props.match.params.projectId;
   const [ title, setTitle ] = useState('Project Title');
   const [ uid, setUid ] = useState();
 
-  const firebase = props.firebase;
-  const [ loading, setIsLoading ] = useState(false);
+  const [ transcriptItems, setTranscriptItems ] = useState([]);
 
-  const [ modalTitle, setModalTitle ] = useState('');
-  const [ showModal, setShowModal ] = useState(false);
-  const [ formData, dispatchForm ] = useReducer(formReducer, initialFormState);
+  const [ loadingT, setIsLoadingT ] = useState(false);
+  const [ modalTTitle, setModalTTitle ] = useState('');
+  const [ showTModal, setShowTModal ] = useState(false);
+  const [ formTData, dispatchTForm ] = useReducer(formReducer, initialFormState);
 
   const [ paperEditItems, setPaperEditItems ] = useState([]);
+
   const [ loadingPE, setIsloadingPE ] = useState(false);
+  const [ modalPETitle, setModalPETitle ] = useState('');
+  const [ showPEModal, setShowPEModal ] = useState(false);
+  const [ formPEData, dispatchPEForm ] = useReducer(formReducer, initialFormState);
+
+  const [ uploadTasks, setUploadTasks ] = useState(new Map());
 
   const PaperEditsCollection = new Collection(
     props.firebase,
@@ -45,10 +53,6 @@ const WorkspaceView = props => {
     props.firebase,
     `/projects/${ id }/transcripts`
   );
-
-  const [ transcriptItems, setTranscriptItems ] = useState([]);
-
-  console.log(setModalTitle, uid, transcriptItems);
 
   // search to move here
   useEffect(() => {
@@ -67,9 +71,11 @@ const WorkspaceView = props => {
   }, [ firebase ]);
 
   useEffect(() => {
+    const collection = new Collection(props.firebase, PROJECTS);
+
     const getProjectName = async () => {
       try {
-        const doc = await projects.getItem(id);
+        const doc = await collection.getItem(id);
         setTitle(doc.title);
       } catch (e) {
         console.error('Could not get Project Id: ', id, e);
@@ -79,13 +85,15 @@ const WorkspaceView = props => {
     getProjectName();
 
     return () => {};
-  }, [ id, projects ]);
+  }, [ id, props.firebase ]);
 
   // modal
 
   const createPaperEdit = async (item) => {
-    const newItem = await createCollectionItem(item, PaperEditsCollection);
+    const newItem = await createCollectionItem( item, PaperEditsCollection);
     setPaperEditItems(() => [ newItem, ...paperEditItems ]);
+
+    return newItem;
   };
 
   const deletePaperEdit = async (item) => {
@@ -93,27 +101,155 @@ const WorkspaceView = props => {
     setPaperEditItems(() => paperEditItems.filter(i => i.id !== item.id));
   };
 
-  const updatePaperEdit = (item) => {
-    updateCollectionItem(item, paperEditItems);
-    setPaperEditItems(updateItems(item, paperEditItems));
+  const duplicatePaperEdit = async (item) => {
+    let newItem = paperEditItems.find(i => i.id === item.id);
+    newItem.title = incrementCopyName(newItem.title, paperEditItems.map(p => p.title));
+    newItem = await createCollectionItem(newItem, PaperEditsCollection);
+    setPaperEditItems(() => [ newItem, ...paperEditItems ]);
+    props.trackEvent({ category: 'paperEdits', action: `handleCreate ${ item.id }` });
   };
 
-  const handleEditItem = (itemId, items, type) => {
-    setModalTitle(formData.id ? `Edit ${ type }` : `New ${ type }`);
-    const item = items.find(i => i.id === itemId);
-    dispatchForm({
+  const updatePaperEdit = async (item) => {
+    let newItem = paperEditItems.find(i => i.id === item.id);
+    newItem = { ...newItem, ...item };
+    newItem = await updateCollectionItem(newItem, PaperEditsCollection);
+    setPaperEditItems(updateItems(newItem, paperEditItems));
+    props.trackEvent({ category: 'paperEdits', action: `handleUpdate ${ item.id }` });
+
+    return newItem;
+  };
+
+  const updateTranscript = async (item) => {
+    const newItem = transcriptItems.find(i => i.id === item.id);
+    newItem = { ...newItem, ...item };
+    await updateCollectionItem(newItem, TranscriptsCollection);
+    setTranscriptItems(updateItems(newItem, transcriptItems));
+    props.trackEvent({ category: 'transcripts', action: `handleUpdate ${ item.id }` });
+  };
+
+  const createTranscript = async (item) => {
+    const newItem = await createCollectionItem(item, TranscriptsCollection);
+    setTranscriptItems(() => [ newItem, ...transcriptItems ]);
+    props.trackEvent({ category: 'transcripts', action: `handleCreate ${ item.id }` });
+  };
+
+  const deleteTranscript = async (item) => {
+    await deleteCollectionItem(item.id, TranscriptsCollection);
+    setTranscriptItems(() => transcriptItems.filter(i => i.id !== item.id));
+
+    try {
+      await firebase.storage.child(`users/${ uid }/uploads/${ item.id }`).delete();
+      await firebase.storage.child(`users/${ uid }/audio/${ item.id }`).delete();
+    } catch (e) {
+      console.error('Failed to delete item in storage: ', e.code_);
+    }
+    props.trackEvent({ category: 'transcripts', action: `handleDelete ${ item.id }` });
+  };
+
+  // storage
+
+  const updateUploadTasksProgress = (taskId, progress) => {
+    const newUploading = new Map(uploadTasks); // shallow clone
+    newUploading.set(taskId, progress);
+
+    setUploadTasks(newUploading);
+  };
+
+  const handleUploadProgress = (taskId, snapshot) => {
+    const progress = Math.floor(
+      (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+    );
+    updateUploadTasksProgress(taskId, progress);
+  };
+
+  const handleUploadError = (taskId, error) => {
+    console.error('Failed to upload file: ', error);
+    const newTasks = new Map(uploadTasks); // shallow clone
+    newTasks.delete(taskId);
+    setUploadTasks(newTasks);
+
+    updateTranscript(taskId, { status: 'error' });
+  };
+
+  const handleUploadComplete = (taskId) => {
+    console.log('File upload completed');
+    const newTasks = new Map(uploadTasks); // shallow clone
+    newTasks.delete(taskId);
+    setUploadTasks(newTasks);
+
+    updateTranscript(taskId, { status: 'in-progress' });
+  };
+
+  const getUploadPath = (taskId) => {
+    return `users/${ uid }/${ UPLOADFOLDER }/${ taskId }`;
+  };
+
+  const asyncUploadFile = async (taskId, file) => {
+    const path = getUploadPath(taskId);
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+
+    video.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(video.src);
+      const duration = video.duration;
+
+      const metadata = {
+        customMetadata: {
+          userId: uid,
+          id: taskId,
+          projectId: id,
+          originalName: file.name,
+          folder: UPLOADFOLDER,
+          duration: duration,
+        },
+      };
+
+      const uploadTask = firebase.storage.child(path).put(file, metadata);
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          handleUploadProgress(taskId, snapshot);
+        },
+        (error) => {
+          handleUploadError(taskId, error);
+        },
+        () => {
+          handleUploadComplete(taskId);
+        }
+      );
+    };
+    video.src = URL.createObjectURL(file);
+  };
+
+  const handleEditPaperEdit = (itemId) => {
+    setModalPETitle(formPEData.id ? 'Edit Paper Edit' : 'New Paper Edit');
+    const item = paperEditItems.find(i => i.id === itemId);
+    dispatchPEForm({
       type: 'update',
       payload: item
     });
-    setShowModal(true);
+    setShowPEModal(true);
+    setShowTModal(false);
   };
 
-  const toggleShowModal = () => {
-    setShowModal(!showModal);
+  const handleEditTranscript = (itemId) => {
+    setModalTTitle(formTData.id ? 'Edit Transcript' : 'New Transcript');
+    const item = transcriptItems.find(i => i.id === itemId);
+    dispatchTForm({
+      type: 'update',
+      payload: item
+    });
+    setShowTModal(true);
+    setShowPEModal(false);
   };
 
-  const handleOnHide = () => {
-    setShowModal(false);
+  const handleOnTHide = () => {
+    setShowTModal(false);
+  };
+
+  const handleOnPEHide = () => {
+    setShowPEModal(false);
   };
 
   useEffect(() => {
@@ -130,55 +266,75 @@ const WorkspaceView = props => {
       }
     };
 
-    if (!loading) {
+    if (!loadingT) {
       getTranscripts();
-      setIsLoading(true);
+      setIsLoadingT(true);
     }
 
-  }, [ TranscriptsCollection.collectionRef, loading ]);
+  }, [ TranscriptsCollection.collectionRef, loadingT ]);
 
   // general
 
-  const createOrUpdateCollectionItem = async (item, create, update) => {
-    const updatedItem = { ...item };
-    updatedItem.display = true;
-
-    if (!updatedItem.id) {
-      updatedItem.url = '';
-      updatedItem.projectId = id;
-    }
-    updatedItem = await createOrUpdateItem(item, create, update);
-
-    return updatedItem;
-  };
-
   const createOrUpdatePaperEdit = async (item) => {
-    const paperEdit = await createOrUpdateCollectionItem(item, createPaperEdit, updatePaperEdit);
+    const newPaperEdit = { ...item, projectId: id };
+    delete newPaperEdit.display;
+    const paperEdit = await createOrUpdateCollectionItem(newPaperEdit,
+      createPaperEdit, updatePaperEdit);
+    paperEdit.display = true;
 
     return paperEdit;
   };
 
-  const handleSaveForm = (item) => {
-  // const handleSaveForm = (item) => {
-    // createOrUpdateFn(formData);
+  const genUrl = (trId) => {
+    return `/projects/${ id }/transcripts/${ trId }/correct`;
+  };
+
+  const createOrUpdateTranscript = async (item) => {
+    let newTranscript = { ...item, projectId: id };
+    delete newTranscript.display;
+
+    if (newTranscript.id) {
+      newTranscript = createOrUpdateCollectionItem(newTranscript, createTranscript,
+        updateTranscript);
+
+    } else {
+      newTranscript = createOrUpdateCollectionItem({
+        ...newTranscript,
+        title: newTranscript.title,
+        projectId: id,
+        description: newTranscript.description ? newTranscript.description : '',
+        status: 'uploading',
+      }, createTranscript, updateTranscript);
+
+      asyncUploadFile(newTranscript.id, newTranscript.file);
+      newTranscript = { ...newTranscript, url: genUrl(newTranscript.id) };
+    }
+
+    newTranscript.display = true;
+
+    return newTranscript;
+  };
+
+  const handleSavePaperEditForm = (item) => {
     createOrUpdatePaperEdit(item);
-    setShowModal(false);
-    dispatchForm({ type: 'reset' });
+    setShowPEModal(false);
+    dispatchPEForm({ type: 'reset' });
   };
 
-  const handleDeleteItem = (item, deleteFn) => {
-    deleteFn(item);
-  };
-
-  const handleDuplicateItem = (item, updateFn) => {
-    const clone = { ...item };
-    updateFn(clone);
+  const handleSaveTranscriptForm = (item) => {
+    createOrUpdateTranscript(item);
+    setShowTModal(false);
+    dispatchTForm({ type: 'reset' });
   };
 
   useEffect(() => {
+    const collection = new Collection(
+      props.firebase,
+      `/projects/${ id }/paperedits`
+    );
     const getPaperEdits = async () => {
       try {
-        PaperEditsCollection.collectionRef.onSnapshot((snapshot) => {
+        collection.collectionRef.onSnapshot((snapshot) => {
           const paperEdits = snapshot.docs.map((doc) => {
             return { ...doc.data(), id: doc.id, display: true };
           });
@@ -188,17 +344,17 @@ const WorkspaceView = props => {
         console.error('Error getting documents: ', error);
       }
     };
-    // TODO: some error handling
+
     if (!loadingPE) {
       getPaperEdits();
       setIsloadingPE(true);
     }
 
     return () => {};
-  }, [ PaperEditsCollection, loadingPE, paperEditItems, id ]);
+  }, [ loadingPE, paperEditItems, id, props.firebase ]);
 
   return (
-    <Container style={ { marginBottom: '5em' } }>
+    <Container >
       <Row>
         <Col sm={ 2 }>
           <a href="#">
@@ -209,7 +365,7 @@ const WorkspaceView = props => {
         </Col>
         <Col sm={ 3 }>
           <Button
-            onClick={ toggleShowModal }
+            onClick={ handleEditPaperEdit }
             variant="outline-secondary"
             size="sm"
             block
@@ -219,12 +375,12 @@ const WorkspaceView = props => {
         </Col>
         <Col sm={ 3 }>
           <Button
-            onClick={ toggleShowModal }
+            onClick={ handleEditTranscript }
             variant="outline-secondary"
             size="sm"
             block
           >
-            <FontAwesomeIcon icon={ faCircle } /> Convert Media to Transcript
+            <FontAwesomeIcon icon={ faCircle } /> Transcribe Media
           </Button>
         </Col>
       </Row>
@@ -235,31 +391,47 @@ const WorkspaceView = props => {
         </Col>
       </Row>
       <Row>
-        <Col sm={ 8 }>
-
-        </Col>
+        <Col sm={ 4 }><h5>Title</h5></Col>
+        <Col sm={ 4 }><h5>Created / Updated</h5></Col>
+        <Col sm={ 4 }><h5>Transcripts</h5></Col>
       </Row>
       <Row>
-        <Col>
+        <Col sm={ 8 }>
           {paperEditItems ? (
             <PaperEdits
               items={ paperEditItems }
-              handleEditItem={ (item) => handleEditItem(item, createOrUpdatePaperEdit, 'paper-edit') }
-              handleDeleteItem={ (item) => handleDeleteItem(item, deletePaperEdit) }
-              handleDuplicateItem={ (item) => handleDuplicateItem(item, updatePaperEdit) }
+              handleEditItem={ (itemId) => handleEditPaperEdit(itemId) }
+              handleDeleteItem={ (itemId) => handleDeleteItem({ id: itemId }, deletePaperEdit) }
+              handleDuplicateItem={ (itemId) => handleDuplicateItem({ id: itemId }, duplicatePaperEdit) }
+            />
+          ) : null}
+        </Col>
+        <Col sm={ 4 }>
+          {transcriptItems ? (
+            <Transcripts
+              items={ transcriptItems }
+              handleEditItem={ (itemId) => handleEditTranscript(itemId) }
+              handleDeleteItem={ (itemId) => handleDeleteItem({ id: itemId }, deleteTranscript) }
             />
           ) : null}
         </Col>
       </Row>
       <CustomFooter />
       <FormModal
-        { ...formData }
-        modalTitle={ modalTitle }
-        showModal={ showModal }
-        handleOnHide={ handleOnHide }
-        handleSaveForm={ handleSaveForm }
+        { ...formPEData }
+        modalTitle={ modalPETitle }
+        showModal={ showPEModal }
+        handleOnHide={ handleOnPEHide }
+        handleSaveForm={ handleSavePaperEditForm }
         type={ 'paper-edit' }
-        // type={ type }
+      />
+      <FormModal
+        { ...formTData }
+        modalTitle={ modalTTitle }
+        showModal={ showTModal }
+        handleOnHide={ handleOnTHide }
+        handleSaveForm={ handleSaveTranscriptForm }
+        type={ 'transcript' }
       />
     </Container>
   );

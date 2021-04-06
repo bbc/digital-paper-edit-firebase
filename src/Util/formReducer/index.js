@@ -19,11 +19,21 @@ const formReducer = (state = initialFormState, { type, payload }) => {
 const createOrUpdateItem = async (item, create, update) => {
   const updatedItem = { ...item };
   if (updatedItem.id) {
-    update(updatedItem.id, updatedItem);
-
+    update(updatedItem);
   } else {
-    updatedItem = create(item);
+    updatedItem = await create(item);
   }
+
+  return updatedItem;
+};
+
+const createOrUpdateCollectionItem = async (item, create, update) => {
+  const updatedItem = { ...item };
+
+  if (!updatedItem.id) {
+    updatedItem.url = '';
+  }
+  updatedItem = await createOrUpdateItem(item, create, update);
 
   return updatedItem;
 };
@@ -35,20 +45,22 @@ const createCollectionItem = async (item, collection) => {
     id: docRef.id,
     url: `${ collection.name }/${ docRef.id }`,
   };
-  docRef.update(update);
+  await docRef.update(update);
 
   return { ...item, ...update };
 };
 
-const updateCollectionItem = (item, collection) => collection.putItem(item.id, item);
+const updateCollectionItem = async (item, collection) => {
+  await collection.putItem(item.id, item);
+
+  return item;
+};
 
 const updateItems = (item, items) => {
   const itemsToUpdate = [ ...items ];
-
   const updateItem = items.find(i => i.id === item.id);
   const updateIndex = items.indexOf(updateItem);
-
-  itemsToUpdate[updateIndex] = { ...updateItem }.update(item);
+  itemsToUpdate[updateIndex] = item;
 
   return itemsToUpdate;
 };
@@ -61,4 +73,32 @@ const deleteCollectionItem = async (docId, collection) => {
   }
 };
 
-export { formReducer, initialFormState, createOrUpdateItem, deleteCollectionItem, updateItems, updateCollectionItem, createCollectionItem };
+const handleDeleteItem = (item, deleteFn) => {
+  deleteFn(item);
+};
+
+const incrementCopyName = (name, names) => {
+  const words = name.split(' ');
+  const lastWord = parseInt(words.pop());
+  let newName = '';
+  if (isNaN(lastWord)) {
+    newName = `${ name } 1`;
+  } else {
+    newName = [ ...words, lastWord + 1 ].join(' ');
+  }
+
+  if (names.indexOf(newName) > -1) {
+    return incrementCopyName(newName, names);
+  } else {
+    return newName;
+  }
+};
+
+const handleDuplicateItem = (item, createFn) => {
+  createFn(item);
+};
+
+export { formReducer, initialFormState, createOrUpdateItem,
+  deleteCollectionItem, handleDeleteItem, handleDuplicateItem,
+  updateItems, updateCollectionItem, createCollectionItem,
+  createOrUpdateCollectionItem, incrementCopyName };

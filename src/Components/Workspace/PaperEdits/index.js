@@ -2,26 +2,23 @@ import React from 'react';
 import PropTypes from 'prop-types';
 // import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
-import { getISOTime } from '../../../Util/time';
+import { formatISOObj } from '../../../Util/time';
 import ProjectRow from '@bbc/digital-paper-edit-storybook/ProjectRow';
 
 const PaperEdits = (props) => {
-  // const PaperEditsCollection = new Collection(
-  //   props.firebase,
-  //   `/projects/${ props.projectId }/paperedits`
-  // );
-
   const items = props.items;
 
   const PaperEditRows = items.map(item => {
-    const key = `card-${ item.id }`;
-    const created = item.created ? getISOTime(item.created.seconds).split('T')[0] : 0;
-    const updated = item.updated ? getISOTime(item.updated.seconds).split('T')[0] : 0;
+    const key = `card-paper-edit-${ item.id }`;
+    const { created, updated } = formatISOObj(item);
 
     return (
       <>
         <ProjectRow
-          { ...item }
+          description={ item.description }
+          id={ item.id }
+          title={ item.title }
+          url={ item.url ? item.url : '' }
           created={ created }
           updated={ updated }
           key={ key }
@@ -36,7 +33,6 @@ const PaperEdits = (props) => {
 
   return (
     <>
-      <p>Programme Script Titles</p>
       <section style={ { height: '75vh', overflow: 'scroll' } }>
         {items.length > 0 ? (
           PaperEditRows
@@ -50,6 +46,10 @@ const PaperEdits = (props) => {
 
 PaperEdits.propTypes = {
   firebase: PropTypes.any,
+  handleDeleteItem: PropTypes.any,
+  handleDuplicateItem: PropTypes.any,
+  handleEditItem: PropTypes.any,
+  items: PropTypes.any,
   projectId: PropTypes.any
 };
 
