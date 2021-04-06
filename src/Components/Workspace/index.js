@@ -94,6 +94,7 @@ const WorkspaceView = props => {
   const createPaperEdit = async (item) => {
     const newItem = await createCollectionItem( item, PaperEditsCollection);
     setPaperEditItems(() => [ newItem, ...paperEditItems ]);
+    props.trackEvent({ category: 'paperEdits', action: `createPaperEdit ${ newItem.id }` });
 
     return newItem;
   };
@@ -101,6 +102,7 @@ const WorkspaceView = props => {
   const deletePaperEdit = async (item) => {
     await deleteCollectionItem(item.id, PaperEditsCollection);
     setPaperEditItems(() => paperEditItems.filter(i => i.id !== item.id));
+    props.trackEvent({ category: 'paperEdits', action: `deletePaperEdit ${ item.id }` });
   };
 
   const duplicatePaperEdit = async (item) => {
@@ -108,7 +110,7 @@ const WorkspaceView = props => {
     newItem.title = incrementCopyName(newItem.title, paperEditItems.map(p => p.title));
     newItem = await createCollectionItem(newItem, PaperEditsCollection);
     setPaperEditItems(() => [ newItem, ...paperEditItems ]);
-    props.trackEvent({ category: 'paperEdits', action: `handleCreate ${ item.id }` });
+    props.trackEvent({ category: 'paperEdits', action: `duplicatePaperEdit ${ item.id }` });
   };
 
   const updatePaperEdit = async (item) => {
@@ -116,7 +118,7 @@ const WorkspaceView = props => {
     newItem = { ...newItem, ...item };
     newItem = await updateCollectionItem(newItem, PaperEditsCollection);
     setPaperEditItems(updateItems(newItem, paperEditItems));
-    props.trackEvent({ category: 'paperEdits', action: `handleUpdate ${ item.id }` });
+    props.trackEvent({ category: 'paperEdits', action: `updatePaperEdit ${ item.id }` });
 
     return newItem;
   };
@@ -126,7 +128,7 @@ const WorkspaceView = props => {
     newItem = { ...newItem, ...item };
     await updateCollectionItem(newItem, TranscriptsCollection);
     setTranscriptItems(updateItems(newItem, transcriptItems));
-    props.trackEvent({ category: 'transcripts', action: `handleUpdate ${ item.id }` });
+    props.trackEvent({ category: 'transcripts', action: `updateTranscript ${ item.id }` });
 
     return newItem;
   };
@@ -134,7 +136,7 @@ const WorkspaceView = props => {
   const createTranscript = async (item) => {
     const newItem = await createCollectionItem(item, TranscriptsCollection);
     setTranscriptItems(() => [ newItem, ...transcriptItems ]);
-    props.trackEvent({ category: 'transcripts', action: `handleCreate ${ item.id }` });
+    props.trackEvent({ category: 'transcripts', action: `createTranscript ${ item.id }` });
 
     return newItem;
   };
@@ -149,7 +151,7 @@ const WorkspaceView = props => {
     } catch (e) {
       console.error('Failed to delete item in storage: ', e.code_);
     }
-    props.trackEvent({ category: 'transcripts', action: `handleDelete ${ item.id }` });
+    props.trackEvent({ category: 'transcripts', action: `deleteTranscript ${ item.id }` });
   };
 
   // storage

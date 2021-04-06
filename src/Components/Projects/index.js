@@ -54,7 +54,7 @@ const Projects = (props) => {
   const createProject = async (item) => {
     const newItem = await createCollectionItem(item, ProjectsCollection);
     await createDefaultLabel(newItem.id);
-    props.trackEvent({ category: 'projects', action: `handleCreate ${ item.id }` });
+    props.trackEvent({ category: 'projects', action: `createProject ${ item.id }` });
 
     return newItem;
   };
@@ -64,7 +64,7 @@ const Projects = (props) => {
     newItem = { ...newItem, ...item };
     await updateCollectionItem(newItem, ProjectsCollection);
     setItems(updateItems(newItem, items));
-    props.trackEvent({ category: 'projects', action: `handleUpdate ${ item.id }` });
+    props.trackEvent({ category: 'projects', action: `updateProject ${ item.id }` });
 
     return newItem;
   };
@@ -87,7 +87,7 @@ const Projects = (props) => {
     newItem.title = incrementCopyName(newItem.title, items.map(p => p.title));
     newItem = await createCollectionItem(newItem, ProjectsCollection);
     setItems(() => [ newItem, ...items ]);
-    props.trackEvent({ category: 'projects', action: `handleDuplicate ${ item.id }` });
+    props.trackEvent({ category: 'projects', action: `duplicateProject ${ item.id }` });
   };
 
   const handleSaveForm = (item) => {
@@ -99,7 +99,7 @@ const Projects = (props) => {
   const deleteProject = async (item) => {
     await deleteCollectionItem(item.id, ProjectsCollection);
     setItems(() => items.filter(i => i.id !== item.id));
-    props.trackEvent({ category: 'project', action: `handleDelete ${ item.id }` });
+    props.trackEvent({ category: 'projects', action: `deleteProject ${ item.id }` });
   };
 
   const handleEdit = (itemId) => {
