@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-// import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
 import { formatDates } from '../../../Util/time';
 import ProjectRow from '@bbc/digital-paper-edit-storybook/ProjectRow';
