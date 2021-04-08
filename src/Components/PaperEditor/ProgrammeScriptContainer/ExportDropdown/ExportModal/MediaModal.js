@@ -7,66 +7,57 @@ import {
 
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import styles from './index.module.css';
 
 import download from 'downloadjs';
 
-const MediaModal = (props) => {
-  const [ progress, setProgress ] = useState([]);
-  const [ isDownloading, setIsDownloading ] = useState([]);
+const DownloadItem = ({ name, fileName, url, type }) => {
+  const [ isDownloading, setIsDownloading ] = useState(false);
+  const [ progress, setProgress ] = useState();
 
-  const handleProgress = (e, fileName) => {
-    const filesProgress = progress;
+  const handleProgress = (e) => {
     if (e.lengthComputable) {
-      if (!(progress.find((item) => item.fileName == fileName))) {
-        filesProgress.push({
-          fileName,
-          progress: Math.round((e.loaded / e.total) * 100)
-        });
-        setProgress(filesProgress);
-      } else {
-        const filteredFiles = progress.filter((item) => item.fileName != fileName);
-        filteredFiles.push({
-          fileName,
-          progress: Math.round((e.loaded / e.total) * 100)
-        });
-        setProgress(filteredFiles);
-      }
+      setProgress(Math.round((e.loaded / e.total) * 100));
     }
   };
 
-  const addDownloads = (fileName) => {
-    const downloads = isDownloading;
-    downloads.push(fileName);
-    setIsDownloading(downloads);
-  };
-
-  const removeDownloads = (fileName) => {
-    const downloads = isDownloading.filter((media) => media != fileName);
-    const removeFileProgress = progress.filter((file) => file.fileName != fileName);
-    setIsDownloading(downloads);
-    setProgress(removeFileProgress);
-  };
-
-  const handleClick = (url, fileName, type) => {
+  const handleClick = () => {
     const x = new XMLHttpRequest();
-    x.addEventListener('loadstart', addDownloads(fileName));
-    x.addEventListener('progress', e => handleProgress(e, fileName));
+    x.addEventListener('loadstart', setIsDownloading(true));
+    x.addEventListener('progress', handleProgress);
     x.open('GET', url, true);
     x.responseType = 'blob';
     x.onload = function () {
       download(x.response, fileName, type);
-      removeDownloads(fileName);
+      setIsDownloading(false);
     };
     x.send();
   };
 
-  const getProgress = (fileName) => {
-    const file = progress.find((media) => fileName === media.fileName);
-    if (file) {
-      return file.progress;
+  const getStatus = () => {
+    if (isDownloading) {
+      return (
+        <span className={ styles.status }>Downloading... { progress }%</span>
+      );
     }
-
   };
+
+  return (
+    <li key={ name } className={ styles.mediaItem }>
+      <Button
+        variant="outline-primary"
+        size="sm"
+        disabled={ isDownloading }
+        onClick={ () => handleClick(url, fileName, type) }>
+        <FontAwesomeIcon icon={ faDownload } />
+      </Button>
+      <p className={ styles.mediaName }>{name}</p>
+      {getStatus()}
+    </li>
+  );
+};
+
+const MediaModal = (props) => {
 
   return (
     <Modal show={ props.show } onHide={ props.handleClose }>
@@ -75,22 +66,14 @@ const MediaModal = (props) => {
       </Modal.Header>
       <Modal.Body>
         {props.urls.map(({ name, url, fileName, type }) => (
-          <li key={ name }>
-            <Button onClick={ () => handleClick(url, fileName, type) }>
-              <FontAwesomeIcon icon={ faDownload } />
-            </Button>
-            {name}{' '}
-            {isDownloading.length && isDownloading.includes(fileName) ? (`Downloading... ${ getProgress(fileName) }%`) : ''}
-            <>
-            </>
-          </li>))
-        }
+          <DownloadItem
+            key={ fileName }
+            name={ name }
+            url={ url }
+            fileName={ fileName }
+            type={ type }/>
+        ))}
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={ props.handleClose }>
-          Close
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 
@@ -101,4 +84,12 @@ MediaModal.propTypes = {
   show: PropTypes.any,
   urls: PropTypes.any
 };
+
+DownloadItem.propTypes = {
+  name: PropTypes.string,
+  fileName: PropTypes.string,
+  url: PropTypes.string,
+  type: PropTypes.string
+};
+
 export default MediaModal;
