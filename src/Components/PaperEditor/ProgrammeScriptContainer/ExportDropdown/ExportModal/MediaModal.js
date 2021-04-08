@@ -11,42 +11,61 @@ import Button from 'react-bootstrap/Button';
 import download from 'downloadjs';
 
 const MediaModal = (props) => {
-  const [ progress, setProgress ] = useState();
+  const [ progress, setProgress ] = useState([]);
   const [ isDownloading, setIsDownloading ] = useState([]);
 
-  const handleProgress = (fileName, event) => {
-    if (event.lengthComputable) {
-      setProgress(Math.round((event.loaded / event.total) * 100));
+  const handleProgress = (e, fileName) => {
+    const filesProgress = progress;
+    if (e.lengthComputable) {
+      if (!(progress.find((item) => item.fileName == fileName))) {
+        filesProgress.push({
+          fileName,
+          progress: Math.round((e.loaded / e.total) * 100)
+        });
+        setProgress(filesProgress);
+      } else {
+        const filteredFiles = progress.filter((item) => item.fileName != fileName);
+        filteredFiles.push({
+          fileName,
+          progress: Math.round((e.loaded / e.total) * 100)
+        });
+        setProgress(filteredFiles);
+      }
     }
   };
 
   const addDownloads = (fileName) => {
-    console.log(isDownloading);
-    const downloads = [];
+    const downloads = isDownloading;
     downloads.push(fileName);
-    console.log('downloads', downloads);
     setIsDownloading(downloads);
   };
 
   const removeDownloads = (fileName) => {
     const downloads = isDownloading.filter((media) => media != fileName);
+    const removeFileProgress = progress.filter((file) => file.fileName != fileName);
     setIsDownloading(downloads);
-    setProgress(0);
-
+    setProgress(removeFileProgress);
   };
 
   const handleClick = (url, fileName, type) => {
-    console.log(isDownloading);
     const x = new XMLHttpRequest();
+    x.addEventListener('loadstart', addDownloads(fileName));
+    x.addEventListener('progress', e => handleProgress(e, fileName));
     x.open('GET', url, true);
     x.responseType = 'blob';
-    x.addEventListener('loadstart', addDownloads(fileName));
-    x.addEventListener('progress', handleProgress(fileName));
     x.onload = function () {
       download(x.response, fileName, type);
       removeDownloads(fileName);
     };
     x.send();
+  };
+
+  const getProgress = (fileName) => {
+    const file = progress.find((media) => fileName === media.fileName);
+    if (file) {
+      return file.progress;
+    }
+
   };
 
   return (
@@ -61,7 +80,7 @@ const MediaModal = (props) => {
               <FontAwesomeIcon icon={ faDownload } />
             </Button>
             {name}{' '}
-            {isDownloading.length && isDownloading.includes(fileName) ? (`Downloading... ${ progress }%`) : ''}
+            {isDownloading.length && isDownloading.includes(fileName) ? (`Downloading... ${ getProgress(fileName) }%`) : ''}
             <>
             </>
           </li>))
