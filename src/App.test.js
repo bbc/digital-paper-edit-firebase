@@ -1,13 +1,14 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import App from './App';
 import Firebase, { FirebaseContext } from './Components/Firebase';
 
-test('App renders', () => {
+test('App renders', async () => {
   render(
     <FirebaseContext.Provider value={ new Firebase() }>
       <App />
     </FirebaseContext.Provider>
   );
-  expect(screen.getByText('Digital Paper Edit')).toBeTruthy();
+
+  await waitFor(() => expect(screen.getByText('Digital Paper Edit')).toBeTruthy());
 });
