@@ -8,7 +8,7 @@ const formatToEDLEvent = (transcript, element) => {
     reelName: transcript.metadata
       ? transcript.metadata.reelName
       : defaultReelName,
-    clipName: `${ transcript.title.replace(/\s+/g, '%20') }`,
+    clipName: `${ encodeURIComponent(transcript.title) }`,
     // TODO: frameRate should be pulled from the clips in the sequence
     // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
     // but again frameRate should not be hard coded
