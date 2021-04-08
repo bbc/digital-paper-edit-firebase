@@ -7,10 +7,21 @@ import {
 
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+
 import download from 'downloadjs';
 
-const handleClick = (url, fileName) => {
-  download(url, fileName, 'application/octet-stream');
+/* TODO: Feedback on download progress(?) - this takes a few seconds for a one-minute
+video, so I think there is definitely optimization that needs to happen here -
+possibly with chunking uploads / downloads, etc */
+
+const handleClick = (url, fileName, type) => {
+  const x = new XMLHttpRequest();
+  x.open('GET', url, true);
+  x.responseType = 'blob';
+  x.onload = function() {
+    download(x.response, fileName, type);
+  };
+  x.send();
 };
 
 const MediaModal = (props) => {
@@ -21,9 +32,9 @@ const MediaModal = (props) => {
         <Modal.Title>Download Media</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {props.urls.map(({ name, url, fileName }) => (
+        {props.urls.map(({ name, url, fileName, type }) => (
           <li key={ name }>Title:{name}{' '}
-            <Button onClick={ () => handleClick(url, fileName) }>Download{' '}
+            <Button onClick={ () => handleClick(url, fileName, type) }>Download{' '}
               <FontAwesomeIcon icon={ faDownload } />
             </Button>
           </li>))
