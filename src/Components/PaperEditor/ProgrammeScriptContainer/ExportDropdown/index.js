@@ -92,7 +92,6 @@ const ExportDropdown = (props) => {
         type: tr.media.type,
       };
     }));
-    console.log('trUrls: ', trUrls);
     setUrls(trUrls);
     handleShowMedia();
   };
