@@ -16,6 +16,7 @@ import EDL from 'edl_composer';
 import { getEDLSq, getADLSq } from './edl';
 import { formatJsonToText, getJson } from './json';
 import { useState } from 'react';
+import programmeScriptJsonToDocx from './programme-script-json-to-docx';
 
 const ExportDropdown = (props) => {
 
@@ -79,6 +80,12 @@ const ExportDropdown = (props) => {
     handleShowADL();
   };
 
+  const handleExportDocx = () => {
+    const edlJson = getJson(title, elements, transcripts);
+    programmeScriptJsonToDocx(edlJson, title);
+    // downloadjs(result, `${ title }.docx`, 'application/msword');
+  };
+
   const getMediaUrl = async (item) => {
     return props.handleGetMediaUrl(item);
   };
@@ -128,9 +135,7 @@ const ExportDropdown = (props) => {
           Text File <FontAwesomeIcon icon={ faInfoCircle } />
         </Dropdown.Item>
         <Dropdown.Item
-          onClick={ () => {
-            alert('export word doc not implemented yet');
-          } }
+          onClick={ handleExportDocx }
           title="export docx, export the programme script as a word document"
         >
           Word Document <FontAwesomeIcon icon={ faInfoCircle } />
