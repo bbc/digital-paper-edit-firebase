@@ -92,7 +92,7 @@ const WorkspaceView = props => {
   // modal
 
   const createPaperEdit = async (item) => {
-    const newItem = await createCollectionItem( item, PaperEditsCollection);
+    const newItem = await createCollectionItem(item, PaperEditsCollection);
     setPaperEditItems(() => [ newItem, ...paperEditItems ]);
     props.trackEvent({ category: 'paperEdits', action: `createPaperEdit ${ newItem.id }` });
 
@@ -322,7 +322,6 @@ const WorkspaceView = props => {
   };
 
   const handleSavePaperEditForm = (item) => {
-    console.log(item);
     createOrUpdatePaperEdit(item);
     setShowPEModal(false);
     dispatchPEForm({ type: 'reset' });

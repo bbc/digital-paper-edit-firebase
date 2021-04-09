@@ -14,37 +14,34 @@ const Transcripts = (props) => {
     const progress = uploadTasks.get(item.id);
 
     return (
-      <>
-        <TranscriptRow
-          description={ item.description }
-          id={ item.id }
-          title={ item.title }
-          url={ item.url ? item.url : '' }
-          created={ created ? created : 'NA' }
-          updated={ updated ? updated : 'NA' }
-          message={ item.message }
-          mediaDuration={ item.mediaDuration }
-          transcriptionDuration={ item.transcriptionDuration }
-          status={ item.status }
-          key={ key }
-          progress={ progress }
-          handleEditItem={ props.handleEditItem }
-          handleDeleteItem={ props.handleDeleteItem }
-        />
-      </>
+      <TranscriptRow
+        key={ key }
+        description={ item.description }
+        id={ item.id }
+        title={ item.title }
+        url={ item.url ? item.url : '' }
+        created={ created ? created : 'NA' }
+        updated={ updated ? updated : 'NA' }
+        message={ item.message }
+        mediaDuration={ item.mediaDuration }
+        transcriptionDuration={ item.transcriptionDuration }
+        status={ item.status }
+        progress={ progress }
+        handleEditItem={ props.handleEditItem }
+        handleDeleteItem={ props.handleDeleteItem }
+        mediaType={ item.type }
+      />
     );
   });
 
   return (
-    <>
-      <section style={ { height: '75vh', overflow: 'scroll' } }>
-        {items.length > 0 ? (
-          TranscriptRows
-        ) : (
-          <i>There are no transcripts, create a new one to get started.</i>
-        )}
-      </section>
-    </>
+    <section style={ { height: '75vh', overflow: 'scroll' } }>
+      {items.length > 0 ? (
+        TranscriptRows
+      ) : (
+        <i>There are no transcripts, create a new one to get started.</i>
+      )}
+    </section>
   );
 };
 

@@ -54,6 +54,7 @@ const Projects = (props) => {
   const createProject = async (item) => {
     const newItem = await createCollectionItem(item, ProjectsCollection);
     await createDefaultLabel(newItem.id);
+    setItems(() => [ newItem, ...items ]);
     props.trackEvent({ category: 'projects', action: `createProject ${ item.id }` });
 
     return newItem;
@@ -222,7 +223,9 @@ const Projects = (props) => {
       </Row>
       <CustomFooter />
       <FormModal
-        { ...formData }
+        title={ formData.title }
+        description={ formData.description ? formData.description : initialFormState.description }
+        id={ formData.id ? formData.id : initialFormState.id }
         modalTitle={ modalTitle }
         showModal={ showModal }
         handleOnHide={ handleOnHide }

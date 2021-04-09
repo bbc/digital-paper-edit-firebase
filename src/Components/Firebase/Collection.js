@@ -43,21 +43,6 @@ class Collection {
     }
   };
 
-  setItem = async (id, data) => {
-    try {
-      await this.collectionRef
-        .doc(id)
-        .set({ ...data,
-          created: this.getServerTimestamp(),
-          updated: this.getServerTimestamp()
-        });
-      console.log('Document written with ID: ', id);
-    } catch (error) {
-      console.error('Error adding document: ', error);
-      throw (error);
-    }
-  };
-
   putItem = async (id, data) => {
     try {
       await this.collectionRef.doc(id).update({

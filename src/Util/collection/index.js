@@ -20,8 +20,9 @@ const createCollectionItem = async (item, collection) => {
   };
 
   await docRef.update(update);
+  const updatedDoc = await docRef.get();
 
-  return { ...item, ...update };
+  return updatedDoc.data();
 };
 
 const updateCollectionItem = async (item, collection) => {
