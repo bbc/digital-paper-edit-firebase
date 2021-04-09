@@ -81,9 +81,8 @@ const ExportDropdown = (props) => {
   };
 
   const handleExportDocx = () => {
-    const edlJson = getJson(title, elements, transcripts);
-    programmeScriptJsonToDocx(edlJson, title);
-    // downloadjs(result, `${ title }.docx`, 'application/msword');
+    const programmeScriptJson = getJson(title, elements, transcripts, true);
+    programmeScriptJsonToDocx(programmeScriptJson, title, true);
   };
 
   const getMediaUrl = async (item) => {

@@ -12,6 +12,7 @@ const programmeScriptJsonToDocx = (edlJson, title, isWithClipReference) => {
   const sections = [];
   edlJson.events.forEach(event => {
     if (event.type === 'title') {
+      console.log(event, "🌊");
       sections.push(
         new Paragraph({
           text: event.text,
@@ -102,7 +103,6 @@ const programmeScriptJsonToDocx = (edlJson, title, isWithClipReference) => {
   return new Promise((resolve, reject) => {
     return Packer.toBlob(doc)
       .then(blob => {
-        console.log('💩', blob);
         resolve(blob);
         downloadjs(blob, `${ title || 'example' }.docx`, 'application/msword');
         console.log('Document created successfully');

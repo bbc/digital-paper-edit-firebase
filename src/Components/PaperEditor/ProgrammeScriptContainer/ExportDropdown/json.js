@@ -11,7 +11,7 @@ const formatToJSONEvent = (transcript, element) => {
     reelName: transcript.metadata
       ? transcript.metadata.reelName
       : defaultReelName,
-    clipName: `${ transcript.clipName }`,
+    clipName: `${ transcript.title }`,
     // TODO: frameRate should be pulled from the clips in the sequence
     // Changing to 24 fps because that is the frame rate of the ted talk examples from youtube
     // but again frameRate should not be hard coded
@@ -29,8 +29,7 @@ const formatToJSONEvent = (transcript, element) => {
   return result;
 };
 
-const getJson = (title, elements, transcripts) => {
-  // alert('this function has not been implemented yet');
+const getJson = (title, elements, transcripts, isWordDoc) => {
   return elements.reduce((res, element) => {
     if (element.type === 'paper-cut') {
       const transcript = getCurrentTranscript(element, transcripts);
@@ -38,6 +37,10 @@ const getJson = (title, elements, transcripts) => {
       res.index += 1;
       jsonEvent.id = res.index;
       res.events.push(jsonEvent);
+    } else if (isWordDoc) {
+      res.index += 1;
+      element.id = res.index;
+      res.events.push(element);
     }
 
     return res;
