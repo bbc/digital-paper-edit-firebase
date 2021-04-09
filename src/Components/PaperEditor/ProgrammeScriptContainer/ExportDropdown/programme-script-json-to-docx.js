@@ -12,7 +12,6 @@ const programmeScriptJsonToDocx = (edlJson, title, isWithClipReference) => {
   const sections = [];
   edlJson.events.forEach(event => {
     if (event.type === 'title') {
-      console.log(event, "🌊");
       sections.push(
         new Paragraph({
           text: event.text,
