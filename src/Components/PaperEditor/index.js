@@ -185,7 +185,6 @@ const PaperEditor = (props) => {
   );
 
   const transcriptsColumn = (el) => {
-    const display = isTranscriptsShown ? 'block' : 'none';
     if (isProgramScriptShown) {
       return (
         <Col
@@ -194,7 +193,7 @@ const PaperEditor = (props) => {
           md={ { span: 7, offset: 0 } }
           lg={ { span: 7, offset: 0 } }
           xl={ { span: 7, offset: 0 } }
-          style={ { display: { display } } }
+          style={ { display: 'block' } }
         >
           {el}
         </Col>
@@ -207,7 +206,7 @@ const PaperEditor = (props) => {
           md={ { span: 12, offset: 0 } }
           lg={ { span: 10, offset: 1 } }
           xl={ { span: 10, offset: 1 } }
-          style={ { display: { display } } }
+          style={ { display: 'block', margin: '0 auto' } }
         >
           {el}
         </Col>
@@ -216,8 +215,7 @@ const PaperEditor = (props) => {
   };
 
   const programmeScriptColumn = (el) => {
-    const display = isTranscriptsShown ? 'block' : 'none';
-    if (isProgramScriptShown) {
+    if (isTranscriptsShown) {
       return (
         <Col
           xs={ { span: 12, offset: 0 } }
@@ -225,7 +223,7 @@ const PaperEditor = (props) => {
           md={ { span: 5, offset: 0 } }
           lg={ { span: 5, offset: 0 } }
           xl={ { span: 5, offset: 0 } }
-          style={ { display: { display } } }
+          style={ { display: 'block' } }
         >
           {el}
         </Col>
@@ -238,7 +236,7 @@ const PaperEditor = (props) => {
           md={ { span: 12, offset: 0 } }
           lg={ { span: 10, offset: 1 } }
           xl={ { span: 8, offset: 2 } }
-          style={ { display: { display } } }
+          style={ { display: 'block', margin: '0 auto' } }
         >
           {el}
         </Col>
@@ -266,8 +264,8 @@ const PaperEditor = (props) => {
         </div>
 
         <Row>
-          {transcriptsColumn(TranscriptEl)}
-          {programmeScriptColumn(ProgrammeScriptEl)}
+          { isTranscriptsShown && transcriptsColumn(TranscriptEl) }
+          { isProgramScriptShown && programmeScriptColumn(ProgrammeScriptEl) }
         </Row>
       </Container>
     </Container>
