@@ -18,8 +18,9 @@ class Firebase {
     this.firestore = app.firestore;
     this.auth = app.auth();
     this.db = app.firestore();
+
     if (location.hostname === 'localhost') {
-      this.db.useEmulator('http://localhost:8080');
+      this.db.useEmulator('localhost', 8080);
       this.auth.useEmulator('http://localhost:9099');
     }
 

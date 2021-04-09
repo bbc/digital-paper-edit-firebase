@@ -56,8 +56,8 @@
   "license": "MIT",
   "scripts": {
     "start": "firebase emulators:start --only auth,firestore,functions --import=./emulators-data/ & cross-env REACT_APP_NODE_ENV=development react-scripts start",
-    "start:hosting": "npm run build && firebase emulators:start --only hosting",
-    "start:all": "npm run build && firebase emulators:start",
+    "start:local": "cross-env REACT_APP_NODE_ENV=development react-scripts start",
+    "start:all": "npm run build && firebase emulators:start --import=./emulators-data/",
     "start:demo": "cross-env REACT_APP_NODE_ENV=demo react-scripts start",
     "build": "react-scripts --max-old-space-size=4096 build",
     "test": "react-scripts test",

@@ -29,6 +29,7 @@ class Collection {
 
   postItem = async data => {
     try {
+      console.log(this.collectionRef);
       const docRef = await this.collectionRef.add({
         ...data,
         created: this.getServerTimestamp()

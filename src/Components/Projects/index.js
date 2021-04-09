@@ -33,10 +33,13 @@ const Projects = (props) => {
   };
 
   const createProject = async (item) => {
+    console.log(item);
     const docRef = await projectsCollection.postItem(item);
     docRef.update({
       url: `/projects/${ docRef.id }`,
     });
+
+    console.log(docRef);
 
     const defaultLabel = {
       label: 'Default',
@@ -59,6 +62,7 @@ const Projects = (props) => {
     } else {
       item.users = [ uid ];
       item.url = '';
+      console.log(uid);
       createProject(item);
       setItems(() => [ ...items, item ]);
     }
@@ -153,7 +157,7 @@ const Projects = (props) => {
             />
           </Col>
         </Row>
-        {items ? (
+        {items && uid ? (
           <ItemsContainer
             key={ type }
             model={ type }
