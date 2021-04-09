@@ -14,12 +14,17 @@ const config = {
 class Firebase {
   constructor() {
     app.initializeApp(config);
-    this.auth = app.auth();
 
     this.firestore = app.firestore;
-    this.db = this.firestore()
-      .collection('apps')
-      .doc('digital-paper-edit');
+    this.auth = app.auth();
+    this.db = app.firestore();
+    if (location.hostname === 'localhost') {
+      this.db.useEmulator('localhost', 8080);
+    } else {
+      this.db = this.db
+        .collection('apps')
+        .doc('digital-paper-edit');
+    }
     this.storage = app.storage().ref();
     this.getServerTimestamp = () => this.firestore.FieldValue.serverTimestamp();
   }
