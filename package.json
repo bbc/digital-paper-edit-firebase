@@ -55,11 +55,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "run-p --race dev:firebase dev:react",
-    "dev:firebase": "firebase serve -p 4000",
-    "dev:react": "cross-env REACT_APP_NODE_ENV=development react-scripts start",
-    "start:dev": "cross-env REACT_APP_NODE_ENV=development react-scripts start",
-    "start-emu": "cross-env REACT_APP_NODE_ENV=development react-scripts start",
+    "start": "firebase emulators:start",
+    "start:hosting": "firebase emulators:start --only hosting",
     "start:demo": "cross-env REACT_APP_NODE_ENV=demo react-scripts start",
     "build": "react-scripts --max-old-space-size=4096 build",
     "test": "react-scripts test",
@@ -87,9 +84,7 @@
     "@testing-library/react": "^9.3.0",
     "cross-env": "^5.2.0",
     "eslint-plugin-react-hooks": "^2.5.0",
-    "gh-pages": "^2.0.1",
-    "http-proxy-middleware": "^0.20.0",
-    "npm-run-all": "^4.1.5"
+    "gh-pages": "^2.0.1"
   },
   "jest": {}
 }
