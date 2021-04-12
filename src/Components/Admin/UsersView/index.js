@@ -14,7 +14,6 @@ import Modal from 'react-bootstrap/Modal';
 import Form from './Form';
 
 const UserView = props => {
-  const Users = new Collection(props.firebase, USERS);
   const [ users, setUsers ] = useState();
   const [ message, setMessage ] = useState('');
 
@@ -27,6 +26,7 @@ const UserView = props => {
   const handleFormShow = () => setFormShow(true);
 
   useEffect(() => {
+    const Users = new Collection(props.firebase, USERS);
     const getUsers = async () => {
       try {
         const allUsers = await Users.getCollection();
@@ -43,7 +43,7 @@ const UserView = props => {
 
     return () => {
     };
-  }, [ Users, users ]);
+  }, [ props.firebase, users ]);
 
   const handleSubmit = async (email, password) => {
     handleFormClose();

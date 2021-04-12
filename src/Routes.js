@@ -38,6 +38,11 @@ const Routes = ({ authUser }) => {
         <Route exact path={ ROUTES.PAPER_EDITOR } component={ PaperEditor } />
         <Route
           exact
+          path={ ROUTES.TRANSCRIPT_EDITOR_CORRECT }
+          component={ TranscriptEditor }
+        />
+        <Route
+          exact
           path={ ROUTES.TRANSCRIPT_EDITOR }
           component={ TranscriptEditor }
         />

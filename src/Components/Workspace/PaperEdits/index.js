@@ -1,95 +1,53 @@
-import React, { useEffect, useState } from 'react';
-import ItemsContainer from '../../lib/ItemsContainer';
+import React from 'react';
 import PropTypes from 'prop-types';
-import Collection from '../../Firebase/Collection';
 import { withAuthorization } from '../../Session';
+import { formatDates } from '../../../Util/time';
+import ProjectRow from '@bbc/digital-paper-edit-storybook/ProjectRow';
 
 const PaperEdits = (props) => {
-  const TYPE = 'Paper Edit';
+  const items = props.items;
 
-  const PaperEditsCollection = new Collection(
-    props.firebase,
-    `/projects/${ props.projectId }/paperedits`
-  );
+  const PaperEditRows = items.map(item => {
+    const key = `card-paper-edit-${ item.id }`;
+    const { created, updated } = formatDates(item);
 
-  const [ items, setItems ] = useState([]);
-  const [ loading, setIsLoading ] = useState(false);
-
-  useEffect(() => {
-    const getPaperEdits = async () => {
-      try {
-        PaperEditsCollection.collectionRef.onSnapshot((snapshot) => {
-          const paperEdits = snapshot.docs.map((doc) => {
-            return { ...doc.data(), id: doc.id, display: true };
-          });
-          setItems(paperEdits);
-        });
-      } catch (error) {
-        console.error('Error getting documents: ', error);
-      }
-    };
-    // TODO: some error handling
-    if (!loading) {
-      getPaperEdits();
-      setIsLoading(true);
-    }
-
-    return () => {};
-  }, [ PaperEditsCollection, loading, items, props.projectId ]);
-
-  const createPaperEdit = async (item) => {
-    const docRef = await PaperEditsCollection.postItem(item);
-
-    docRef.update({
-      id: docRef.id,
-      url: `/projects/${ props.projectId }/paperedits/${ docRef.id }`,
-    });
-
-    return item;
-  };
-
-  const updatePaperEdit = (id, item) => {
-    PaperEditsCollection.putItem(id, item);
-  };
-
-  const handleSave = async (item) => {
-    item.display = true;
-
-    if (item.id) {
-      updatePaperEdit(item.id, item);
-    } else {
-      item.url = '';
-      item.projectId = props.projectId;
-      createPaperEdit(item);
-
-      setItems(() => [ ...items, item ]);
-    }
-  };
-
-  const deletePaperEdit = async (id) => {
-    try {
-      await PaperEditsCollection.deleteItem(id);
-    } catch (e) {
-      console.error('Failed to delete item:', e);
-    }
-  };
-
-  const handleDelete = (id) => {
-    deletePaperEdit(id);
-  };
+    return (
+      <div key={ key }>
+        <ProjectRow
+          description={ item.description }
+          id={ item.id }
+          title={ item.title }
+          url={ item.url ? item.url : '' }
+          created={ created ? created : 'NA' }
+          updated={ updated ? updated : 'NA' }
+          handleDuplicateItem={ props.handleDuplicateItem }
+          handleEditItem={ props.handleEditItem }
+          handleDeleteItem={ props.handleDeleteItem }
+        />
+        <hr style={ { color: 'grey' } } />
+      </div>
+    );
+  });
 
   return (
-    <ItemsContainer
-      type={ TYPE }
-      items={ items }
-      handleSave={ handleSave }
-      handleDelete={ handleDelete }
-    />
+    <>
+      <section style={ { height: '75vh', overflow: 'scroll' } }>
+        {items.length > 0 ? (
+          PaperEditRows
+        ) : (
+          <i>There are no paper edits, create a new one to get started.</i>
+        )}
+      </section>
+    </>
   );
 };
 
 PaperEdits.propTypes = {
   firebase: PropTypes.any,
+  handleDeleteItem: PropTypes.any,
+  handleDuplicateItem: PropTypes.any,
+  handleEditItem: PropTypes.any,
+  items: PropTypes.any,
   projectId: PropTypes.any
 };
 

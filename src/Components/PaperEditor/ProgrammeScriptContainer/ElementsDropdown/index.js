@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -45,6 +46,10 @@ const ElementsDropdown = (props) => {
     </Dropdown>
 
   );
+};
+
+ElementsDropdown.propTypes = {
+  handleAdd: PropTypes.func
 };
 
 export default ElementsDropdown;
