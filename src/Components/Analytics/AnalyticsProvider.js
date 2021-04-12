@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MatomoProvider, createInstance } from '@datapunt/matomo-tracker-react';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import PropTypes from 'prop-types';
 
 const instance = createInstance({
   urlBase: process.env.REACT_APP_MATOMO_BASE,
@@ -53,9 +54,21 @@ export const withAnalytics = Component => {
 
     return (<Component { ...props } setAnalyticsUserId={ setAnalyticsUserId } trackPageView={ trackPageView } trackEvent={ trackEvent } />);
   };
+  WithAnalytics.propTypes = {
+    location: PropTypes.any,
+    match: PropTypes.shape({
+      params: PropTypes.shape({
+        projectId: PropTypes.any
+      })
+    }),
+  };
 
   return WithAnalytics;
 
 };
 
 export default AnalyticsProvider;
+
+AnalyticsProvider.propTypes = {
+  children: PropTypes.any
+};

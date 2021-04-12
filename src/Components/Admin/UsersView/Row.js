@@ -6,11 +6,11 @@ import { PROJECTS } from '../../../constants/routes';
 import { getISOTime } from '../../../Util/time';
 
 const Row = props => {
-  const Projects = new Collection(props.firebase, PROJECTS);
   const { role, access, id, email, updated, } = props.user;
   const [ userProjects, setUserProjects ] = useState();
 
   useEffect(() => {
+    const Projects = new Collection(props.firebase, PROJECTS);
     const getProjects = async () => {
       try {
         Projects.userRef(id).onSnapshot((snapshot) => {
@@ -34,7 +34,7 @@ const Row = props => {
 
     return () => {
     };
-  }, [ Projects, id, userProjects ]);
+  }, [ id, props.firebase, userProjects ]);
 
   let updatedSeconds = 'N/A';
 

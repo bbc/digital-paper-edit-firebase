@@ -8,11 +8,12 @@ import { PROJECTS } from '../../../constants/routes';
 import { updateDescOrder } from '../../../Util/time';
 
 const TranscriptsView = props => {
-  const Projects = new Collection(props.firebase, PROJECTS);
   const [ projects, setProjects ] = useState();
   const [ transcripts, setTranscripts ] = useState();
 
   useEffect(() => {
+
+    const Projects = new Collection(props.firebase, PROJECTS);
     const getProjects = async () => {
       try {
         const allProjects = await Projects.getCollection();
@@ -29,7 +30,7 @@ const TranscriptsView = props => {
 
     return () => {
     };
-  }, [ Projects, projects, props.firebase ]);
+  }, [ projects, props.firebase ]);
 
   useEffect(() => {
     const getDataForRows = async (title, tr, user) => {

@@ -30,17 +30,8 @@ const PaperEditor = (props) => {
   const [ isTranscriptsShown, setIsTranscriptsShown ] = useState(true);
   const [ isProgramScriptShown, setIsProgramScriptShown ] = useState(true);
 
-  const Projects = new Collection(props.firebase, 'projects');
-  const PaperEdits = new Collection(
-    props.firebase,
-    `/projects/${ projectId }/paperedits`
-  );
-  const Transcriptions = new Collection(
-    props.firebase,
-    `/projects/${ projectId }/transcripts`
-  );
-
   useEffect(() => {
+    const Projects = new Collection(props.firebase, 'projects');
     const getProject = async () => {
       setFetchProject(true);
       try {
@@ -56,9 +47,13 @@ const PaperEditor = (props) => {
     }
 
     return () => {};
-  }, [ Projects, projectTitle, projectId, fetchProject ]);
+  }, [ projectTitle, projectId, fetchProject, props.firebase ]);
 
   useEffect(() => {
+    const PaperEdits = new Collection(
+      props.firebase,
+      `/projects/${ projectId }/paperedits`
+    );
     const getPaperEdit = async () => {
       setFetchPaperEdit(true);
       try {
@@ -74,9 +69,14 @@ const PaperEditor = (props) => {
     }
 
     return () => {};
-  }, [ PaperEdits, papereditId, fetchPaperEdit, paperEditTitle ]);
+  }, [ papereditId, fetchPaperEdit, paperEditTitle, props.firebase, projectId ]);
 
   useEffect(() => {
+    const Transcriptions = new Collection(
+      props.firebase,
+      `/projects/${ projectId }/transcripts`
+    );
+
     const getTranscripts = async () => {
       setFetchTranscripts(true);
       try {
@@ -97,7 +97,7 @@ const PaperEditor = (props) => {
     }
 
     return () => {};
-  }, [ Transcriptions.collectionRef, transcripts, fetchTranscripts ]);
+  }, [ transcripts, fetchTranscripts, props.firebase, projectId ]);
 
   const toggleTranscripts = () => {
     if (isProgramScriptShown) {

@@ -46,13 +46,17 @@ const TranscriptEditor = ({ match, firebase, trackEvent }) => {
     `/projects/${ projectId }/transcripts`
   );
 
-  const ProjectsCollection = new Collection(firebase, '/projects');
-
   useEffect(() => {
+
+    const collection = new Collection(
+      firebase,
+      `/projects/${ projectId }/transcripts`
+    );
+
     const getTranscript = async () => {
       setFetchTranscript(true);
       try {
-        const { media, groupedc, title } = await TranscriptsCollection.getItem(
+        const { media, groupedc, title } = await collection.getItem(
           transcriptId
         );
 
@@ -71,13 +75,7 @@ const TranscriptEditor = ({ match, firebase, trackEvent }) => {
     }
 
     return () => {};
-  }, [
-    TranscriptsCollection,
-    transcriptId,
-    firebase.storage,
-    fetchTranscript,
-    compressedGrouped,
-  ]);
+  }, [ transcriptId, firebase.storage, fetchTranscript, compressedGrouped, firebase, projectId ]);
 
   useEffect(() => {
     const getDownloadURL = async () => {
@@ -95,10 +93,12 @@ const TranscriptEditor = ({ match, firebase, trackEvent }) => {
   }, [ firebase.storage.storage, mediaRef ]);
 
   useEffect(() => {
+    const collection = new Collection(firebase, '/projects');
+
     const getProject = async () => {
       setFetchProject(true);
       try {
-        const data = await ProjectsCollection.getItem(projectId);
+        const data = await collection.getItem(projectId);
         setProjectTitle(data.title);
       } catch (error) {
         console.error('Error getting documents: ', error);
@@ -109,7 +109,7 @@ const TranscriptEditor = ({ match, firebase, trackEvent }) => {
     }
 
     return () => {};
-  }, [ ProjectsCollection, projectId, projectTitle, fetchProject ]);
+  }, [ projectId, projectTitle, fetchProject, firebase ]);
 
   useEffect(() => {
     const getTranscriptData = (grouped) => {

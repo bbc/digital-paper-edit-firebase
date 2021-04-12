@@ -39,4 +39,16 @@ const getISOTime = (sec) => {
   return date.toISOString();
 };
 
-export { ToHumanReadable, ToDhmsCompact, getISOTime, updateDescOrder };
+const getISODay = (time) => {
+  return getISOTime(time.seconds).split('T')[0];
+};
+
+const formatDates = (item) => {
+  const created = item.created ? getISODay(item.created) : 0;
+  const updated = item.updated ? getISODay(item.updated) : 0;
+
+  return { created, updated };
+
+};
+
+export { ToHumanReadable, ToDhmsCompact, getISOTime, updateDescOrder, formatDates };
