@@ -2,7 +2,7 @@ import { Document, HeadingLevel, AlignmentType, Paragraph, TextRun, Packer } fro
 import { shortTimecode } from 'slate-transcript-editor';
 import downloadjs from 'downloadjs';
 
-const programmeScriptJsonToDocx = (edlJson, title, isWithClipReference) => {
+const programmeScriptJsonToDocx = (edlJson, title, includeClipReference) => {
   const transcriptTitle = edlJson.title;
 
   const doc = new Document({
@@ -73,7 +73,7 @@ const programmeScriptJsonToDocx = (edlJson, title, isWithClipReference) => {
         })
       );
 
-      if (isWithClipReference) {
+      if (includeClipReference) {
         sections.push(
           new Paragraph({
             children: [
