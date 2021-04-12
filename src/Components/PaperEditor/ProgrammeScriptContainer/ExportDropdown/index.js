@@ -88,7 +88,8 @@ const ExportDropdown = (props) => {
       return {
         name: tr.title,
         fileName: tr.title,
-        url: await getMediaUrl(tr.media)
+        url: await getMediaUrl(tr.media),
+        type: tr.media.type,
       };
     }));
     setUrls(trUrls);

@@ -1,17 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faDownload
-} from '@fortawesome/free-solid-svg-icons';
 
 import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
-import download from 'downloadjs';
 
-const handleClick = (url, fileName) => {
-  download(url, fileName, 'application/octet-stream');
-};
+import MediaModalFiles from './MediaModalFiles';
 
 const MediaModal = (props) => {
 
@@ -21,19 +13,15 @@ const MediaModal = (props) => {
         <Modal.Title>Download Media</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {props.urls.map(({ name, url, fileName }) => (
-          <li key={ name }>Title:{name}{' '}
-            <Button onClick={ () => handleClick(url, fileName) }>Download{' '}
-              <FontAwesomeIcon icon={ faDownload } />
-            </Button>
-          </li>))
-        }
+        {props.urls.map(({ name, url, fileName, type }) => (
+          <MediaModalFiles
+            key={ fileName }
+            name={ name }
+            url={ url }
+            fileName={ fileName }
+            type={ type }/>
+        ))}
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={ props.handleClose }>
-          Close
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 
@@ -44,4 +32,5 @@ MediaModal.propTypes = {
   show: PropTypes.any,
   urls: PropTypes.any
 };
+
 export default MediaModal;
