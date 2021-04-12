@@ -12,6 +12,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.15",
     "@fortawesome/free-solid-svg-icons": "^5.7.2",
     "@fortawesome/react-fontawesome": "^0.1.5",
+    "@shakacode/recompose": "^0.30.3",
     "array-move": "^2.1.0",
     "bootstrap-css-only": "^4.3.1",
     "chroma-js": "^2.0.3",
@@ -21,8 +22,8 @@
     "edl_composer": "^1.0.3",
     "express": "^4.17.1",
     "firebase": "^8.0.0",
-    "firebase-admin": "^9.4.2",
-    "firebaseui": "^4.3.0",
+    "firebase-admin": "^9.6.0",
+    "firebaseui": "^4.8.0",
     "formik": "^2.2.6",
     "http2": "^3.3.7",
     "node-sass": "^4.13.0",
@@ -37,7 +38,6 @@
     "react-scripts": "^4.0.3",
     "react-select": "^2.4.3",
     "react-sortable-hoc": "^1.9.1",
-    "@shakacode/recompose": "^0.30.3",
     "videocontext": "^0.53.1",
     "zlib": "^1.0.5"
   },
@@ -55,11 +55,14 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "firebase emulators:start --only auth,firestore,functions --import=./emulators-data/ & cross-env REACT_APP_NODE_ENV=development react-scripts start",
+    "start": "concurrently \"npm:start:emu\" \"npm:start:local\"",
+    "prep:emu": "cp firestore.rules firestore.prod.rules && cp firestore.local.rules firestore.rules",
+    "prep:build": "cp firestore.prod.rules firestore.rules",
+    "start:emu": "npm run prep:emu && firebase emulators:start --only auth,firestore,functions --import=./emulators-data/",
     "start:local": "cross-env REACT_APP_NODE_ENV=development react-scripts start",
     "start:all": "npm run build && firebase emulators:start --import=./emulators-data/",
     "start:demo": "cross-env REACT_APP_NODE_ENV=demo react-scripts start",
-    "build": "react-scripts --max-old-space-size=4096 build",
+    "build": "npm run prep:build && react-scripts --max-old-space-size=4096 build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "clean:cache": "npm cache clean --force",
@@ -85,7 +88,8 @@
     "@testing-library/react": "^9.3.0",
     "cross-env": "^5.2.0",
     "eslint-plugin-react-hooks": "^2.5.0",
-    "gh-pages": "^2.0.1"
+    "gh-pages": "^2.0.1",
+    "concurrently": "^6.0.1"
   },
   "jest": {}
 }
