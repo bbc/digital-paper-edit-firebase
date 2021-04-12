@@ -14,12 +14,20 @@ const config = {
 class Firebase {
   constructor() {
     app.initializeApp(config);
-    this.auth = app.auth();
 
     this.firestore = app.firestore;
-    this.db = this.firestore()
+    this.auth = app.auth();
+    this.db = app.firestore();
+
+    if (location.hostname === 'localhost') {
+      this.auth.useEmulator('http://localhost:9099');
+      this.db.useEmulator('localhost', 8080);
+    }
+
+    this.db = this.db
       .collection('apps')
       .doc('digital-paper-edit');
+
     this.storage = app.storage().ref();
     this.getServerTimestamp = () => this.firestore.FieldValue.serverTimestamp();
   }
@@ -27,8 +35,15 @@ class Firebase {
   // *** Merge Auth and DB User API *** //
   initDB = async (uid, email) => {
     const dbUserRef = this.db.collection('users').doc(uid);
-    const dbSnapshot = await dbUserRef.get();
-    const dbUser = dbSnapshot.data();
+    let dbSnapshot = { exists: false };
+    let dbUser = {};
+
+    try {
+      dbSnapshot = await dbUserRef.get();
+      dbUser = dbSnapshot.data();
+    } catch (err) {
+      console.error(err);
+    }
 
     if (!dbSnapshot.exists || !dbUser) {
       dbUserRef.set({
@@ -37,6 +52,9 @@ class Firebase {
         created: this.getServerTimestamp(),
         email: email
       });
+
+      dbSnapshot = await dbUserRef.get();
+      dbUser = dbSnapshot.data();
 
       // https://firebase.google.com/docs/firestore/data-model
       // Docs / Collections are automatically created if not existing
@@ -48,17 +66,21 @@ class Firebase {
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged(async authUser => {
       if (authUser) {
-        const db = await this.initDB(authUser.uid, authUser.email);
+        try {
+          const db = await this.initDB(authUser.uid, authUser.email);
+          const mergeUser = {
+            uid: authUser.uid,
+            email: authUser.email,
+            emailVerified: authUser.emailVerified,
+            providerData: authUser.providerData,
+            ...db
+          };
 
-        const mergeUser = {
-          uid: authUser.uid,
-          email: authUser.email,
-          emailVerified: authUser.emailVerified,
-          providerData: authUser.providerData,
-          ...db
-        };
+          next(mergeUser);
+        } catch (err) {
+          console.error(err);
+        }
 
-        next(mergeUser);
       } else {
         fallback();
       }
