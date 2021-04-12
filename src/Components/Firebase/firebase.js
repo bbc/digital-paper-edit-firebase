@@ -42,7 +42,7 @@ class Firebase {
       dbSnapshot = await dbUserRef.get();
       dbUser = dbSnapshot.data();
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
 
     if (!dbSnapshot.exists || !dbUser) {
