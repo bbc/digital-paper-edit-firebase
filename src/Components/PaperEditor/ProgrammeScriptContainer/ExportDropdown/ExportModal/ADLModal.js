@@ -59,7 +59,7 @@ const ADLModal = (props) => {
     if (!value) {
       error = 'Required';
     } else {
-      const ext = getExt(value);
+      const ext = getExt(value).toLowerCase();
       if (ext && !adlSupportedExt(ext)) {
         error = `Invalid ext: ADL does not support filenames with ${ ext }. Please remove ext.`;
       }
