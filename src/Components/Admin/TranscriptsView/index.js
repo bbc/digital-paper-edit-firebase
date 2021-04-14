@@ -48,8 +48,8 @@ const TranscriptsView = props => {
         status:  tr.status,
         created:  tr.created,
         updated:  tr.updated,
-        duration:  upload.duration,
-        size:upload.size,
+        duration:  upload ? upload.duration : 0,
+        size: upload ? upload.size : 0,
       };
     };
 

@@ -56,8 +56,8 @@ const Row = ({
       <td>{dhmsRuntime}</td>
       <td>{ToDhmsCompact(duration)}</td>
       <td>{size}</td>
-      <td>{media.ref}</td>
-      <td>{media.type}</td>
+      <td>{media ? media.ref : ''}</td>
+      <td>{media ? media.type : ''}</td>
     </tr>
   );
 };
