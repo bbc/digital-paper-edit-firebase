@@ -4,8 +4,7 @@ class MyHttpRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/status':
             self.send_response(200)
-        else: 
-            self.path = '/index.html'
+        else:
             return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 # Create an object of the above class
 handler_object = MyHttpRequestHandler
