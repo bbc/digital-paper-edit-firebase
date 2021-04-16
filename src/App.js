@@ -61,14 +61,14 @@ const App = (props) => {
     AppContainer = (
       <>
         {offlineWarning}
-        <Container style={ { marginBottom: '1em', marginTop: '1em' } }>
+        <Container style={ { marginBottom: "1em", marginTop: "1em" } }>
           <Row>
             <Col xs={ 5 }>
               <h1> Digital Paper Edit </h1>
             </Col>
             <Col md={ { offset: 1, span: 3 } }>
               Signed in as: <br></br>
-              <strong>
+              <strong>      
                 {user && user.role === 'ADMIN' ? <a href="#admin">{authUser.email}</a> : authUser.email}
               </strong>
             </Col>
