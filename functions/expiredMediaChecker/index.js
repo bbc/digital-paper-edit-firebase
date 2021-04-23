@@ -3,38 +3,45 @@ const { updateTranscription } = require("../sttChecker");
 const expiredMediaChecker = (bucket, admin) => {
   bucket.getFiles().then((data) => {
     const files = data[0];
+
     files.forEach((file) => {
       const dateCreated = new Date(file.metadata.timeCreated);
+
       let expiryDate = new Date(dateCreated);
       expiryDate.setDate(dateCreated.getDate() + 60);
+
       const isDeletableContentType = (contentType) => {
+        let isDeletable = false;
         if (contentType !== undefined) {
-          if (contentType.includes("video") || contentType.includes("audio")) {
-            return true;
-          }
+          isDeletable = contentType.includes("video") || contentType.includes("audio");
         }
-        return false;
+        return isDeletable;
       }
+
       if (
         Date.now() >= expiryDate &&
-        isDeletableContentType(file.metadata.contentType)) {
-        file.delete();
-        updateTranscription(admin, file.metadata.metadata.id, file.metadata.metadata.projectId, {
-          status: "expired",
-          message: "Media older than 60 days",
-        });
+        isDeletableContentType(file.metadata.contentType)
+        // && file.metadata.metadata.id === "zgBSIGwTvqJjlbto5nb2" // UNCOMMENT TO SAFELY TEST FILE DELETION/UPDATE TRANSCRIPTION STATUS
+        ) {
+
+        // file.delete();
+        // updateTranscription(admin, file.metadata.metadata.id, file.metadata.metadata.projectId, {
+        //   status: "expired",
+        //   message: "Media older than 60 days",
+        // });
 
         console.log(`Expired media was deleted:
-          userId: ${ file.metadata.metadata.userId }
-          id: ${ file.metadata.metadata.id }
-          projectId: ${ file.metadata.metadata.projectId }
           originalName: ${ file.metadata.metadata.originalName }
-          folder: ${ file.metadata.metadata.folder }`);
+          timeCreated: ${ file.metadata.timeCreated }
+          filePath: ${ file.metadata.name }
+          id: ${ file.metadata.metadata.id }
+          userId: ${ file.metadata.metadata.userId }
+          projectId: ${ file.metadata.metadata.projectId }`);
       }
     })
-    return null;
+    return;
   }).catch(error => {
-    console.log(`Files could not be retreived ${ error }`);
+    return console.log(`Files could not be retreived ${ error }`);
   })
 }
 
