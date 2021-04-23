@@ -6,6 +6,7 @@ const inventoryChecker = require("./inventoryChecker");
 const audioStripper = require("./audioStripper");
 const awsUploader = require("./awsUploader");
 const sttChecker = require("./sttChecker");
+const expiredMediaChecker = require("./expiredMediaChecker");
 
 // Was run as a migration task
 // const compressData = require("./compressData")
@@ -51,6 +52,12 @@ exports.dpeCronSTTJobChecker = functions
   .onRun((context) =>
     sttChecker.createHandler(admin, config.aws.api.transcriber, context)
   );
+
+exports.expiredMediaChecker = functions
+  .pubsub.schedule("every 24 hours")
+  .onRun(() => {
+    expiredMediaChecker.createHandler(bucket, admin);
+  });
 
 // For migration of DB
 

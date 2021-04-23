@@ -212,3 +212,5 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
 exports.createHandler = async (admin, config, context) => {
   await sttCheckRunner(admin, config, context.timestamp);
 };
+
+exports.updateTranscription = updateTranscription;

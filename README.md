@@ -222,11 +222,12 @@ Use node v8 in Functions directory.
 Developing is a lot easier if you have your **local emulator** set up.
 
 1. Follow the instructions
-   [here](https://firebase.google.com/docs/functions/local-2.
-   emulator#set_up_admin_credentials_optional) to get the admin credentials.
+   [here](https://firebase.google.com/docs/functions/local-emulator#set_up_admin_credentials_optional) to get the admin credentials.
 2. You need to save this as `gcp-credentials.json` and keep it in your
    `digital-paper-edit-firebase/functions` folder.
-3. Run `./start_firebase_shell` in functions folder.
+3. Run `./start_firebase_shell` in functions folder. This should start the emulator running in your terminal window.
+4. Call the function e.g. type `expiredMediaChecker()`
+5. BEWARE!!! Running these functions will affect Firebase files, so tread carefully!
    <!-- TODO: Setup eslint in express server -->
 
 ## Documentation
