@@ -36,6 +36,17 @@ const TranscriptsView = props => {
     const getDataForRows = async (title, tr, user) => {
       const Uploads = new Collection(props.firebase, `users/${ user }/uploads`);
       const upload = await Uploads.getItem(tr.id);
+      let duration = 0;
+      let size = 0;
+
+      try {
+        duration = upload.duration;
+        size = upload.size;
+      } catch (err) {
+        console.error(
+          `Transcript ID: ${ tr.id } for User ${ user } should be removed:`,
+          err.message);
+      }
 
       return {
         transcriptId: tr.id,
@@ -48,8 +59,8 @@ const TranscriptsView = props => {
         status:  tr.status,
         created:  tr.created,
         updated:  tr.updated,
-        duration:  upload.duration,
-        size:upload.size,
+        duration:  duration,
+        size: size,
       };
     };
 

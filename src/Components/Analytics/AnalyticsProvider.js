@@ -2,13 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { MatomoProvider, createInstance } from '@datapunt/matomo-tracker-react';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import PropTypes from 'prop-types';
+import isProduction from '../../Util/is-production';
 
-const instance = createInstance({
+const prodConfig = {
   urlBase: process.env.REACT_APP_MATOMO_BASE,
   siteId: process.env.REACT_APP_MATOMO_SITEID,
   trackerUrl: process.env.REACT_APP_MATOMO_TRACKER, // optional, default value: `${urlBase}matomo.php`
-  srcUrl: process.env.REACT_APP_MATOMO_SRC, // optional, default value: `${urlBase}matomo.js`
-});
+  srcUrl: process.env.REACT_APP_MATOMO_SRC // optional, default value: `${urlBase}matomo.js`
+};
+
+const devConfig = {
+  urlBase: process.env.REACT_APP_TEST_MATOMO_BASE,
+  siteId: process.env.REACT_APP_TEST_MATOMO_SITEID,
+  trackerUrl: process.env.REACT_APP_TEST_MATOMO_TRACKER, // optional, default value: `${urlBase}matomo.php`
+  srcUrl: process.env.REACT_APP_TEST_MATOMO_SRC, // optional, default value: `${urlBase}matomo.js`
+};
+
+const config = isProduction() ? prodConfig : devConfig;
+
+const instance = createInstance(config);
 
 const AnalyticsProvider = props => (
   <MatomoProvider value={ instance }>

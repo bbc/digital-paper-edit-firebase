@@ -35,6 +35,18 @@ const Row = ({
     return <Badge variant={ variant }>{status}</Badge>;
   };
 
+  let mediaRef = '';
+  let mediaType = '';
+
+  try {
+    mediaRef = media.ref;
+    mediaType = media.type;
+  } catch (err) {
+    console.error(
+      `Transcript ID: ${ transcriptId } for Project ${ projectId } should be removed:`,
+      err.message);
+  }
+
   return (
     <tr key={ transcriptId }>
       <td>{getStatusBadge(status)}</td>
@@ -56,8 +68,8 @@ const Row = ({
       <td>{dhmsRuntime}</td>
       <td>{ToDhmsCompact(duration)}</td>
       <td>{size}</td>
-      <td>{media.ref}</td>
-      <td>{media.type}</td>
+      <td>{mediaRef}</td>
+      <td>{mediaType}</td>
     </tr>
   );
 };
