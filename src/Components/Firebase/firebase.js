@@ -25,7 +25,6 @@ if (isProduction()) {
   };
 }
 
-console.log('config: ', config);
 class Firebase {
   constructor() {
     app.initializeApp(config);
