@@ -73,7 +73,7 @@
     "deploy:prod:hosting": "rimraf build && npm run build && firebase deploy -P prod --only hosting:digital-paper-edit",
     "publish:prep": "npm run build && cp package.json ./build/package.json && cp README.md ./build/README.md && rimraf ./build/db",
     "publish:public": "npm run publish:prep && npm publish build --access public",
-    "prepare": "husky install",
+    "postinstall": "husky install",
     "pre-commit": "DIFFED_FILES=$(git diff --name-only --diff-filter=ACMRTUXB --cached | grep -E \"(.js$)\"); eslint --fix $DIFFED_FILES && git add $DIFFED_FILES",
     "pre-merge-commit": "DIFFED_FILES=$(git diff --name-only --diff-filter=ACMRTUXB --cached | grep -E \"(.js$)\"); eslint --fix $DIFFED_FILES && git add $DIFFED_FILES"
   },
