@@ -1,6 +1,10 @@
 const { updateTranscription } = require("../sttChecker");
 
-const expiredMediaChecker = (bucket, admin) => {
+const isDeletableContentType = (contentType) => {
+  return contentType ? contentType.includes("video") || contentType.includes("audio") : false;
+}
+
+const dpeCronExpiredMediaChecker = (bucket, admin) => {
   bucket.getFiles().then((data) => {
     const files = data[0];
 
@@ -9,14 +13,6 @@ const expiredMediaChecker = (bucket, admin) => {
 
       let expiryDate = new Date(dateCreated);
       expiryDate.setDate(dateCreated.getDate() + 60);
-
-      const isDeletableContentType = (contentType) => {
-        let isDeletable = false;
-        if (contentType !== undefined) {
-          isDeletable = contentType.includes("video") || contentType.includes("audio");
-        }
-        return isDeletable;
-      }
 
       if (
         Date.now() >= expiryDate &&
@@ -46,5 +42,5 @@ const expiredMediaChecker = (bucket, admin) => {
 }
 
 exports.createHandler = async (bucket, admin) => {
-  await expiredMediaChecker(bucket, admin);
+  await dpeCronExpiredMediaChecker(bucket, admin);
 };

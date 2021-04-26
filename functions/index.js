@@ -53,10 +53,10 @@ exports.dpeCronSTTJobChecker = functions
     sttChecker.createHandler(admin, config.aws.api.transcriber, context)
   );
 
-exports.expiredMediaChecker = functions
+exports.dpeCronExpiredMediaChecker = functions
   .pubsub.schedule("every 24 hours")
   .onRun(() => {
-    expiredMediaChecker.createHandler(bucket, admin);
+    dpeCronExpiredMediaChecker.createHandler(bucket, admin);
   });
 
 // For migration of DB
