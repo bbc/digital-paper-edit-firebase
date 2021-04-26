@@ -74,8 +74,8 @@
     "publish:prep": "npm run build && cp package.json ./build/package.json && cp README.md ./build/README.md && rimraf ./build/db",
     "publish:public": "npm run publish:prep && npm publish build --access public",
     "prepare": "husky install",
-    "pre-commit": "npm test && DIFFED_FILES=$(git diff --name-only --diff-filter=ACMRTUXB --cached | grep -E \"(.js$)\"); eslint --fix $DIFFED_FILES && git add $DIFFED_FILES",
-    "pre-merge-commit": "npm test && DIFFED_FILES=$(git diff --name-only --diff-filter=ACMRTUXB --cached | grep -E \"(.js$)\"); eslint --fix $DIFFED_FILES && git add $DIFFED_FILES"
+    "pre-commit": "DIFFED_FILES=$(git diff --name-only --diff-filter=ACMRTUXB --cached | grep -E \"(.js$)\"); eslint --fix $DIFFED_FILES && git add $DIFFED_FILES",
+    "pre-merge-commit": "DIFFED_FILES=$(git diff --name-only --diff-filter=ACMRTUXB --cached | grep -E \"(.js$)\"); eslint --fix $DIFFED_FILES && git add $DIFFED_FILES"
   },
   "eslintConfig": {
     "extends": "react-app"
