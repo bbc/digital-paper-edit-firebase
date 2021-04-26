@@ -28,6 +28,7 @@ if (isProduction()) {
 class Firebase {
   constructor() {
     app.initializeApp(config);
+    window.reactConfig = config;
     this.auth = app.auth();
 
     this.firestore = app.firestore;
