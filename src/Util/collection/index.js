@@ -1,5 +1,5 @@
 const createOrUpdateCollectionItem = async (item, create, update) => {
-  const updatedItem = { ...item };
+  let updatedItem = { ...item };
 
   if (!updatedItem.id) {
     updatedItem.url = '';
