@@ -61,7 +61,7 @@ const Projects = (props) => {
   };
 
   const updateProject = async (item) => {
-    const newItem = items.find(i => i.id === item.id);
+    let newItem = items.find(i => i.id === item.id);
     newItem = { ...newItem, ...item };
     await updateCollectionItem(newItem, ProjectsCollection);
     setItems(updateItems(newItem, items));
