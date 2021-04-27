@@ -17,7 +17,7 @@ const dpeCronExpiredMediaChecker = (bucket, admin) => {
       if (
         Date.now() >= expiryDate &&
         isDeletableContentType(file.metadata.contentType)
-        // && file.metadata.metadata.id === "zgBSIGwTvqJjlbto5nb2" // UNCOMMENT TO SAFELY TEST FILE DELETION/UPDATE TRANSCRIPTION STATUS
+        // && file.metadata.metadata.id === 'kHN7t5yCJNpPwbODfIH5' // UNCOMMENT TO SAFELY TEST FILE DELETION/UPDATE TRANSCRIPTION STATUS
         ) {
 
         // file.delete();

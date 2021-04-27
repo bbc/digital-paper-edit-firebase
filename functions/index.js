@@ -6,7 +6,7 @@ const inventoryChecker = require("./inventoryChecker");
 const audioStripper = require("./audioStripper");
 const awsUploader = require("./awsUploader");
 const sttChecker = require("./sttChecker");
-const expiredMediaChecker = require("./expiredMediaChecker");
+const dpeCronExpiredMediaChecker = require("./dpeCronExpiredMediaChecker");
 
 // Was run as a migration task
 // const compressData = require("./compressData")

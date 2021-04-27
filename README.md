@@ -219,7 +219,9 @@ Node version is set in node version manager
 
 Use node v8 in Functions directory.
 
-Developing is a lot easier if you have your **local emulator** set up. Here is how to run the firebase functions locally:
+Developing is a lot easier if you have your **local emulator** set up. 
+
+### Running Firebase functions locally:
 
 1. Set up admin credentials for emulated functions via the [service account](https://console.cloud.google.com/iam-admin/serviceaccounts/details/102625058144632397517/keys?authuser=1&folder=&organizationId=&project=newslabs-dev-aa20&supportedpurview=project )
 2. Make sure you are in the `newslab-dev` project and click `Add key`
@@ -237,6 +239,8 @@ firebase functions:shell
 ```
 4. Call the function you would like to test e.g. type `dpeCronExpiredMediaChecker()`
 5. BEWARE!!! Running these functions will really affect files in the Firestore, so tread carefully!
+
+See [here](https://firebase.google.com/docs/functions/local-emulator) for more info on running functions locally.
 
 
 ## Documentation
