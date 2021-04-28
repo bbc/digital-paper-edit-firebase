@@ -113,3 +113,9 @@ SOURCES
 # firebase
 .firebase/*
 .env
+
+# Husky
+.husky/
+
+# Local NPM config
+.npmrc
