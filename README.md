@@ -237,8 +237,8 @@ firebase functions:config:get > .runtimeconfig.json
 ```
 firebase functions:shell
 ```
-4. Call the function you would like to test e.g. type `dpeCronExpiredMediaChecker()`
-5. BEWARE!!! Running these functions will really affect files in the Firestore, so tread carefully!
+4. BEWARE!!! Running functions locally will really affect files in the Firestore, so tread carefully!
+5. Call the function you would like to test e.g. run `dpeCronExpiredMediaChecker()`
 
 See [here](https://firebase.google.com/docs/functions/local-emulator) for more info on running functions locally.
 
