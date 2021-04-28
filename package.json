@@ -70,7 +70,7 @@
     "deploy:all": "rimraf build && npm run build && firebase deploy",
     "deploy:ghpages": "rimraf build && cross-env REACT_APP_NODE_ENV=demo npm run build && gh-pages -d build",
     "deploy:dev:hosting": "rimraf build && npm run build && firebase deploy -P dev --only hosting:digital-paper-edit-dev",
-    "deploy:prod:hosting": "rimraf build && npm run build && firebase deploy -P prod --only hosting:digital-paper-edit",
+    "deploy:prod:hosting": "rimraf build && npm run build && firebase deploy -P prod --only hosting:digital-paper-edit-prod",
     "publish:prep": "npm run build && cp package.json ./build/package.json && cp README.md ./build/README.md && rimraf ./build/db",
     "publish:public": "npm run publish:prep && npm publish build --access public",
     "postinstall": "husky install",

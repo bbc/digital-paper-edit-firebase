@@ -215,7 +215,7 @@ React is setup using
 Node version is set in node version manager
 [`.nvmrc`](https://github.com/creationix/nvm#nvmrc)
 
-### Functions
+## Functions
 
 Use node v8 in Functions directory.
 
@@ -228,6 +228,22 @@ Developing is a lot easier if you have your **local emulator** set up.
    `digital-paper-edit-firebase/functions` folder.
 3. Run `./start_firebase_shell` in functions folder.
    <!-- TODO: Setup eslint in express server -->
+
+### Function deployment
+
+From the `functions` directory, you can
+
+Deploy to dev:
+
+```
+npm run deploy:dev
+```
+
+Deploy to prod:
+
+```
+npm run deploy:prod
+```
 
 ## Documentation
 
