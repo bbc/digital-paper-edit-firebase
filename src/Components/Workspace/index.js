@@ -124,7 +124,7 @@ const WorkspaceView = props => {
   };
 
   const updateTranscript = async (item) => {
-    const newItem = transcriptItems.find(i => i.id === item.id);
+    let newItem = transcriptItems.find(i => i.id === item.id);
     newItem = { ...newItem, ...item };
     await updateCollectionItem(newItem, TranscriptsCollection);
     setTranscriptItems(updateItems(newItem, transcriptItems));
