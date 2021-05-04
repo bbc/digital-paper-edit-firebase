@@ -1,19 +1,22 @@
+const { info, error } = require("firebase-functions/lib/logger");
 const { getUserCollection } = require("../utils/firebase");
 const { getTranscriptsCollection } = require("../utils/firebase");
 const deleteFirestore = async (admin, object) => {
-  const { id: transcriptId, userId, folder } = object.metadata;
-  console.log(
-    `[START] Deleting item ${transcriptId} for user ${userId} in ${folder}`
+  const { id: transcriptId, userId, projectId, folder } = object.metadata;
+  const jobData = { id: transcriptId, userId, projectId};
+
+  info(
+    `[START] Deleting item ${transcriptId} for user ${userId} in ${folder}: `, jobData
   );
 
   try {
     await getUserCollection(admin, userId, folder).doc(transcriptId).delete();
-    console.log(
-      `[COMPLETE] Deleted item ${transcriptId} for user ${userId} in ${folder}`
+    info(
+      `[COMPLETE] Deleted item ${transcriptId} for user ${userId} in ${folder}: `, jobData
     );
   } catch (e) {
-    console.error(
-      `[ERROR] Failed to delete item ${transcriptId} for user ${userId} in ${folder}: `,
+    error(
+      `[ERROR] Failed to delete item ${transcriptId} for user ${userId} in ${folder}: `, jobData,
       e
     );
   }

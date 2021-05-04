@@ -1,3 +1,4 @@
+const { info, error } = require("firebase-functions/lib/logger");
 const { getSignedUrl, uploadS3Stream } = require("../utils/aws");
 
 exports.createHandler = async (snap, bucket, aws, context) => {
@@ -10,14 +11,25 @@ exports.createHandler = async (snap, bucket, aws, context) => {
   const metadata = snap.data();
   const durationSeconds = Math.ceil(metadata.duration);
   const fileSize = metadata.size;
+
+  const jobData = {
+    item: itemId,
+    project: projectId,
+    user: userId
+  }
+
   try {
+    info(`[START] Attempting to upload file to s3://${aws.bucket.name}/${destPath}`, jobData)
     const uploadUrl = await getSignedUrl(aws, fileName, durationSeconds);
     await uploadS3Stream(uploadUrl, readStream, fileSize);
-    console.log(
-      `[COMPLETE] Finished upload to s3://${aws.bucket.name}/${destPath}`
+    info(
+      `[COMPLETE] Finished upload to s3://${aws.bucket.name}/${destPath}`, jobData
     );
   } catch (err) {
-    console.error(`[ERROR] ${err}`);
+    error(`[ERROR] Upload error: `, {
+      ...jobData,
+      err
+    });
     return;
   }
 };

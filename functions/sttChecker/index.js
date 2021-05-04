@@ -1,4 +1,5 @@
 const fetch = require("node-fetch");
+const { info, error } = require("firebase-functions/lib/logger");
 const { secondsToDhms } = require("../utils");
 const zlib = require("zlib");
 
@@ -107,7 +108,7 @@ const updateTranscription = async (admin, transcriptId, projectId, update) => {
 const getUserfromJob = (usersAudioData, jobId) => {
   const usersAudioDataJob = usersAudioData[jobId];
   if (!usersAudioDataJob) {
-    console.error(`[ERROR] Job ID ${jobId} not found`);
+    error(`[ERROR] Job ID ${jobId} not found`);
     return "";
   }
   return usersAudioDataJob.user;
