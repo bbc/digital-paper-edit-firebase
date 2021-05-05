@@ -28,7 +28,6 @@ const getRuntime = (execTimestamp, created) => {
   const createdTime = created.toDate().getTime();
   const sttCheckerExecTime = Date.parse(execTimestamp);
   const timeDifference = sttCheckerExecTime - createdTime;
-  console.log("timeDifference", timeDifference);
   return {
     humanReadable: secondsToDhms(timeDifference / 1000),
     runtimeByNano: timeDifference,
@@ -46,7 +45,7 @@ const isValidJob = (execTimestamp, transcript) => {
   // TODO make sure objectKey exists in upload
 
   if (expired) {
-    console.log(
+    info(
       `Last updated ${transcript.id} ${secondsToDhms(expiredByNano / 1000)} ago`
     );
     return false;
@@ -123,7 +122,7 @@ const updateTranscriptsStatus = async (
 ) => {
   await filterInvalidJobs(projectTranscripts, execTimestamp).forEach(
     async (job) => {
-      console.log(`Job ${job.id} expired, updating status to Error`);
+      info(`Job ${job.id} expired, updating status to Error`);
       const { projectId } = job.data();
       await updateTranscription(admin, job.id, projectId, {
         status: "error",
@@ -134,7 +133,7 @@ const updateTranscriptsStatus = async (
 
   let validJobs = filterValidJobs(projectTranscripts, execTimestamp);
 
-  console.log(`${validJobs.length} valid jobs to process`);
+  info(`${validJobs.length} valid jobs to process`);
 
   await validJobs.forEach(async (job) => {
     const jobId = job.id;
@@ -158,15 +157,15 @@ const updateTranscriptsStatus = async (
           update.groupedc = zlib.gzipSync(JSON.stringify(grouped));
           update.status = "done";
           update.runtime = getRuntime(execTimestamp, created);
-          console.log(
+          info(
             `Finished job ${jobId} in ${update.runtime.humanReadable}`
           );
         }
       }
       await updateTranscription(admin, job.id, projectId, update);
-      console.log(`Updated ${job.id} with data`, update);
+      info(`Updated ${job.id} with data`, update);
     } catch (err) {
-      console.error(
+      error(
         `[ERROR] Failed to get STT jobs status for ${fileName}: ${err}`
       );
       return;
@@ -175,13 +174,13 @@ const updateTranscriptsStatus = async (
 };
 
 const sttCheckRunner = async (admin, config, execTimestamp) => {
-  console.log(`[START] Checking STT jobs for in-progress transcriptions`);
+  info(`[START] Checking STT jobs for in-progress transcriptions`);
   let usersAudioData = {};
 
   try {
     usersAudioData = await getUsersAudioData(admin);
   } catch (err) {
-    return console.error("[ERROR] Could not get User's Audio Data", err);
+    return error("[ERROR] Could not get user's audio data", err);
   }
 
   try {
@@ -202,10 +201,10 @@ const sttCheckRunner = async (admin, config, execTimestamp) => {
       }
     });
   } catch (err) {
-    return console.error("[ERROR] Could not get valid Jobs", err);
+    return error("[ERROR] Could not get valid jobs", err);
   }
 
-  return console.log(
+  return info(
     `[COMPLETE] Checking STT jobs for in-progress transcriptions`
   );
 };

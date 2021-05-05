@@ -1,6 +1,7 @@
 const { info, error } = require("firebase-functions/lib/logger");
 const { getUserCollection } = require("../utils/firebase");
 const { getTranscriptsCollection } = require("../utils/firebase");
+
 const deleteFirestore = async (admin, object) => {
   const { id: transcriptId, userId, projectId, folder } = object.metadata;
   const jobData = { id: transcriptId, userId, projectId};
@@ -45,42 +46,44 @@ const getTranscriptionUpdate = (object) => {
   };
 };
 
-const updateUserWithFile = async (admin, userUpdate, id, userId, folder) => {
+const updateUserWithFile = async (admin, userUpdate, id, userId, projectId, folder) => {
+  const jobData = { id: transcriptId, userId, projectId };
   try {
-    console.log(
+    info(
       `[START] Setting item ${id} for user ${userId} in ${folder} with: ${JSON.stringify(
         userUpdate
-      )}`
+      )}: `, jobData
     );
     await getUserCollection(admin, userId, folder).doc(id).set(userUpdate);
-    console.log(`[COMPLETE] Set item ${id} for user ${userId} in ${folder}`);
+    info(`[COMPLETE] Set item ${id} for user ${userId} in ${folder}: `, jobData);
   } catch (e) {
-    console.error(
+    error(
       `[ERROR] Failed to set item ${id} for user ${userId} in ${folder}: `,
-      e
+      { ...jobData, e}
     );
   }
   return userUpdate;
 };
 
-const updateTranscription = async (admin, update, transcriptId, projectId) => {
+const updateTranscription = async (admin, update, transcriptId, projectId, userId) => {
+  const jobData = { id: transcriptId, userId, projectId };
   try {
-    console.log(
+    info(
       `[START] Updating transcription item ${transcriptId} in project ${projectId} with: ${JSON.stringify(
         update
-      )}`
+      )}: `, jobData
     );
     await getTranscriptsCollection(admin, projectId)
       .doc(transcriptId)
       .update(update);
 
-    console.log(
-      `[COMPLETE] Updating transcription item ${transcriptId} in project ${projectId}`
+    info(
+      `[COMPLETE] Updating transcription item ${transcriptId} in project ${projectId}: `, jobData
     );
   } catch (e) {
-    console.error(
+    error(
       `[ERROR] Failed transcription item ${transcriptId} in project ${projectId}:`,
-      e
+      { ...jobData, e}
     );
   }
 };
@@ -89,7 +92,7 @@ const updateFirestore = async (admin, object) => {
   const { id: transcriptId, userId, projectId, folder } = object.metadata;
 
   const userUpdate = getUserUpdate(object);
-  await updateUserWithFile(admin, userUpdate, transcriptId, userId, folder);
+  await updateUserWithFile(admin, userUpdate, transcriptId, userId, projectId, folder);
 
   if (folder === "uploads") {
     const transcriptionUpdate = getTranscriptionUpdate(object);
@@ -98,7 +101,8 @@ const updateFirestore = async (admin, object) => {
       admin,
       transcriptionUpdate,
       transcriptId,
-      projectId
+      projectId, 
+      userId
     );
   } else if (folder === "audio") {
     const transcriptionUpdate = {
@@ -108,7 +112,8 @@ const updateFirestore = async (admin, object) => {
       admin,
       transcriptionUpdate,
       transcriptId,
-      projectId
+      projectId,
+      userId
     );
   }
 };

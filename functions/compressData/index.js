@@ -1,4 +1,5 @@
 const zlib = require("zlib");
+const { info, error } = require("firebase-functions")
 
 const {
   getProjectsCollection,
@@ -118,7 +119,7 @@ const createGroupedC = (words, paragraphs, wordsc, paragraphsc) => {
 };
 
 const updateTranscriptsWordsParagraphs = async (admin, transcripts) => {
-  console.log(`${transcripts.length} transcripts to process`);
+  info(`${transcripts.length} transcripts to process`);
   await transcripts.forEach(async (transcript) => {
     const transcriptId = transcript.id;
     const {
@@ -151,9 +152,9 @@ const updateTranscriptsWordsParagraphs = async (admin, transcripts) => {
 
       await updateTranscription(admin, transcriptId, projectId, update);
 
-      console.log(`Updated ${transcriptId} with data`, update);
+      info(`Updated ${transcriptId} with data`, update);
     } catch (err) {
-      console.error(
+      error(
         `[ERROR] Compressing existing transcription data ${transcriptId}: ${err}`
       );
       return;
@@ -162,7 +163,7 @@ const updateTranscriptsWordsParagraphs = async (admin, transcripts) => {
 };
 
 const compressExistingFirestoreContent = async (admin) => {
-  console.log(`[START] Compressing existing transcription data`);
+  info(`[START] Compressing existing transcription data`);
 
   try {
     const projectTranscripts = await getProjectTranscripts(admin);
@@ -173,10 +174,10 @@ const compressExistingFirestoreContent = async (admin) => {
       }
     });
   } catch (err) {
-    return console.error("[ERROR] Could not get transcripts", err);
+    return error("[ERROR] Could not get transcripts", err);
   }
 
-  return console.log(`[COMPLETE] Compressing transcriptions`);
+  return info(`[COMPLETE] Compressing transcriptions`);
 };
 
 exports.createHandler = async (admin) => {

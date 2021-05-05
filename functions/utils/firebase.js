@@ -1,3 +1,5 @@
+const { info, error } = require("firebase-functions/lib/logger");
+
 const getProjectsCollection = (admin) => {
   return admin.firestore().collection(`apps/digital-paper-edit/projects`);
 };

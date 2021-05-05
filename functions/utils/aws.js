@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const { info, error } = require("firebase-functions/lib/logger");
 
 const getSignedUrl = async (aws, fileName, durationSeconds) => {
   const headers = {
@@ -21,7 +22,7 @@ const getSignedUrl = async (aws, fileName, durationSeconds) => {
   const url = aws.api.uploader.endpoint;
   const response = await fetch(url, params);
   if (response.ok) {
-    console.log(
+    info(
       `[SUCCESS] got signed url: status ${response.status}`
     );
     const responseJson = await response.json();
@@ -35,7 +36,7 @@ const getSignedUrl = async (aws, fileName, durationSeconds) => {
 }
   
 const uploadS3Stream = async (url, stream, size) => {
-  console.log(`[START] Upload to S3: ${url}`);
+  info(`[START] Upload to S3: ${url}`);
   const headers = {
     "Content-length": size,
   };
@@ -47,7 +48,7 @@ const uploadS3Stream = async (url, stream, size) => {
 
   const response = await fetch(url, params);
   if (response.ok) {
-    console.log(
+    info(
       `[SUCCESS] File upload PUT request sent with status ${response.status}`
     );
     return true;
