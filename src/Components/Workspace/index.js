@@ -362,7 +362,7 @@ const WorkspaceView = props => {
   return (
     <Container >
       <Row>
-        <Col sm={ 2 }>
+        <Col sm={ 6 }>
           <a href="#">
             <Button size="sm">
               <FontAwesomeIcon icon={ faArrowLeft } /> Back to Projects
@@ -396,10 +396,10 @@ const WorkspaceView = props => {
           <h2>Project: &quot;{title}&quot;</h2>
         </Col>
       </Row>
-      <Row>
-        <Col sm={ 4 }><h5>Programme scripts</h5></Col>
-        <Col sm={ 4 }><h5>Created / Updated</h5></Col>
-        <Col sm={ 4 }><h5>Transcripts</h5></Col>
+      <Row style={ { color: '#6b6b6b' } }>
+        <Col sm={ 4 }><h5 style={ { fontWeight: 'normal' } } >Programme scripts</h5></Col>
+        <Col sm={ 4 }><h5 style={ { fontWeight: 'normal' } } >Created / Updated</h5></Col>
+        <Col sm={ 4 }><h5 style={ { fontWeight: 'normal' } } >Transcripts</h5></Col>
       </Row>
       <Row>
         <Col sm={ 8 }>
