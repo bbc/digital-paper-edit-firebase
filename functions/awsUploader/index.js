@@ -2,7 +2,7 @@ const { info, error } = require("firebase-functions/lib/logger");
 const { getSignedUrl, uploadS3Stream } = require("../utils/aws");
 
 exports.createHandler = async (snap, bucket, aws, context) => {
-  const { userId, itemId } = context.params;
+  const { userId, itemId, projectId } = context.params;
   const srcPath = `users/${userId}/audio/${itemId}`;
   const fileName = `${srcPath}.wav`;
   const readStream = bucket.file(srcPath).createReadStream();
@@ -14,7 +14,6 @@ exports.createHandler = async (snap, bucket, aws, context) => {
 
   const jobData = {
     item: itemId,
-    project: projectId,
     user: userId
   }
 

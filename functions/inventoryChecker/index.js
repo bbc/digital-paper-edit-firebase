@@ -47,7 +47,7 @@ const getTranscriptionUpdate = (object) => {
 };
 
 const updateUserWithFile = async (admin, userUpdate, id, userId, projectId, folder) => {
-  const jobData = { id: transcriptId, userId, projectId };
+  const jobData = { id, userId, projectId };
   try {
     info(
       `[START] Setting item ${id} for user ${userId} in ${folder} with: ${JSON.stringify(

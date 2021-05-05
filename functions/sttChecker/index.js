@@ -140,6 +140,11 @@ const updateTranscriptsStatus = async (
     const userId = getUserfromJob(usersAudioData, jobId);
     const { projectId, message, created } = job.data();
     const fileName = `users/${userId}/audio/${jobId}.wav`;
+    const jobData = {
+      id: jobId,
+      userId,
+      projectId
+    };
 
     try {
       const update = { message: "Transcribing..." };
@@ -158,15 +163,15 @@ const updateTranscriptsStatus = async (
           update.status = "done";
           update.runtime = getRuntime(execTimestamp, created);
           info(
-            `Finished job ${jobId} in ${update.runtime.humanReadable}`
+            `Finished job ${jobId} in ${update.runtime.humanReadable}: `, jobData
           );
         }
       }
       await updateTranscription(admin, job.id, projectId, update);
-      info(`Updated ${job.id} with data`, update);
+      info(`Updated ${job.id} with data ${update}`, jobData);
     } catch (err) {
       error(
-        `[ERROR] Failed to get STT jobs status for ${fileName}: ${err}`
+        `[ERROR] Failed to get STT jobs status for ${fileName}: `, { ...jobData, err}
       );
       return;
     }
