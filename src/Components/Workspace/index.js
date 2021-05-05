@@ -386,7 +386,7 @@ const WorkspaceView = props => {
             size="sm"
             block
           >
-            <FontAwesomeIcon icon={ faCircle } /> Transcribe Media
+            <FontAwesomeIcon icon={ faCircle } /> Convert Media to Transcript
           </Button>
         </Col>
       </Row>
@@ -397,7 +397,7 @@ const WorkspaceView = props => {
         </Col>
       </Row>
       <Row>
-        <Col sm={ 4 }><h5>Title</h5></Col>
+        <Col sm={ 4 }><h5>Programme scripts</h5></Col>
         <Col sm={ 4 }><h5>Created / Updated</h5></Col>
         <Col sm={ 4 }><h5>Transcripts</h5></Col>
       </Row>
