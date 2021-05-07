@@ -397,9 +397,11 @@ const WorkspaceView = props => {
         </Col>
       </Row>
       <Row style={ { color: '#6b6b6b' } }>
-        <Col sm={ 4 }><h5 style={ { fontWeight: 'normal' } } >Programme scripts</h5></Col>
-        <Col sm={ 4 }><h5 style={ { fontWeight: 'normal' } } >Created / Updated</h5></Col>
-        <Col sm={ 4 }><h5 style={ { fontWeight: 'normal' } } >Transcripts</h5></Col>
+        <Col sm={ 8 } style={ { display: 'flex', justifyContent: 'space-around' } }>
+          <h5 style={ { fontWeight: 'normal', borderBottom: 'solid 1px #c0c0c0', paddingBottom: '8px', width: '50%' } }>Programme scripts</h5>
+          <h5 style={ { fontWeight: 'normal', borderBottom: 'solid 1px #c0c0c0', paddingBottom: '8px', width: '50%' } }>Created / Updated</h5>
+        </Col>
+        <Col><h5 style={ { fontWeight: 'normal', borderBottom: 'solid 1px #c0c0c0', paddingBottom: '8px' } }>Transcripts</h5></Col>
       </Row>
       <Row>
         <Col sm={ 8 }>
