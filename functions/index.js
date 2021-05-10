@@ -54,6 +54,7 @@ exports.dpeCronSTTJobChecker = functions
   );
 
 exports.dpeCronExpiredMediaChecker = functions
+  .runWith(maxRuntimeOpts)
   .pubsub.schedule("every 24 hours")
   .onRun(() => {
     dpeCronExpiredMediaChecker.createHandler(bucket, admin);
