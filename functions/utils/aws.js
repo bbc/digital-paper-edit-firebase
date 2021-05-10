@@ -53,6 +53,7 @@ const uploadS3Stream = async (url, stream, size) => {
     );
     return true;
   } else {
+    error(`[ERROR] Failed to upload to S3: status ${response.status} - ${response.statusText}`)
     throw new Error(
       `Failed to upload to S3: status ${response.status} - ${response.statusText}`
     );

@@ -168,7 +168,7 @@ const updateTranscriptsStatus = async (
         }
       }
       await updateTranscription(admin, job.id, projectId, update);
-      info(`Updated ${job.id} with data ${update}`, jobData);
+      info(`Updated ${job.id} with data ${JSON.stringify(update)}`, jobData);
     } catch (err) {
       error(
         `[ERROR] Failed to get STT jobs status for ${fileName}: `, { ...jobData, err}
