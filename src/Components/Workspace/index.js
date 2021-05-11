@@ -231,7 +231,7 @@ const WorkspaceView = props => {
   };
 
   const handleEditPaperEdit = (itemId) => {
-    setModalPETitle(formPEData.id ? 'Edit Paper Edit' : 'New Paper Edit');
+    setModalPETitle(formPEData.id ? 'Edit Programme Script' : 'New Programme Script');
     const item = paperEditItems.find(i => i.id === itemId);
     dispatchPEForm({
       type: 'update',
@@ -432,7 +432,7 @@ const WorkspaceView = props => {
         showModal={ showPEModal }
         handleOnHide={ handleOnPEHide }
         handleSaveForm={ handleSavePaperEditForm }
-        type={ 'paper-edit' }
+        type={ 'programme-script' }
       />
       <FormModal
         title={ formTData.title }
