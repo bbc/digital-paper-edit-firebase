@@ -1,3 +1,5 @@
+const { info, error } = require("firebase-functions/lib/logger");
+
 const getProjectsCollection = (admin) => {
   return admin.firestore().collection(`apps/digital-paper-edit/projects`);
 };
@@ -58,15 +60,15 @@ const getUsersAudioData = async (admin) => {
 
 const getStorageSignedUrl = async (srcFile) => {
   try {
-    console.log(`[START] Getting signed URL`);
+    info(`[START] Getting signed URL`);
     const sourceUrl = await srcFile.getSignedUrl({
       action: "read",
       expires: Date.now() + 1000 * 60 * 9, // 9 minutes
     });
-    console.log(`[COMPLETE] Signed URL: ${sourceUrl}`);
+    info(`[COMPLETE] Signed URL: ${sourceUrl}`);
     return sourceUrl;
   } catch (err) {
-    console.error("[ERROR] Could not get signed URL: ", err);
+    error("[ERROR] Could not get signed URL: ", err);
     throw err;
   }
 };

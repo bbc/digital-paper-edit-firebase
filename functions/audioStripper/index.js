@@ -1,4 +1,5 @@
 const ffmpeg = require("fluent-ffmpeg");
+const { info, error } = require("firebase-functions/lib/logger");
 const { getStorageSignedUrl } = require("../utils/firebase");
 
 // Will NOT work for MP4 Streams
@@ -59,17 +60,26 @@ exports.createHandler = async (snap, bucket, context) => {
     metadata: metadata,
   });
 
+  const jobData = {
+    item: itemId,
+    project: projectId,
+    user: userId
+  }
+
   try {
     const sourceUrl = await getStorageSignedUrl(srcFile);
-    console.log(`[START] Streaming, transforming file ${sourceUrl} to audio`);
+    info(`[START] Streaming, transforming file ${sourceUrl} to audio`, jobData);
     await convertStreamToAudio(sourceUrl[0], writeStream);
   } catch (err) {
-    return console.error(
+    return error(
       "[ERROR] Could not stream / transform audio file: ",
-      err
+      {
+        ...jobData,
+        err
+      }
     );
   }
-  return console.log(
-    `[COMPLETE] Uploaded audio file for ${userId} to ${itemId}`
+  return info(
+    `[COMPLETE] Uploaded audio file`, jobData
   );
 };
