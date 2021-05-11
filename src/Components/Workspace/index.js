@@ -11,6 +11,7 @@ import { PROJECTS } from '../../constants/routes';
 import { withAuthorization } from '../Session';
 import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import './index.css';
 
 import {
   faArrowLeft,
@@ -391,17 +392,17 @@ const WorkspaceView = props => {
         </Col>
       </Row>
       <hr></hr>
-      <Row style={ { marginBottom: '15px' } }>
+      <Row className="title-row">
         <Col>
           <h2>Project: &quot;{title}&quot;</h2>
         </Col>
       </Row>
-      <Row style={ { color: '#6b6b6b' } }>
-        <Col sm={ 8 } style={ { display: 'flex', justifyContent: 'space-around' } }>
-          <h5 style={ { fontWeight: 'normal', borderBottom: 'solid 1px #c0c0c0', paddingBottom: '8px', width: '50%' } }>Programme scripts</h5>
-          <h5 style={ { fontWeight: 'normal', borderBottom: 'solid 1px #c0c0c0', paddingBottom: '8px', width: '50%' } }>Created / Updated</h5>
+      <Row className="headers-row">
+        <Col className="column" sm={ 8 }>
+          <h5 className="column__header">Programme scripts</h5>
+          <h5 className="column__header">Created / Updated</h5>
         </Col>
-        <Col><h5 style={ { fontWeight: 'normal', borderBottom: 'solid 1px #c0c0c0', paddingBottom: '8px' } }>Transcripts</h5></Col>
+        <Col><h5 className="column__header">Transcripts</h5></Col>
       </Row>
       <Row>
         <Col sm={ 8 }>

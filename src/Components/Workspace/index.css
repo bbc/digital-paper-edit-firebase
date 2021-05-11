@@ -1,0 +1,21 @@
+.title-row {
+  margin-bottom: 15px;
+}
+
+.headers-row {
+  color: #6b6b6b;
+}
+
+.column {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.column__header {
+  font-weight: normal;
+  border-bottom: solid 1px #c0c0c0;
+  padding-bottom: 8px;
+  width: 100%;
+}
+/*# sourceMappingURL=index.css.map */
