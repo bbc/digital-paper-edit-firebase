@@ -1,4 +1,7 @@
 const { updateTranscription } = require('../sttChecker');
+const functions = require("firebase-functions");
+
+const daysUntilExpiry = 60;
 
 const isDeletableContentType = (contentType) => {
   return contentType ? contentType.includes('video') || contentType.includes('audio') : false;
@@ -10,47 +13,65 @@ const deleteExpiredFile = async (file, admin) => {
   if (transcriptId) {
     await updateTranscription(admin, transcriptId, file.metadata.metadata.projectId, {
       status: 'expired',
-      message: 'Media older than 60 days',
+      message: `Media older than ${ daysUntilExpiry } days`,
     });
   }
 };
 
 const checkForExpiredContent = async (allFiles, admin) => {
-  const daysUntilExpiry = 60;
   let filePath = '';
-  // eslint-disable-next-line consistent-return
-  allFiles.forEach(async (file) => {
+  let transcriptFilePath = '';
+
+  const expiredMediaFiles = allFiles.map(async (file) => {
     try {
       const dateCreated = new Date(file.metadata.timeCreated);
       const expiryDate = new Date(dateCreated);
       expiryDate.setDate(dateCreated.getDate() + daysUntilExpiry);
       filePath = file.metadata.name;
-      const transcriptFilePath = `projects/${ file.metadata.metadata.projectId }/transcripts/${ file.metadata.metadata.id }`;
+      transcriptFilePath = file.metadata.metadata ? `projects/${ file.metadata.metadata.projectId }/transcripts/${ file.metadata.metadata.id }` : 'no transcript';
 
       if (Date.now() >= expiryDate && isDeletableContentType(file.metadata.contentType)) {
-        await deleteExpiredFile(file, admin);
 
-        return console.log(`[IN PROGRESS] Expired media is being deleted:
+        functions.logger.log(`[IN PROGRESS] Expired media is being deleted:
         filePath: ${ filePath }
         transcriptFilePath: ${ transcriptFilePath }`);
+        return deleteExpiredFile(file, admin);
       }
+      return Promise.resolve();
     } catch (error) {
-      return console.log(`[ERROR]: Unable to delete file ${ filePath }: `, error);
+      functions.logger.log(`[ERROR]: Unable to delete file ${ filePath } : `, error);
+      return Promise.reject(error);
     }
   });
+
+  return expiredMediaFiles;
 };
 
 const dpeCronExpiredMediaChecker = async (bucket, admin) => {
-  console.log('[START] Checking for expired media files...');
-  try {
-    const allFiles = await bucket.getFiles();
-    await checkForExpiredContent(allFiles[0], admin);
+  functions.logger.log('[START] Checking for expired media files...');
+  let data = [];
+  let allFiles = [];
 
-    return console.log('[COMPLETE] Deleted expired media content ✅');
+  try {
+    data = await bucket.getFiles();
+  } catch (error) {
+    functions.logger.log(`[ERROR] data not found`, error);
+    return error;
+  }
+  allFiles = data.length > 0 ? data[0] : [];
+
+  try {
+    const expiredContent = checkForExpiredContent(allFiles, admin);
+    if (expiredContent.length > 0) {
+      await Promise.all(expiredContent);
+    }
+    functions.logger.log('[COMPLETE] Deleted expired media content ✅');
   }
   catch (error) {
-    return console.log(`[ERROR] Files could not be deleted ${ error }`);
+    functions.logger.log(`[ERROR] Files could not be deleted`, error );
+    return error;
   }
+  return true;
 };
 
 exports.createHandler = async (bucket, admin) => {
