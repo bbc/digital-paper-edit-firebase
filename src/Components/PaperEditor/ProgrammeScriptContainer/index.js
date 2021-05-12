@@ -204,11 +204,14 @@ const ProgrammeScriptContainer = (props) => {
     return await firebase.storage.storage.ref(item.ref).getDownloadURL();
   };
 
+  //load/update playlist items(media urls and start/end times to play edited script) - triggered when resetPreview is true (change to paperedit)
   useEffect(() => {
-    const getPlaylistItem = (element) => ({
+    const getPlaylistItem = (element, ref, start) => ({
       type: 'video',
       sourceStart: element.start,
       duration: element.end - element.start,
+      ref,
+      start
     });
 
     const getMediaUrl = async (item) => {
@@ -216,37 +219,38 @@ const ProgrammeScriptContainer = (props) => {
     };
 
     const getPlaylist = async () => {
+      const emptyPlaylist = { startTime: 0, playlist: [] };
       const results = paperEdits.reduce(
         (prevResult, paperEdit) => {
           const transcript = transcripts.find(t => t.id === paperEdit.transcriptId);
           if (transcript) {
-            const playlistItem = getPlaylistItem(paperEdit);
-            playlistItem.ref = transcript.media.ref;
-            playlistItem.start = prevResult.startTime;
-            prevResult.playlist.push(playlistItem);
-            prevResult.startTime += playlistItem.duration;
+            const playlistItem = getPlaylistItem(paperEdit, transcript.media.ref, prevResult.startTime);
+            const updatedPlaylist = [ ...prevResult.playlist, playlistItem ];
+            const updatedStartTime = prevResult.startTime + playlistItem.duration;
 
+            return { ...prevResult, startTime: updatedStartTime, playlist: updatedPlaylist };
           }
 
           return prevResult;
         },
-        { startTime: 0, playlist: [] }
+        emptyPlaylist
       );
 
-      let { playlist: playlistItems } = results;
-      playlistItems = await Promise.all(
-        playlistItems.map(async (item) => {
-          item.src = await getMediaUrl(item);
+      // let { playlist: playlistItems } = results;
+      const playlistItems = await Promise.all(
+        results.playlist.map(async (item) => {
+          const src = await getMediaUrl(item);
 
-          return item;
+          return { ...item, src };
         })
       );
-
+      console.log('playlistItems', playlistItems);
       setPlaylist(playlistItems);
       setResetPreview(false);
     };
 
     if (resetPreview && paperEdits && transcripts) {
+      console.log('getting playlist');
       getPlaylist();
     }
 
@@ -378,11 +382,13 @@ const ProgrammeScriptContainer = (props) => {
 
   const formatMultipleParagraphs = (selection, insertElementIndex) => {
     console.log('Adding multiple paragraphs...');
-    console.log(selection);
+    console.log('selection', selection);
     console.log(insertElementIndex);
     const playlistStartTime = getTranscriptSelectionStartTime(
       insertElementIndex
     );
+
+    //here might be a goodplace to extend the last word
     const paragraphSelections = divideWordsSelectionsIntoParagraphs(
       selection.words
     );
