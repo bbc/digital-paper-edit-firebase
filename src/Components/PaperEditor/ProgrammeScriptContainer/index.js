@@ -323,59 +323,53 @@ const ProgrammeScriptContainer = (props) => {
     );
 
     const totalDuration = pes.reduce(
-      (prevResult, paperEdit) => {
+      (runningTotal, paperEdit) => {
         const paperEditDuration = paperEdit.end - paperEdit.start;
-        prevResult.startTime += paperEditDuration;
 
-        return prevResult;
+        return runningTotal + paperEditDuration;
       },
-      { startTime: 0 }
+      0
     );
 
     return totalDuration;
   };
 
-  const formatSingleParagaph = (selection) => {
+  const formatSingleParagaph = ({ start, end, speaker, transcriptId, words }) => {
     console.log('Adding one paragraph...');
     const insertElementIndex = getInsertElementIndex();
     const playlistStartTime = getTranscriptSelectionStartTime(
       insertElementIndex
     );
-    const paperCutDuration = selection.end - selection.start;
+    const paperCutDuration = end - start;
+
+    // Recalcultates word timings to align with programme script playlist
+    const wordsAdjusted = words.map((word, i) => {
+      const wordStartTime = word.start - start + playlistStartTime;
+      const wordDuration = word.end - word.start;
+      const wordEndTime = wordStartTime + wordDuration;
+
+      return { ...word,
+        index: i,
+        start: wordStartTime,
+        end: wordEndTime,
+        speaker,
+      };
+    });
 
     const newElement = {
       id: cuid(),
       index: insertElementIndex,
       type: 'paper-cut',
-      start: selection.start,
-      end: selection.end,
-      vcStart: playlistStartTime.startTime,
-      vcEnd: playlistStartTime.startTime + paperCutDuration,
-      words: [],
-      speaker: selection.speaker,
-      transcriptId: selection.transcriptId,
+      start,
+      end,
+      vcStart: playlistStartTime,
+      vcEnd: playlistStartTime + paperCutDuration,
+      words: wordsAdjusted,
+      speaker,
+      transcriptId,
       labelId: [],
       continues: false
     };
-
-    const selectedWords = selection.words;
-
-    // Recalcultates word timings to align with programme script playlist
-    selectedWords.forEach((word, i) => {
-      const wordStartTime =
-        word.start - selection.start + playlistStartTime.startTime;
-      const wordDuration = word.end - word.start;
-      const wordEndTime = wordStartTime + wordDuration;
-      const newWord = {
-        index: i,
-        start: wordStartTime,
-        end: wordEndTime,
-        speaker: selection.speaker,
-        text: word.text,
-        transcriptId: word.transcriptId,
-      };
-      newElement.words.push(newWord);
-    });
 
     return newElement;
   };
@@ -388,18 +382,21 @@ const ProgrammeScriptContainer = (props) => {
       insertElementIndex
     );
 
-    //here might be a goodplace to extend the last word
     const paragraphSelections = divideWordsSelectionsIntoParagraphs(
       selection.words
     );
     console.log('paragraphSelections', paragraphSelections);
 
+    const emptyPaperEditElement = {
+      elements: [],
+      newDuration: playlistStartTime,
+      index: elements.length - 1,
+    };
     const paperEditElements = paragraphSelections.reduce(
       (prevResult, paragraph, paragraphIndex) => {
         // Calculates start and end times in the programme script playlist
         const paperCutStart = prevResult.newDuration;
-        const paperCutDuration =
-          paragraph[paragraph.length - 1].end - paragraph[0].start;
+        const paperCutDuration = paragraph[paragraph.length - 1].end - paragraph[0].start;
         const paperCutEnd = paperCutStart + paperCutDuration;
 
         // Stores start and end times corresponding to the original media file and transcription
@@ -410,6 +407,22 @@ const ProgrammeScriptContainer = (props) => {
         const paperCutTranscriptId = paragraph[0].transcriptId;
         const isNotLastParagraphInSelection = paragraphIndex !== paragraphSelections.length - 1;
 
+        // Recalcultates word timings to align with programme script playlist
+        const wordsAdjusted = paragraph.map((word, wordIndex) => {
+          const newStart = word.start - transcriptStart + paperCutStart;
+          const wordDuration = word.end - word.start;
+          const newEnd = newStart + wordDuration;
+
+          return {
+            index: wordIndex,
+            start: newStart,
+            end: newEnd,
+            speaker: paperCutSpeaker,
+            text: word.text,
+            transcriptId: paperCutTranscriptId,
+          };
+        });
+
         const newPaperCut = {
           id: cuid(),
           index: prevResult.index,
@@ -418,40 +431,19 @@ const ProgrammeScriptContainer = (props) => {
           end: transcriptEnd,
           vcStart: paperCutStart,
           vcEnd: paperCutEnd,
-          words: [],
+          words: wordsAdjusted,
           speaker: paperCutSpeaker,
           transcriptId: paperCutTranscriptId,
           labelId: [],
           continues: isNotLastParagraphInSelection
         };
 
-        // Recalcultates word timings to align with programme script playlist
-        paragraph.forEach((word, index) => {
-          const newStart = word.start - transcriptStart + paperCutStart;
-          const wordDuration = word.end - word.start;
-          const newEnd = newStart + wordDuration;
-          const newWord = {
-            index: index,
-            start: newStart,
-            end: newEnd,
-            speaker: paperCutSpeaker,
-            text: word.text,
-            transcriptId: paperCutTranscriptId,
-          };
-          newPaperCut.words.push(newWord);
-        });
-
-        prevResult.elements.push(newPaperCut);
-        prevResult.newDuration += paperCutDuration;
-        prevResult.index += 1;
-
-        return prevResult;
-      },
-      {
-        elements: [],
-        newDuration: playlistStartTime.startTime,
-        index: elements.length - 1,
-      }
+        return {
+          elements: [ ...prevResult.elements, newPaperCut ],
+          newDuration: prevResult.newDuration + paperCutDuration,
+          index: prevResult.index + 1
+        };
+      }, emptyPaperEditElement
     );
 
     return paperEditElements;
@@ -460,6 +452,7 @@ const ProgrammeScriptContainer = (props) => {
   const handleTransfer = () => {
     console.log('Handling add transcript selection...');
     const selection = getDataFromUserWordsSelection();
+    console.log('selection', selection);
     const elementsClone = JSON.parse(JSON.stringify(elements));
     const insertElementIndex = getInsertElementIndex();
     let updatedElements;
