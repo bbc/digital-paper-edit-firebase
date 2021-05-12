@@ -355,6 +355,7 @@ const ProgrammeScriptContainer = (props) => {
       speaker: selection.speaker,
       transcriptId: selection.transcriptId,
       labelId: [],
+      continues: false
     };
 
     const selectedWords = selection.words;
@@ -394,7 +395,7 @@ const ProgrammeScriptContainer = (props) => {
     console.log('paragraphSelections', paragraphSelections);
 
     const paperEditElements = paragraphSelections.reduce(
-      (prevResult, paragraph) => {
+      (prevResult, paragraph, paragraphIndex) => {
         // Calculates start and end times in the programme script playlist
         const paperCutStart = prevResult.newDuration;
         const paperCutDuration =
@@ -407,6 +408,7 @@ const ProgrammeScriptContainer = (props) => {
 
         const paperCutSpeaker = paragraph[0].speaker;
         const paperCutTranscriptId = paragraph[0].transcriptId;
+        const isNotLastParagraphInSelection = paragraphIndex !== paragraphSelections.length - 1;
 
         const newPaperCut = {
           id: cuid(),
@@ -420,6 +422,7 @@ const ProgrammeScriptContainer = (props) => {
           speaker: paperCutSpeaker,
           transcriptId: paperCutTranscriptId,
           labelId: [],
+          continues: isNotLastParagraphInSelection
         };
 
         // Recalcultates word timings to align with programme script playlist
