@@ -108,25 +108,25 @@ const ProgrammeScriptContainer = (props) => {
 
   //on load? if no elements, get paper edit from db and save state.elements
   useEffect(() => {
-    const collection = new Collection(
-      firebase,
-      `/projects/${ projectId }/paperedits`
-    );
-
     const getPaperEdit = async () => {
-      try {
-        const paperEdit = await collection.getItem(papereditsId);
-        setTitle(paperEdit.title);
+      const PaperEditCollection = new Collection(
+        firebase,
+        `/projects/${ projectId }/paperedits`
+      );
 
-        const newElements = paperEdit.elements
-          ? JSON.parse(JSON.stringify(paperEdit.elements))
-          : [];
+      try {
+        const { title: paperEditTitle, elements: paperEditElements } = await PaperEditCollection.getItem(papereditsId);
+        setTitle(paperEditTitle);
+
         const insertElement = {
           type: 'insert',
           text: 'Insert point to add selection',
         };
 
-        newElements.push(insertElement);
+        const newElements = paperEditElements
+          ? [ ...paperEditElements, insertElement ]
+          : [ insertElement ];
+
         setElements(newElements);
         setResetPreview(true);
       } catch (error) {
@@ -236,7 +236,6 @@ const ProgrammeScriptContainer = (props) => {
         emptyPlaylist
       );
 
-      // let { playlist: playlistItems } = results;
       const playlistItems = await Promise.all(
         results.playlist.map(async (item) => {
           const src = await getMediaUrl(item);
