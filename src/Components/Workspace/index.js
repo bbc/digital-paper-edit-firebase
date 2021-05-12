@@ -11,7 +11,7 @@ import { PROJECTS } from '../../constants/routes';
 import { withAuthorization } from '../Session';
 import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import './index.css';
+import './index.scss';
 
 import {
   faArrowLeft,
