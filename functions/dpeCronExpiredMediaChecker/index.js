@@ -63,15 +63,15 @@ const dpeCronExpiredMediaChecker = async (bucket, admin) => {
   try {
     const expiredContent = checkForExpiredContent(allFiles, admin);
     if (expiredContent.length > 0) {
-      await Promise.all(expiredContent);
+      return await Promise.all(expiredContent);
     }
     functions.logger.log('[COMPLETE] Deleted expired media content ✅');
+    return Promise.resolve();
   }
   catch (error) {
     functions.logger.log(`[ERROR] Files could not be deleted`, error );
-    return error;
+    return Promise.reject(error);
   }
-  return true;
 };
 
 exports.createHandler = async (bucket, admin) => {
