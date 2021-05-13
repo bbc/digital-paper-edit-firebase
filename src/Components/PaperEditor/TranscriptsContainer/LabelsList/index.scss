@@ -1,0 +1,22 @@
+.LabelsList__ {
+  &dropdown-card-header {
+    background-color: #222222;
+    color: white;
+  }
+
+  &dropdown-list {
+    height: fit-content;
+    width: 20vw;
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+
+  &label-element {
+    display: contents;
+    color: #222222;
+
+    :hover {
+      color: #222222;
+    }
+  }
+}

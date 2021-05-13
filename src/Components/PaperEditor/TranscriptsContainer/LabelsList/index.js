@@ -8,10 +8,9 @@ import Col from 'react-bootstrap/Col';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTag,
-  faTags,
   faTimes,
+  faTrash,
   faPen,
-  faCog,
 } from '@fortawesome/free-solid-svg-icons';
 import cuid from 'cuid';
 
@@ -19,11 +18,14 @@ import LabelModal from './LabelModal.js';
 import { randomColor } from './css-color-names.js';
 import PropTypes from 'prop-types';
 
+import './index.scss';
+
 const LabelsList = (props) => {
   const labels = props.labels;
   const onLabelDelete = props.onLabelDelete;
   const onLabelCreate = props.onLabelCreate;
   const onLabelUpdate = props.onLabelUpdate;
+  const updateLabelSelection = props.updateLabelSelection;
 
   const handleDelete = (id) => {
     const response = window.confirm(
@@ -32,8 +34,6 @@ const LabelsList = (props) => {
 
     if (response) {
       onLabelDelete(id);
-    } else {
-      alert('Your label was not deleted');
     }
   };
 
@@ -48,6 +48,7 @@ const LabelsList = (props) => {
     } else {
       onLabelCreate(newLabel);
     }
+    updateLabelSelection(newLabel.id);
   };
 
   const EditableLabel = (id, color, label, description) => {
@@ -79,7 +80,7 @@ const LabelsList = (props) => {
             } }
             disabled={ false }
           >
-            <FontAwesomeIcon icon={ faTimes } />
+            <FontAwesomeIcon icon={ faTrash } />
           </Button>
         </Col>
       </>
@@ -126,18 +127,25 @@ const LabelsList = (props) => {
       return (
         <ListGroup.Item style={ { width: '100%' } } key={ cuid() }>
           <Row>
-            <Col
-              xs={ 1 }
-              sm={ 1 }
-              md={ 1 }
-              lg={ 1 }
-              xl={ 1 }
-              style={ { backgroundColor: color } }
-              title={ label }
-            ></Col>
-            <Col xs={ 6 } sm={ 6 } md={ 6 } lg={ 6 } xl={ 6 } title={ label }>
-              {label}
-            </Col>
+            <Button
+              className='LabelsList__label-element'
+              onClick={ () => {
+                updateLabelSelection(id);
+              } }
+            >
+              <Col
+                xs={ 1 }
+                sm={ 1 }
+                md={ 1 }
+                lg={ 1 }
+                xl={ 1 }
+                style={ { backgroundColor: color } }
+                title={ label }
+              />
+              <Col xs={ 6 } sm={ 6 } md={ 6 } lg={ 6 } xl={ 6 } title={ label }>
+                {label}
+              </Col>
+            </Button>
 
             {label === 'Default'
               ? NonEditableLabel(id)
@@ -164,22 +172,14 @@ const LabelsList = (props) => {
   }
 
   const labelsList = (
-    <ListGroup
-      style={ {
-        height: '50vh',
-        width: '20vw',
-        overflowY: 'scroll',
-        overflowX: 'hidden',
-      } }
-    >
+    <ListGroup className='LabelsList__dropdown-list'>
       {labelEls}
     </ListGroup>
   );
 
   return (
     <Card>
-      <Card.Header>
-        <FontAwesomeIcon icon={ faTags } /> <FontAwesomeIcon icon={ faCog } />{' '}
+      <Card.Header className='LabelsList__dropdown-card-header'>
         Labels
       </Card.Header>
       {labelsList}
@@ -208,6 +208,7 @@ LabelsList.propTypes = {
   onLabelDelete: PropTypes.any,
   onLabelCreate: PropTypes.any,
   onLabelUpdate: PropTypes.any,
+  updateLabelSelection: PropTypes.func
 };
 
 export default LabelsList;

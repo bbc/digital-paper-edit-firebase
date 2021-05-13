@@ -9,69 +9,72 @@ import DropdownButton from 'react-bootstrap/DropdownButton';
 import LabelsList from '../LabelsList/index.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
+import './index.scss';
 
 const TranscriptMenu = (props) => {
   const labels = props.labels;
 
-  const HighlightButton = (
+  const setSelectedLabelColour = (transcriptLabels) => {
+    const defaultColour = 'orange';
+
+    if (transcriptLabels) {
+      const tempLabels = JSON.parse(JSON.stringify(transcriptLabels));
+      const activeLabel = tempLabels.find((label) => label.active);
+      if (activeLabel) {
+        return activeLabel.color;
+      } else {
+        const firstLabelInList = transcriptLabels[0];
+
+        return firstLabelInList.color;
+      }
+    }
+
+    return defaultColour;
+  };
+
+  const selectedLabelColour = setSelectedLabelColour(labels);
+
+  const LabelButton = (
     <Button
       variant="outline-secondary"
       data-label-id={ 'default' }
-      onClick={ (e) => props.handleCreateAnnotation(e) }
+      onClick={ (e) => {
+        props.handleCreateAnnotation(e);
+      } }
     >
-      <FontAwesomeIcon icon={ faHighlighter } flip="horizontal" /> Highlight
+      <FontAwesomeIcon icon={ faHighlighter } flip="horizontal" />
+      <span className='TranscriptMenu__label-button-text'>Labels</span>
+      <Col
+        style={ { backgroundColor: selectedLabelColour } }
+        className="TranscriptMenu__highlight-square"
+      />
     </Button>
   );
 
   const EditLabelButton = (
     <DropdownButton
-      drop={ 'right' }
       as={ ButtonGroup }
       title={ <FontAwesomeIcon icon={ faCog } /> }
       id="bg-nested-dropdown"
       variant="outline-secondary"
+      className="TranscriptMenu__edit-label-button"
     >
       <LabelsList
-        labels={ labels && labels }
+        labels={ labels }
         onLabelUpdate={ props.onLabelUpdate }
         onLabelCreate={ props.onLabelCreate }
         onLabelDelete={ props.onLabelDelete }
+        updateLabelSelection={ props.updateLabelSelection }
       />
     </DropdownButton>
   );
-
-  const Labels = () =>
-    labels.map((label) => (
-      <Dropdown.Item key={ `label_id_${ label.id }` } data-label-id={ label.id }>
-        <Row
-          value={ label.id }
-          onClick={ (e) => props.updateLabelSelection(e, label.id) }
-          data-label-id={ label.id }
-        >
-          <Col
-            xs={ 1 }
-            style={ { backgroundColor: label.color } }
-            data-label-id={ label.id }
-          ></Col>
-          <Col xs={ 1 } data-label-id={ label.id }>
-            {label.label}
-          </Col>
-        </Row>
-      </Dropdown.Item>
-    ));
 
   return (
     <Row>
       <Col xs={ 12 }>
         <ButtonGroup style={ { width: '100%' } }>
           <Dropdown as={ ButtonGroup } style={ { width: '100%' } }>
-            {HighlightButton}
-            <Dropdown.Toggle
-              split
-              variant="outline-secondary"
-              data-lable-id={ 0 }
-            />
-            <Dropdown.Menu>{labels ? Labels() : null}</Dropdown.Menu>
+            {LabelButton}
           </Dropdown>
           {EditLabelButton}
         </ButtonGroup>

@@ -446,7 +446,7 @@ const TranscriptTabContent = (props) => {
     props.trackEvent({ category: 'paperEditor transcriptsTab', action: `label delete ${ labelId }` });
   };
 
-  const updateLabelSelection = (e, labelId) => {
+  const updateLabelSelection = (labelId) => {
     const tempLabels = JSON.parse(JSON.stringify(labels));
     const previousActiveLabel = tempLabels.find((label) => label.active);
     if (previousActiveLabel) {

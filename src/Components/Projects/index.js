@@ -36,8 +36,8 @@ const Projects = (props) => {
   const createDefaultLabel = async (projectId) => {
     const defaultLabel = {
       label: 'Default',
-      color: 'yellow',
-      value: 'yellow',
+      color: 'orange',
+      value: 'orange',
       description: '',
     };
     const labelsCollection = new Collection(

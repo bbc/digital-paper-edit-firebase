@@ -1,0 +1,22 @@
+.TranscriptMenu__ {
+
+  &edit-label-button {
+    ::after {
+      display: none !important;
+    }
+
+    .dropdown-menu {
+      padding: 0;
+    }
+  }
+
+  &highlight-square {
+    display: inline;
+    padding: 0px 9px;
+    margin-left: 5px;
+  }
+
+  &label-button-text{
+    margin: 0 8px;
+  }
+}
