@@ -43,9 +43,13 @@ const getISODay = (time) => {
   return getISOTime(time.seconds).split('T')[0];
 };
 
+const getISOHour = (time) => {
+  return getISOTime(time.seconds).split('T')[1].replace('.000Z', '');
+};
+
 const formatDates = (item) => {
-  const created = item.created ? getISODay(item.created) : 0;
-  const updated = item.updated ? getISODay(item.updated) : 0;
+  const created = item.created ? `${ getISODay(item.created) },  ${ getISOHour(item.created) }` : 0;
+  const updated = item.updated ? `${ getISODay(item.created) },  ${ getISOHour(item.created) }` : 0;
 
   return { created, updated };
 

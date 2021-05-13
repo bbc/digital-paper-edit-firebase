@@ -11,6 +11,7 @@ import { PROJECTS } from '../../constants/routes';
 import { withAuthorization } from '../Session';
 import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import './index.scss';
 
 import {
   faArrowLeft,
@@ -362,7 +363,7 @@ const WorkspaceView = props => {
   return (
     <Container >
       <Row>
-        <Col sm={ 2 }>
+        <Col sm={ 6 }>
           <a href="#">
             <Button size="sm">
               <FontAwesomeIcon icon={ faArrowLeft } /> Back to Projects
@@ -386,20 +387,22 @@ const WorkspaceView = props => {
             size="sm"
             block
           >
-            <FontAwesomeIcon icon={ faCircle } /> Transcribe Media
+            <FontAwesomeIcon icon={ faCircle } /> Convert Media to Transcript
           </Button>
         </Col>
       </Row>
       <hr></hr>
-      <Row style={ { marginBottom: '15px' } }>
+      <Row className="title-row">
         <Col>
           <h2>Project: &quot;{title}&quot;</h2>
         </Col>
       </Row>
-      <Row>
-        <Col sm={ 4 }><h5>Title</h5></Col>
-        <Col sm={ 4 }><h5>Created / Updated</h5></Col>
-        <Col sm={ 4 }><h5>Transcripts</h5></Col>
+      <Row className="headers-row">
+        <Col className="column" sm={ 8 }>
+          <h5 className="column__header">Programme scripts</h5>
+          <h5 className="column__header">Created / Updated</h5>
+        </Col>
+        <Col><h5 className="column__header">Transcripts</h5></Col>
       </Row>
       <Row>
         <Col sm={ 8 }>
