@@ -369,7 +369,6 @@ const ProgrammeScriptContainer = (props) => {
       speaker,
       transcriptId,
       labelId: [],
-      continues: false,
       sourceParagraphIndex
     };
 
@@ -378,7 +377,6 @@ const ProgrammeScriptContainer = (props) => {
 
   const formatMultipleParagraphs = (selection, insertElementIndex) => {
     console.log('Adding multiple paragraphs...');
-    console.log('selection', selection);
     const playlistStartTime = getTranscriptSelectionStartTime(
       insertElementIndex
     );
@@ -386,7 +384,6 @@ const ProgrammeScriptContainer = (props) => {
     const paragraphSelections = divideWordsSelectionsIntoParagraphs(
       selection.words
     );
-    console.log('paragraphSelections', paragraphSelections);
 
     const emptyPaperEditElement = {
       elements: [],
@@ -394,7 +391,7 @@ const ProgrammeScriptContainer = (props) => {
       index: elements.length - 1,
     };
     const paperEditElements = paragraphSelections.reduce(
-      (prevResult, paragraph, paragraphIndex) => {
+      (prevResult, paragraph) => {
         // Calculates start and end times in the programme script playlist
         const paperCutStart = prevResult.newDuration;
         const paperCutDuration = paragraph[paragraph.length - 1].end - paragraph[0].start;
@@ -406,7 +403,6 @@ const ProgrammeScriptContainer = (props) => {
 
         const paperCutSpeaker = paragraph[0].speaker;
         const paperCutTranscriptId = paragraph[0].transcriptId;
-        const isNotLastParagraphInSelection = paragraphIndex !== paragraphSelections.length - 1;
         const sourceParagraphIndex = paragraph[0].sourceParagraphIndex;
 
         // Recalcultates word timings to align with programme script playlist
@@ -437,7 +433,6 @@ const ProgrammeScriptContainer = (props) => {
           speaker: paperCutSpeaker,
           transcriptId: paperCutTranscriptId,
           labelId: [],
-          continues: isNotLastParagraphInSelection,
           sourceParagraphIndex
         };
 
@@ -475,7 +470,6 @@ const ProgrammeScriptContainer = (props) => {
         // Adjusts word timings for paper-cuts effected by the insert
         updatedElements = updateWordTimings(elementsClone);
       }
-      // console.log('updatedElements', updatedElements);
       setElements(updatedElements);
       setResetPreview(true);
       handleSaveProgrammeScript(updatedElements);
