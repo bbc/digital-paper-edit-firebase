@@ -3,7 +3,7 @@ import React from 'react';
 import removePunctuation from '../../../../Util/remove-punctuation';
 
 const Word = (props) => {
-  const { transcriptId, speaker, word, handleKeyPress } = props;
+  const { transcriptId, speaker, word, handleKeyPress, sourceParagraphIndex } = props;
 
   return (
     <span
@@ -16,6 +16,7 @@ const Word = (props) => {
       data-end={ word.end }
       data-transcript-id={ transcriptId }
       data-speaker={ speaker }
+      data-source-index={ sourceParagraphIndex }
       key={ 'key_' + word.id + '_' + word.end }
       role="button"
       aria-pressed="false"
@@ -36,6 +37,7 @@ Word.propTypes = {
     start: PropTypes.any,
     text: PropTypes.any,
   }),
+  sourceParagraphIndex: PropTypes.number
 };
 
 export default React.memo(Word);
