@@ -16,7 +16,8 @@ function parseWordElDataset(wordEl) {
     // to preserve punctuation and capitalization
     text: wordEl.innerText,
     speaker: wordEl.dataset.speaker,
-    transcriptId: wordEl.dataset.transcriptId
+    transcriptId: wordEl.dataset.transcriptId,
+    sourceParagraphIndex: wordEl.dataset.sourceIndex ? parseInt(wordEl.dataset.sourceIndex) : null
   };
 }
 
@@ -58,8 +59,7 @@ function getDataFromUserWordsSelection() {
         end: parseFloat(words[words.length - 1].dataset.end),
         transcriptId: words[0].dataset.transcriptId,
         speaker: words[0].dataset.speaker,
-        // words: words
-        words: Array.from(words).map((w) => { return parseWordElDataset(w); })
+        words: Array.from(words).map((w) => { return parseWordElDataset(w); }),
       };
     }
     else {

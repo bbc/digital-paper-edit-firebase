@@ -243,7 +243,7 @@ const ProgrammeScriptContainer = (props) => {
           return { ...item, src };
         })
       );
-      console.log('playlistItems', playlistItems);
+      // console.log('playlistItems', playlistItems);
       setPlaylist(playlistItems);
       setResetPreview(false);
     };
@@ -314,7 +314,7 @@ const ProgrammeScriptContainer = (props) => {
     return elements.indexOf(insertElement);
   };
 
-  // Calcultates the duration of the programme script playlist up to the point of the new insertion
+  // Calculates the duration of the programme script playlist up to the point of the new insertion
   const getTranscriptSelectionStartTime = (insertIndex) => {
     const prevElements = elements.slice(0, insertIndex);
 
@@ -341,6 +341,7 @@ const ProgrammeScriptContainer = (props) => {
       insertElementIndex
     );
     const paperCutDuration = end - start;
+    const { sourceParagraphIndex } = words[0];
 
     // Recalcultates word timings to align with programme script playlist
     const wordsAdjusted = words.map((word, i) => {
@@ -368,7 +369,8 @@ const ProgrammeScriptContainer = (props) => {
       speaker,
       transcriptId,
       labelId: [],
-      continues: false
+      continues: false,
+      sourceParagraphIndex
     };
 
     return newElement;
@@ -377,7 +379,6 @@ const ProgrammeScriptContainer = (props) => {
   const formatMultipleParagraphs = (selection, insertElementIndex) => {
     console.log('Adding multiple paragraphs...');
     console.log('selection', selection);
-    console.log(insertElementIndex);
     const playlistStartTime = getTranscriptSelectionStartTime(
       insertElementIndex
     );
@@ -406,6 +407,7 @@ const ProgrammeScriptContainer = (props) => {
         const paperCutSpeaker = paragraph[0].speaker;
         const paperCutTranscriptId = paragraph[0].transcriptId;
         const isNotLastParagraphInSelection = paragraphIndex !== paragraphSelections.length - 1;
+        const sourceParagraphIndex = paragraph[0].sourceParagraphIndex;
 
         // Recalcultates word timings to align with programme script playlist
         const wordsAdjusted = paragraph.map((word, wordIndex) => {
@@ -435,7 +437,8 @@ const ProgrammeScriptContainer = (props) => {
           speaker: paperCutSpeaker,
           transcriptId: paperCutTranscriptId,
           labelId: [],
-          continues: isNotLastParagraphInSelection
+          continues: isNotLastParagraphInSelection,
+          sourceParagraphIndex
         };
 
         return {
@@ -450,20 +453,14 @@ const ProgrammeScriptContainer = (props) => {
   };
 
   const handleTransfer = () => {
-    console.log('Handling add transcript selection...');
     const selection = getDataFromUserWordsSelection();
-    console.log('selection', selection);
     const elementsClone = JSON.parse(JSON.stringify(elements));
     const insertElementIndex = getInsertElementIndex();
     let updatedElements;
 
     if (selection) {
       if (isOneParagraph(selection.words)) {
-        const newPaperCut = formatSingleParagaph(
-          selection,
-          elementsClone,
-          insertElementIndex
-        );
+        const newPaperCut = formatSingleParagaph(selection);
         elementsClone.splice(insertElementIndex, 0, newPaperCut);
 
         // Adjusts word timings for paper-cuts that come after the new element
@@ -472,16 +469,13 @@ const ProgrammeScriptContainer = (props) => {
           insertElementIndex
         );
       } else {
-        const newPaperCuts = formatMultipleParagraphs(
-          selection,
-          insertElementIndex
-        );
+        const newPaperCuts = formatMultipleParagraphs(selection, insertElementIndex);
         elementsClone.splice(insertElementIndex, 0, ...newPaperCuts.elements);
 
         // Adjusts word timings for paper-cuts effected by the insert
         updatedElements = updateWordTimings(elementsClone);
       }
-      console.log('updatedElements', updatedElements);
+      // console.log('updatedElements', updatedElements);
       setElements(updatedElements);
       setResetPreview(true);
       handleSaveProgrammeScript(updatedElements);
