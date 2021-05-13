@@ -8,13 +8,13 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import LabelsList from '../LabelsList/index.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHighlighter, faCog } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faTag } from '@fortawesome/free-solid-svg-icons';
 import './index.scss';
 
 const TranscriptMenu = (props) => {
   const labels = props.labels;
 
-  const setSelectedLabelColour = (transcriptLabels) => {
+  const getSelectedLabelColour = (transcriptLabels) => {
     const defaultColour = 'orange';
 
     if (transcriptLabels) {
@@ -32,7 +32,7 @@ const TranscriptMenu = (props) => {
     return defaultColour;
   };
 
-  const selectedLabelColour = setSelectedLabelColour(labels);
+  const selectedLabelColour = getSelectedLabelColour(labels);
 
   const LabelButton = (
     <Button
@@ -42,8 +42,8 @@ const TranscriptMenu = (props) => {
         props.handleCreateAnnotation(e);
       } }
     >
-      <FontAwesomeIcon icon={ faHighlighter } flip="horizontal" />
-      <span className='TranscriptMenu__label-button-text'>Labels</span>
+      <FontAwesomeIcon icon={ faTag } flip="horizontal" />
+      <span className='TranscriptMenu__label-button-text'>Label</span>
       <Col
         style={ { backgroundColor: selectedLabelColour } }
         className="TranscriptMenu__highlight-square"

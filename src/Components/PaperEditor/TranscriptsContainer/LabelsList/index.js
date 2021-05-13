@@ -54,7 +54,7 @@ const LabelsList = (props) => {
   const EditableLabel = (id, color, label, description) => {
     return (
       <>
-        <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
+        <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 } className='LabelsList__label-button edit'>
           <LabelModal
             color={ color }
             label={ label }
@@ -65,12 +65,11 @@ const LabelsList = (props) => {
             showButtonSize={ 'sm' }
             showButtonText={
               <span>
-                {' '}
                 <FontAwesomeIcon icon={ faPen } />
               </span> }
           />
         </Col>
-        <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
+        <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 } className='LabelsList__label-button'>
           <Button
             title={ 'delete label' }
             variant="link"
@@ -97,8 +96,8 @@ const LabelsList = (props) => {
             size="sm"
             onClick={ (e) => handleEdit(id, e) }
             disabled={ true }
+            style= { { padding: 0 } }
           >
-            <FontAwesomeIcon icon={ faPen } />{' '}
           </Button>
         </Col>
         <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
@@ -108,8 +107,8 @@ const LabelsList = (props) => {
             size="sm"
             onClick={ (e) => handleDelete(id, e) }
             disabled={ true }
+            style= { { padding: 0 } }
           >
-            <FontAwesomeIcon icon={ faTimes } />
           </Button>
         </Col>
       </>
@@ -125,7 +124,7 @@ const LabelsList = (props) => {
       const { label, color, id, description } = l;
 
       return (
-        <ListGroup.Item style={ { width: '100%' } } key={ cuid() }>
+        <ListGroup.Item key={ cuid() } className='LabelsList__list-item'>
           <Row>
             <Button
               className='LabelsList__label-element'
@@ -133,16 +132,11 @@ const LabelsList = (props) => {
                 updateLabelSelection(id);
               } }
             >
-              <Col
-                xs={ 1 }
-                sm={ 1 }
-                md={ 1 }
-                lg={ 1 }
-                xl={ 1 }
-                style={ { backgroundColor: color } }
-                title={ label }
+              <span
+                className='LabelsList__label-color-square'
+                style= { { backgroundColor: color } }
               />
-              <Col xs={ 6 } sm={ 6 } md={ 6 } lg={ 6 } xl={ 6 } title={ label }>
+              <Col xs={ 6 } sm={ 6 } md={ 6 } lg={ 6 } xl={ 6 } title={ label } className='LabelsList__label-text'>
                 {label}
               </Col>
             </Button>
@@ -150,21 +144,6 @@ const LabelsList = (props) => {
             {label === 'Default'
               ? NonEditableLabel(id)
               : EditableLabel(id, color, label, description)}
-          </Row>
-          <Row>
-            {/* Spacing to align title and color */}
-            <Col
-              xs={ 1 }
-              sm={ 1 }
-              md={ 1 }
-              lg={ 1 }
-              xl={ 1 }
-              className="text-truncate"
-              title={ label }
-            ></Col>
-            <Col xs={ 10 } sm={ 10 } md={ 10 } lg={ 10 } xl={ 10 }>
-              <Form.Text title={ description }>{description}</Form.Text>
-            </Col>
           </Row>
         </ListGroup.Item>
       );
