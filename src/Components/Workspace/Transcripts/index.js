@@ -13,8 +13,6 @@ const Transcripts = (props) => {
     const { created, updated } = formatDates(item);
     const progress = uploadTasks.get(item.id);
 
-    console.log('RUNTIME: ', item.runtime?.humanReadable);
-
     return (
       <TranscriptRow
         key={ key }
@@ -25,7 +23,7 @@ const Transcripts = (props) => {
         created={ created ? created : 'NA' }
         updated={ updated ? updated : 'NA' }
         message={ item.message }
-        mediaDuration={ item.runtime?.humanReadable }
+        mediaDuration={ item.runtime?.humanReadable ? item.runtime?.humanReadable : item.duration }
         transcriptionDuration={ item.transcriptionDuration }
         status={ item.status }
         progress={ progress }
