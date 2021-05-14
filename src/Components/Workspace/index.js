@@ -344,7 +344,6 @@ const WorkspaceView = props => {
   };
 
   const createOrUpdateTranscript = async (item) => {
-    console.log('trying to create a transcript...', item);
     let newTranscript = { ...item, projectId: id };
     delete newTranscript.display;
 
