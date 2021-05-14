@@ -283,10 +283,21 @@ const WorkspaceView = props => {
 
   // general
 
-  const finishCreateorUpdateTranscript = async (transcript, duration) => {
+  const formatDuration = async (duration) => {
+    const seconds = Number(duration);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+
+    const mDisplay = m > 0 ? m + (m === 1 ? ' min ' : ' mins ') : '';
+    const sDisplay = s > 0 ? s + (s === 1 ? ' s' : ' s') : '';
+
+    return mDisplay + sDisplay;
+  };
+
+  const finishCreateOrUpdateTranscript = async (transcript, duration, video) => {
+    video.remove();
     const file = transcript.file;
     delete transcript.file;
-    const formattedDuration = `${ parseInt(duration / 60, 10) } mins`;
 
     const newTranscript = await createOrUpdateCollectionItem({
       ...transcript,
@@ -294,7 +305,7 @@ const WorkspaceView = props => {
       projectId: id,
       description: transcript.description ? transcript.description : '',
       status: 'uploading',
-      duration: formattedDuration
+      duration: duration,
     }, createTranscript, updateTranscript);
 
     asyncUploadFile(newTranscript.id, file);
@@ -305,17 +316,18 @@ const WorkspaceView = props => {
 
   };
 
-  const getDuration = async (newTranscript) => {
+  const createOrUpdateWithDuration = async (newTranscript) => {
     const file = newTranscript.file;
     const video = document.createElement('video');
+    video.setAttribute('id', 'preload');
     video.preload = 'metadata';
 
-    // eslint-disable-next-line no-return-assign
     video.onloadedmetadata = async () => {
       window.URL.revokeObjectURL(video.src);
       const duration = video.duration;
+      const formattedDuration = await formatDuration(duration);
 
-      return await finishCreateorUpdateTranscript(newTranscript, duration);
+      return await finishCreateOrUpdateTranscript(newTranscript, formattedDuration, video);
     };
 
     video.src = URL.createObjectURL(file);
@@ -332,6 +344,7 @@ const WorkspaceView = props => {
   };
 
   const createOrUpdateTranscript = async (item) => {
+    console.log('trying to create a transcript...', item);
     let newTranscript = { ...item, projectId: id };
     delete newTranscript.display;
 
@@ -343,7 +356,7 @@ const WorkspaceView = props => {
       return newTranscript;
 
     } else {
-      return await getDuration(newTranscript);
+      return await createOrUpdateWithDuration(newTranscript);
     }
   };
 

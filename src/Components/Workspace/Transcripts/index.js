@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { withAuthorization } from '../../Session';
 import TranscriptRow from '@bbc/digital-paper-edit-storybook/TranscriptRow';
 import { formatDates } from '../../../Util/time';
+import './index.scss';
 
 const Transcripts = (props) => {
   const items = props.items;
@@ -23,7 +24,7 @@ const Transcripts = (props) => {
         created={ created ? created : 'NA' }
         updated={ updated ? updated : 'NA' }
         message={ item.message }
-        mediaDuration={ item.runtime?.humanReadable ? item.runtime?.humanReadable : item.duration }
+        mediaDuration={ item.duration ? item.duration : null }
         transcriptionDuration={ item.transcriptionDuration }
         status={ item.status }
         progress={ progress }
