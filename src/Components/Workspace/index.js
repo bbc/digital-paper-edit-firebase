@@ -319,7 +319,6 @@ const WorkspaceView = props => {
   const createOrUpdateWithDuration = async (newTranscript) => {
     const file = newTranscript.file;
     const video = document.createElement('video');
-    video.setAttribute('id', 'preload');
     video.preload = 'metadata';
 
     video.onloadedmetadata = async () => {
