@@ -21,7 +21,7 @@ import {
   divideWordsSelectionsIntoParagraphs,
   isOneParagraph,
 } from './divide-words-selections-into-paragraphs';
-import { compilePlaylist } from './utils/compilePlaylist';
+import { compilePlaylist, getMediaUrl } from './utils/compilePlaylist';
 
 import {
   updateWordTimings,
@@ -107,7 +107,7 @@ const ProgrammeScriptContainer = (props) => {
     }
   };
 
-  //on load? if no elements, get paper edit from db and save state.elements
+  //on load, get paper edit from db and update elements
   useEffect(() => {
     const getPaperEdit = async () => {
       const PaperEditCollection = new Collection(
@@ -140,10 +140,8 @@ const ProgrammeScriptContainer = (props) => {
     }
   }, [ elements, firebase, papereditsId, projectId ]);
 
-  //when elements are first loaded or change, set state.paperEdits to equal all the paper-cut items from elements
+  //when elements change, create paperEdits
   useEffect(() => {
-    console.log('useEffect elements', elements);
-    console.log('useEffect paperEdits', paperEdits);
     if (elements) {
       const pe = elements.filter((element) => element.type === 'paper-cut');
 
@@ -153,7 +151,7 @@ const ProgrammeScriptContainer = (props) => {
     }
   }, [ elements, paperEdits ]);
 
-  //when paper edits are loaded/change, fetch or update the list of transcripts
+  //when paperEdits are updated, update transcripts
   useEffect(() => {
     const collection = new Collection(
       props.firebase,
@@ -201,11 +199,7 @@ const ProgrammeScriptContainer = (props) => {
 
   }, [ paperEdits, projectId, props.firebase, transcripts ]);
 
-  const handleGetMediaUrl = async(item) => {
-    return await firebase.storage.storage.ref(item.ref).getDownloadURL();
-  };
-
-  //load/update playlist items(media urls and start/end times to play edited script) - triggered when resetPreview is true (change to paperedit)
+  //when resetPreview is true and transcripts and paperEdits are set, update playlist
   useEffect(() => {
     async function getPlaylist() {
       const playlistItems = await compilePlaylist(paperEdits, transcripts, firebase.storage.storage);
@@ -214,7 +208,6 @@ const ProgrammeScriptContainer = (props) => {
     }
 
     if (resetPreview && paperEdits && transcripts) {
-      console.log('getting playlist');
       getPlaylist();
     }
 
@@ -529,7 +522,7 @@ const ProgrammeScriptContainer = (props) => {
                   transcripts={ transcripts }
                   title={ title }
                   elements={ elements }
-                  handleGetMediaUrl = { handleGetMediaUrl }
+                  handleGetMediaUrl = { getMediaUrl }
                 />
                 : (<Button variant="outline-secondary" disabled>
                   <FontAwesomeIcon icon={ faShare } /> Export

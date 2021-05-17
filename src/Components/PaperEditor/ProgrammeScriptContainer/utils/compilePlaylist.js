@@ -58,4 +58,4 @@ const compilePlaylist = async (paperEdits, transcripts, storage) => {
   );
 };
 
-export { compilePlaylist };
+export { getMediaUrl, compilePlaylist };
