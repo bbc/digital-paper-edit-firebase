@@ -74,7 +74,7 @@ const AnnotationOverlayTrigger = (props) => {
       overlay={ overlay }
     >
       <span
-        style={ { borderBottom: `0.1em ${ color } solid` } }
+        style={ { borderBottom: `0.2em ${ color } solid` } }
         className={ 'highlight' }
       >
         {words}

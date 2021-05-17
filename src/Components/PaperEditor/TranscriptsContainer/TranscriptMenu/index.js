@@ -23,16 +23,15 @@ const TranscriptMenu = (props) => {
       if (activeLabel) {
         return activeLabel.color;
       } else {
-        const firstLabelInList = transcriptLabels[0];
+        const lastLabelInList = transcriptLabels[transcriptLabels.length - 1];
+        lastLabelInList.active = true;
 
-        return firstLabelInList.color;
+        return lastLabelInList.color;
       }
     }
 
     return defaultColour;
   };
-
-  const selectedLabelColour = getSelectedLabelColour(labels);
 
   const LabelButton = (
     <Button
@@ -45,7 +44,7 @@ const TranscriptMenu = (props) => {
       <FontAwesomeIcon icon={ faTag } flip="horizontal" />
       <span className='TranscriptMenu__label-button-text'>Label</span>
       <Col
-        style={ { backgroundColor: selectedLabelColour } }
+        style={ { backgroundColor: getSelectedLabelColour(labels) } }
         className="TranscriptMenu__highlight-square"
       />
     </Button>

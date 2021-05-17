@@ -1,14 +1,12 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
-import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTag,
-  faTimes,
   faTrash,
   faPen,
 } from '@fortawesome/free-solid-svg-icons';
@@ -48,7 +46,6 @@ const LabelsList = (props) => {
     } else {
       onLabelCreate(newLabel);
     }
-    updateLabelSelection(newLabel.id);
   };
 
   const EditableLabel = (id, color, label, description) => {
@@ -124,7 +121,11 @@ const LabelsList = (props) => {
       const { label, color, id, description } = l;
 
       return (
-        <ListGroup.Item key={ cuid() } className='LabelsList__list-item'>
+        <ListGroup.Item
+          key={ cuid() }
+          className='LabelsList__list-item'
+          href='#'
+          style= { { backgroundColor: 'white', borderColor: 'rgba(0, 0, 0, 0.125)' } }>
           <Row>
             <Button
               className='LabelsList__label-element'

@@ -63,6 +63,9 @@ const TranscriptTabContent = (props) => {
             return { ...doc.data(), id: doc.id, display: true };
           });
           const lbls = tempLabels ? tempLabels : []; // to remove once a bug is fixed
+          tempLabels.sort((a, b) => {
+            return a.created - b.created;
+          });
           setLabels(lbls);
         });
       } catch (error) {
@@ -424,16 +427,8 @@ const TranscriptTabContent = (props) => {
     });
   };
 
-  const onLabelCreate = (newLabel) => {
-    createLabel(newLabel);
-    const tempLabels = labels;
-    tempLabels.push(newLabel);
-    setLabels(tempLabels);
-    props.trackEvent({ category: 'paperEditor transcriptsTab', action: 'label create ' });
-  };
-
   const onLabelUpdate = (labelId, updatedLabel) => {
-    setLabels(() => [ ...tempLabels, updatedLabel ]);
+    setLabels(() => [ ...labels, updatedLabel ]);
     LabelsCollection.putItem(labelId, updatedLabel);
     props.trackEvent({ category: 'paperEditor transcriptsTab', action: `label update ${ labelId } ${ updatedLabel }` });
   };
@@ -456,6 +451,15 @@ const TranscriptTabContent = (props) => {
     activeLabel.active = true;
     setLabels(tempLabels);
     props.trackEvent({ category: 'paperEditor transcriptsTab', action: `label select ${ labelId }` });
+  };
+
+  const onLabelCreate = (newLabel) => {
+    createLabel(newLabel);
+    const tempLabels = labels;
+    newLabel.active = true;
+    tempLabels.push(newLabel);
+    props.trackEvent({ category: 'paperEditor transcriptsTab', action: 'label create ' });
+    console.log(labels, '👹');
   };
 
   const cardBodyHeight = mediaType.startsWith('audio') ? '100vh' : '60vh';
