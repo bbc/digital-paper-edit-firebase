@@ -18,38 +18,39 @@ const paperEditsAreContinuous = (lastPlaylistItem, currentEdit) => {
 const getMediaUrl = async (storage, item) => storage.ref(item.ref).getDownloadURL();
 
 const compilePlaylist = async (paperEdits, transcripts, storage) => {
-  //todo: extract startTime into a let?
-  const emptyPlaylist = { startTime: 0, playlist: [] };
   const results = paperEdits.reduce((prevResult, paperEdit) => {
     const transcript = transcripts.find(t => t.id === paperEdit.transcriptId);
     if (transcript) {
-      if (prevResult.playlist.length > 0) {
-        const lastPlaylistItem = prevResult.playlist[prevResult.playlist.length - 1];
+      let startTime = 0;
+      const playlistLength = prevResult.length;
+      if (playlistLength > 0) {
+        const lastPlaylistItem = prevResult[playlistLength - 1];
         if (paperEditsAreContinuous(lastPlaylistItem, paperEdit)) {
           const updatedPlaylistItem = {
             ...lastPlaylistItem,
             duration: paperEdit.end - lastPlaylistItem.sourceStart,
             lastSourceParagraphIndex: paperEdit.sourceParagraphIndex
           };
-          const updatedStartTime = prevResult.startTime + updatedPlaylistItem.duration;
-          const updatedPlaylist = [ ...prevResult.playlist.slice(0, prevResult.playlist.length - 1), updatedPlaylistItem ];
+          const updatedPlaylist = [ ...prevResult.slice(0, playlistLength - 1), updatedPlaylistItem ];
 
-          return { startTime: updatedStartTime, playlist: updatedPlaylist };
+          return updatedPlaylist;
         }
-      }
-      //Todo fix this line - srtatTime not correct?
-      const playlistItem = getPlaylistItem(paperEdit, transcript.media.ref, prevResult.startTime, paperEdit.transcriptId, paperEdit.sourceParagraphIndex);
-      const updatedPlaylist = [ ...prevResult.playlist, playlistItem ];
-      const updatedStartTime = prevResult.startTime + playlistItem.duration;
 
-      return { startTime: updatedStartTime, playlist: updatedPlaylist };
+        const totalDuration = prevResult.reduce((lastClip, currentClip) => lastClip + currentClip.duration, 0);
+        startTime = totalDuration;
+      }
+
+      const playlistItem = getPlaylistItem(paperEdit, transcript.media.ref, startTime, paperEdit.transcriptId, paperEdit.sourceParagraphIndex);
+      const updatedPlaylist = [ ...prevResult, playlistItem ];
+
+      return updatedPlaylist;
     }
 
     return prevResult;
-  }, emptyPlaylist);
+  }, []);
 
   return Promise.all(
-    results.playlist.map(async (item) => {
+    results.map(async (item) => {
       const src = await getMediaUrl(storage, item);
 
       return { ...item, src };

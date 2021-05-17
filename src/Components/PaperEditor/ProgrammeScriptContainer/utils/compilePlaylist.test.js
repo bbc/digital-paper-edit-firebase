@@ -58,5 +58,9 @@ describe('compilePlaylist', () => {
     const clip2Duration = mockPaperEdit[3].end - mockPaperEdit[2].start;
     expect(result[0].duration).toEqual(clip1Duration);
     expect(result[1].duration).toEqual(clip2Duration);
+    const startTimeClip1 = 0;
+    const startTimeClip2 = clip1Duration;
+    expect(result[0].start).toEqual(startTimeClip1);
+    expect(result[1].start).toEqual(startTimeClip2);
   });
 });
