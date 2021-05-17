@@ -21,6 +21,7 @@ import {
   divideWordsSelectionsIntoParagraphs,
   isOneParagraph,
 } from './divide-words-selections-into-paragraphs';
+import { compilePlaylist } from './utils/compilePlaylist';
 
 import {
   updateWordTimings,
@@ -206,47 +207,11 @@ const ProgrammeScriptContainer = (props) => {
 
   //load/update playlist items(media urls and start/end times to play edited script) - triggered when resetPreview is true (change to paperedit)
   useEffect(() => {
-    const getPlaylistItem = (element, ref, start) => ({
-      type: 'video',
-      sourceStart: element.start,
-      duration: element.end - element.start,
-      ref,
-      start
-    });
-
-    const getMediaUrl = async (item) => {
-      return await firebase.storage.storage.ref(item.ref).getDownloadURL();
-    };
-
-    const getPlaylist = async () => {
-      const emptyPlaylist = { startTime: 0, playlist: [] };
-      const results = paperEdits.reduce(
-        (prevResult, paperEdit) => {
-          const transcript = transcripts.find(t => t.id === paperEdit.transcriptId);
-          if (transcript) {
-            const playlistItem = getPlaylistItem(paperEdit, transcript.media.ref, prevResult.startTime);
-            const updatedPlaylist = [ ...prevResult.playlist, playlistItem ];
-            const updatedStartTime = prevResult.startTime + playlistItem.duration;
-
-            return { ...prevResult, startTime: updatedStartTime, playlist: updatedPlaylist };
-          }
-
-          return prevResult;
-        },
-        emptyPlaylist
-      );
-
-      const playlistItems = await Promise.all(
-        results.playlist.map(async (item) => {
-          const src = await getMediaUrl(item);
-
-          return { ...item, src };
-        })
-      );
-      // console.log('playlistItems', playlistItems);
+    async function getPlaylist() {
+      const playlistItems = await compilePlaylist(paperEdits, transcripts, firebase.storage.storage);
       setPlaylist(playlistItems);
       setResetPreview(false);
-    };
+    }
 
     if (resetPreview && paperEdits && transcripts) {
       console.log('getting playlist');
