@@ -22,6 +22,7 @@ import { formReducer, incrementCopyName, initialFormState, } from '../../Util/fo
 import { createCollectionItem, createOrUpdateCollectionItem,
   deleteCollectionItem, handleDeleteItem, handleDuplicateItem,
   updateCollectionItem, updateItems } from '../../Util/collection';
+import { formatDuration } from '../../Util/time';
 
 const WorkspaceView = props => {
   const UPLOADFOLDER = 'uploads';
@@ -283,17 +284,6 @@ const WorkspaceView = props => {
   }, [ TranscriptsCollection.collectionRef, loadingT ]);
 
   // general
-
-  const formatDuration = async (duration) => {
-    const seconds = Number(duration);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-
-    const mDisplay = m > 0 ? m + (m === 1 ? ' min ' : ' mins ') : '';
-    const sDisplay = s > 0 ? s + (s === 1 ? ' s' : ' s') : '';
-
-    return mDisplay + sDisplay;
-  };
 
   const finishCreateOrUpdateTranscript = async (transcript, duration, video) => {
     video.remove();

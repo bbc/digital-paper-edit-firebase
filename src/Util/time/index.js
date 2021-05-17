@@ -55,4 +55,15 @@ const formatDates = (item) => {
 
 };
 
-export { ToHumanReadable, ToDhmsCompact, getISOTime, updateDescOrder, formatDates };
+const formatDuration = async (duration) => {
+  const seconds = Number(duration);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+
+  const mDisplay = m > 0 ? m + (m === 1 ? ' min ' : ' mins ') : '';
+  const sDisplay = s > 0 ? s + (s === 1 ? ' s' : ' s') : '';
+
+  return mDisplay + sDisplay;
+};
+
+export { ToHumanReadable, ToDhmsCompact, getISOTime, updateDescOrder, formatDates, formatDuration };
