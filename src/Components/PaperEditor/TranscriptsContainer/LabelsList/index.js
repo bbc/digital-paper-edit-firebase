@@ -126,7 +126,7 @@ const LabelsList = (props) => {
           href='#'
           style= { { backgroundColor: 'white', borderColor: 'rgba(0, 0, 0, 0.125)' } }>
           <Row>
-            <Button
+            <button
               className='LabelsList__label-element'
               onClick={ () => {
                 onLabelSelect(l);
@@ -140,7 +140,7 @@ const LabelsList = (props) => {
               <Col xs={ 6 } sm={ 6 } md={ 6 } lg={ 6 } xl={ 6 } title={ label } className='LabelsList__label-text'>
                 {label}
               </Col>
-            </Button>
+            </ button>
 
             {label === 'Default'
               ? NonEditableLabel(l)
