@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -12,26 +12,14 @@ import { faCog, faTag } from '@fortawesome/free-solid-svg-icons';
 import './index.scss';
 
 const TranscriptMenu = (props) => {
-  const labels = props.labels;
+  const { labels, activeLabel } = props;
 
-  const getSelectedLabelColour = (transcriptLabels) => {
-    const defaultColour = 'orange';
-
-    if (transcriptLabels) {
-      const tempLabels = JSON.parse(JSON.stringify(transcriptLabels));
-      const activeLabel = tempLabels.find((label) => label.active);
-      if (activeLabel) {
-        return activeLabel.color;
-      } else {
-        const lastLabelInList = transcriptLabels[transcriptLabels.length - 1];
-        lastLabelInList.active = true;
-
-        return lastLabelInList.color;
-      }
+  useEffect(() => {
+    if (labels) {
+      const defaultLabel = labels.find((label) => label.label === 'Default');
+      if (!activeLabel) props.onLabelSelect(defaultLabel);
     }
-
-    return defaultColour;
-  };
+  }, [ activeLabel, labels, props ]);
 
   const LabelButton = (
     <Button
@@ -44,7 +32,7 @@ const TranscriptMenu = (props) => {
       <FontAwesomeIcon icon={ faTag } flip="horizontal" />
       <span className='TranscriptMenu__label-button-text'>Label</span>
       <Col
-        style={ { backgroundColor: getSelectedLabelColour(labels) } }
+        style={ { backgroundColor: activeLabel?.color } }
         className="TranscriptMenu__highlight-square"
       />
     </Button>
@@ -60,10 +48,12 @@ const TranscriptMenu = (props) => {
     >
       <LabelsList
         labels={ labels }
+        activeLabel= { activeLabel }
         onLabelUpdate={ props.onLabelUpdate }
         onLabelCreate={ props.onLabelCreate }
         onLabelDelete={ props.onLabelDelete }
-        updateLabelSelection={ props.updateLabelSelection }
+        onLabelSelect = { props.onLabelSelect }
+        trackEvent = { props.trackEvent }
       />
     </DropdownButton>
   );
@@ -84,11 +74,13 @@ const TranscriptMenu = (props) => {
 
 TranscriptMenu.propTypes = {
   handleCreateAnnotation: PropTypes.func,
-  updateLabelSelection: PropTypes.func,
   labels: PropTypes.array,
+  activeLabel: PropTypes.any,
   onLabelCreate: PropTypes.any,
   onLabelDelete: PropTypes.any,
   onLabelUpdate: PropTypes.any,
+  onLabelSelect: PropTypes.any,
+  trackEvent: PropTypes.any,
 };
 
 export default TranscriptMenu;

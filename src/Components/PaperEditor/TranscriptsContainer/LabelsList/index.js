@@ -19,19 +19,15 @@ import PropTypes from 'prop-types';
 import './index.scss';
 
 const LabelsList = (props) => {
-  const labels = props.labels;
-  const onLabelDelete = props.onLabelDelete;
-  const onLabelCreate = props.onLabelCreate;
-  const onLabelUpdate = props.onLabelUpdate;
-  const updateLabelSelection = props.updateLabelSelection;
+  const { labels, onLabelDelete, onLabelCreate, onLabelUpdate, onLabelSelect, trackEvent } = props;
 
-  const handleDelete = (id) => {
+  const handleDelete = (label) => {
     const response = window.confirm(
       'Click OK to delete the label, Cancel if you changed your mind'
     );
 
     if (response) {
-      onLabelDelete(id);
+      onLabelDelete(label);
     }
   };
 
@@ -46,9 +42,12 @@ const LabelsList = (props) => {
     } else {
       onLabelCreate(newLabel);
     }
+    onLabelSelect(newLabel);
   };
 
-  const EditableLabel = (id, color, label, description) => {
+  const EditableLabel = (l) => {
+    const { color, label, description, id } = l;
+
     return (
       <>
         <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 } className='LabelsList__label-button edit'>
@@ -72,7 +71,7 @@ const LabelsList = (props) => {
             variant="link"
             size="sm"
             onClick={ (e) => {
-              handleDelete(id, e);
+              handleDelete(l, e);
             } }
             disabled={ false }
           >
@@ -83,7 +82,7 @@ const LabelsList = (props) => {
     );
   };
 
-  const NonEditableLabel = (id) => {
+  const NonEditableLabel = (label) => {
     return (
       <>
         <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
@@ -91,7 +90,7 @@ const LabelsList = (props) => {
             title={ 'edit label' }
             variant="link"
             size="sm"
-            onClick={ (e) => handleEdit(id, e) }
+            onClick={ (e) => handleEdit(label.id, e) }
             disabled={ true }
             style= { { padding: 0 } }
           >
@@ -102,7 +101,7 @@ const LabelsList = (props) => {
             title={ 'delete label' }
             variant="link"
             size="sm"
-            onClick={ (e) => handleDelete(id, e) }
+            onClick={ (e) => handleDelete(label, e) }
             disabled={ true }
             style= { { padding: 0 } }
           >
@@ -118,7 +117,7 @@ const LabelsList = (props) => {
 
   if (labels) {
     labelEls = labels.map((l) => {
-      const { label, color, id, description } = l;
+      const { label, color, id } = l;
 
       return (
         <ListGroup.Item
@@ -130,7 +129,8 @@ const LabelsList = (props) => {
             <Button
               className='LabelsList__label-element'
               onClick={ () => {
-                updateLabelSelection(id);
+                onLabelSelect(l);
+                trackEvent({ category: 'paperEditor transcriptsTab', action: `label select ${ id }` });
               } }
             >
               <span
@@ -143,8 +143,8 @@ const LabelsList = (props) => {
             </Button>
 
             {label === 'Default'
-              ? NonEditableLabel(id)
-              : EditableLabel(id, color, label, description)}
+              ? NonEditableLabel(l)
+              : EditableLabel(l)}
           </Row>
         </ListGroup.Item>
       );
@@ -188,7 +188,9 @@ LabelsList.propTypes = {
   onLabelDelete: PropTypes.any,
   onLabelCreate: PropTypes.any,
   onLabelUpdate: PropTypes.any,
-  updateLabelSelection: PropTypes.func
+  updateLabelSelection: PropTypes.func,
+  onLabelSelect: PropTypes. any,
+  trackEvent: PropTypes. any,
 };
 
 export default LabelsList;
