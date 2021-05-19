@@ -188,7 +188,6 @@ LabelsList.propTypes = {
   onLabelDelete: PropTypes.any,
   onLabelCreate: PropTypes.any,
   onLabelUpdate: PropTypes.any,
-  updateLabelSelection: PropTypes.func,
   onLabelSelect: PropTypes. any,
   trackEvent: PropTypes. any,
 };
