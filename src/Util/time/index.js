@@ -43,12 +43,27 @@ const getISODay = (time) => {
   return getISOTime(time.seconds).split('T')[0];
 };
 
+const getISOHour = (time) => {
+  return getISOTime(time.seconds).split('T')[1].replace('.000Z', '');
+};
+
 const formatDates = (item) => {
-  const created = item.created ? getISODay(item.created) : 0;
-  const updated = item.updated ? getISODay(item.updated) : 0;
+  const created = item.created ? `${ getISODay(item.created) },  ${ getISOHour(item.created) }` : 0;
+  const updated = item.updated ? `${ getISODay(item.created) },  ${ getISOHour(item.created) }` : 0;
 
   return { created, updated };
 
 };
 
-export { ToHumanReadable, ToDhmsCompact, getISOTime, updateDescOrder, formatDates };
+const formatDuration = async (duration) => {
+  const seconds = Number(duration);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+
+  const mDisplay = m > 0 ? m + (m === 1 ? ' min ' : ' mins ') : '';
+  const sDisplay = s > 0 ? s + (s === 1 ? ' s' : ' s') : '';
+
+  return mDisplay + sDisplay;
+};
+
+export { ToHumanReadable, ToDhmsCompact, getISOTime, updateDescOrder, formatDates, formatDuration };
