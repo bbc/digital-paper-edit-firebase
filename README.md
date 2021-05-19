@@ -219,15 +219,29 @@ Node version is set in node version manager
 
 Use node v8 in Functions directory.
 
-Developing is a lot easier if you have your **local emulator** set up.
+Developing is a lot easier if you have your **local emulator** set up. 
 
-1. Follow the instructions
-   [here](https://firebase.google.com/docs/functions/local-2.
-   emulator#set_up_admin_credentials_optional) to get the admin credentials.
-2. You need to save this as `gcp-credentials.json` and keep it in your
+### Running Firebase functions locally:
+
+1. Set up admin credentials for emulated functions via the [service account](https://console.cloud.google.com/iam-admin/serviceaccounts/details/102625058144632397517/keys?authuser=1&folder=&organizationId=&project=newslabs-dev-aa20&supportedpurview=project )
+2. Make sure you are in the `newslab-dev` project and click `Add key`
+3. You need to save this as `gcp-credentials.json` and keep it in your
    `digital-paper-edit-firebase/functions` folder.
-3. Run `./start_firebase_shell` in functions folder.
-   <!-- TODO: Setup eslint in express server -->
+4. cd to your `digital-paper-edit-firebase/functions` folder.
+5. run the following commands
+```
+export GOOGLE_APPLICATION_CREDENTIALS="gcp-credentials.json"
+firebase functions:config:get > .runtimeconfig.json
+```
+3. Then to start the emulator in your terminal window, run 
+```
+firebase functions:shell
+```
+4. BEWARE!!! Running functions locally will really affect files in the Firestore, so tread carefully!
+5. Call the function you would like to test e.g. run `dpeCronExpiredMediaChecker()`
+
+See [here](https://firebase.google.com/docs/functions/local-emulator) for more info on running functions locally.
+
 
 ### Function deployment
 
