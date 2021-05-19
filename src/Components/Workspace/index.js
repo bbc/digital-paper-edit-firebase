@@ -22,6 +22,7 @@ import { formReducer, incrementCopyName, initialFormState, } from '../../Util/fo
 import { createCollectionItem, createOrUpdateCollectionItem,
   deleteCollectionItem, handleDeleteItem, handleDuplicateItem,
   updateCollectionItem, updateItems } from '../../Util/collection';
+import { formatDuration } from '../../Util/time';
 
 const WorkspaceView = props => {
   const UPLOADFOLDER = 'uploads';
@@ -284,6 +285,44 @@ const WorkspaceView = props => {
 
   // general
 
+  const finishCreateOrUpdateTranscript = async (transcript, duration, video) => {
+    video.remove();
+    const file = transcript.file;
+    delete transcript.file;
+
+    const newTranscript = await createOrUpdateCollectionItem({
+      ...transcript,
+      title: transcript.title,
+      projectId: id,
+      description: transcript.description ? transcript.description : '',
+      status: 'uploading',
+      duration: duration,
+    }, createTranscript, updateTranscript);
+
+    asyncUploadFile(newTranscript.id, file);
+
+    newTranscript.display = true;
+
+    return newTranscript;
+
+  };
+
+  const createOrUpdateWithDuration = async (newTranscript) => {
+    const file = newTranscript.file;
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+
+    video.onloadedmetadata = async () => {
+      window.URL.revokeObjectURL(video.src);
+      const duration = video.duration;
+      const formattedDuration = await formatDuration(duration);
+
+      return await finishCreateOrUpdateTranscript(newTranscript, formattedDuration, video);
+    };
+
+    video.src = URL.createObjectURL(file);
+  };
+
   const createOrUpdatePaperEdit = async (item) => {
     const newPaperEdit = { ...item, projectId: id };
     delete newPaperEdit.display;
@@ -301,25 +340,13 @@ const WorkspaceView = props => {
     if (newTranscript.id) {
       newTranscript = await createOrUpdateCollectionItem(newTranscript, createTranscript,
         updateTranscript);
+      newTranscript.display = true;
+
+      return newTranscript;
 
     } else {
-      const file = newTranscript.file;
-      delete newTranscript.file;
-
-      newTranscript = await createOrUpdateCollectionItem({
-        ...newTranscript,
-        title: newTranscript.title,
-        projectId: id,
-        description: newTranscript.description ? newTranscript.description : '',
-        status: 'uploading',
-      }, createTranscript, updateTranscript);
-
-      asyncUploadFile(newTranscript.id, file);
+      return await createOrUpdateWithDuration(newTranscript);
     }
-
-    newTranscript.display = true;
-
-    return newTranscript;
   };
 
   const handleSavePaperEditForm = (item) => {
