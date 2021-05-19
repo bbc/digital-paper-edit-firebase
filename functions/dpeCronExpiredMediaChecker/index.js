@@ -1,5 +1,5 @@
 const { updateTranscription } = require('../sttChecker');
-const functions = require("firebase-functions");
+const functions = require('firebase-functions');
 
 const daysUntilExpiry = 60;
 
@@ -35,11 +35,14 @@ const checkForExpiredContent = async (allFiles, admin) => {
         functions.logger.log(`[IN PROGRESS] Expired media is being deleted:
         filePath: ${ filePath }
         transcriptFilePath: ${ transcriptFilePath }`);
+
         return deleteExpiredFile(file, admin);
       }
+
       return Promise.resolve();
     } catch (error) {
       functions.logger.log(`[ERROR]: Unable to delete file ${ filePath } : `, error);
+
       return Promise.reject(error);
     }
   });
@@ -55,7 +58,8 @@ const dpeCronExpiredMediaChecker = async (bucket, admin) => {
   try {
     data = await bucket.getFiles();
   } catch (error) {
-    functions.logger.log(`[ERROR] data not found`, error);
+    functions.logger.log('[ERROR] data not found', error);
+
     return error;
   }
   allFiles = data.length > 0 ? data[0] : [];
@@ -66,10 +70,12 @@ const dpeCronExpiredMediaChecker = async (bucket, admin) => {
       return await Promise.all(expiredContent);
     }
     functions.logger.log('[COMPLETE] Deleted expired media content ✅');
+
     return Promise.resolve();
   }
   catch (error) {
-    functions.logger.log(`[ERROR] Files could not be deleted`, error );
+    functions.logger.log('[ERROR] Files could not be deleted', error );
+
     return Promise.reject(error);
   }
 };

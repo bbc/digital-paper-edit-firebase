@@ -31,6 +31,7 @@ const Paragraphs = (props) => {
         speaker={ paragraph.speaker }
         words={ paragraph.words }
         text={ paragraph.text }
+        sourceParagraphIndex = { paragraph.id }
       />
     );
   };

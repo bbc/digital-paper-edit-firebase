@@ -22,7 +22,8 @@ const Paragraph = (props) => {
     handleEditAnnotation,
     speaker,
     words,
-    text
+    text,
+    sourceParagraphIndex
   } = props;
 
   const [ textWithoutPunctuation, setTextWithoutPunct ] = useState('');
@@ -43,6 +44,7 @@ const Paragraph = (props) => {
         speaker={ speaker }
         word={ word }
         handleKeyPress={ handleWordClick }
+        sourceParagraphIndex = { sourceParagraphIndex }
       />
     );
 
@@ -127,7 +129,8 @@ Paragraph.propTypes = {
   speaker: PropTypes.string,
   text: PropTypes.any,
   transcriptId: PropTypes.any,
-  words: PropTypes.array
+  words: PropTypes.array,
+  sourceParagraphIndex: PropTypes.number
 };
 
 Paragraph.defaultProps = {

@@ -21,6 +21,7 @@ import {
   divideWordsSelectionsIntoParagraphs,
   isOneParagraph,
 } from './divide-words-selections-into-paragraphs';
+import { compilePlaylist, getMediaUrl } from './utils/compilePlaylist';
 
 import {
   updateWordTimings,
@@ -106,26 +107,27 @@ const ProgrammeScriptContainer = (props) => {
     }
   };
 
+  //on load, get paper edit from db and update elements
   useEffect(() => {
-    const collection = new Collection(
-      firebase,
-      `/projects/${ projectId }/paperedits`
-    );
-
     const getPaperEdit = async () => {
-      try {
-        const paperEdit = await collection.getItem(papereditsId);
-        setTitle(paperEdit.title);
+      const PaperEditCollection = new Collection(
+        firebase,
+        `/projects/${ projectId }/paperedits`
+      );
 
-        const newElements = paperEdit.elements
-          ? JSON.parse(JSON.stringify(paperEdit.elements))
-          : [];
+      try {
+        const { title: paperEditTitle, elements: paperEditElements } = await PaperEditCollection.getItem(papereditsId);
+        setTitle(paperEditTitle);
+
         const insertElement = {
           type: 'insert',
           text: 'Insert point to add selection',
         };
 
-        newElements.push(insertElement);
+        const newElements = paperEditElements
+          ? [ ...paperEditElements, insertElement ]
+          : [ insertElement ];
+
         setElements(newElements);
         setResetPreview(true);
       } catch (error) {
@@ -138,6 +140,7 @@ const ProgrammeScriptContainer = (props) => {
     }
   }, [ elements, firebase, papereditsId, projectId ]);
 
+  //when elements change, create paperEdits
   useEffect(() => {
     if (elements) {
       const pe = elements.filter((element) => element.type === 'paper-cut');
@@ -148,6 +151,7 @@ const ProgrammeScriptContainer = (props) => {
     }
   }, [ elements, paperEdits ]);
 
+  //when paperEdits are updated, update transcripts
   useEffect(() => {
     const collection = new Collection(
       props.firebase,
@@ -195,97 +199,13 @@ const ProgrammeScriptContainer = (props) => {
 
   }, [ paperEdits, projectId, props.firebase, transcripts ]);
 
-  const handleGetMediaUrl = async(item) => {
-    return await firebase.storage.storage.ref(item.ref).getDownloadURL();
-  };
-
+  //when resetPreview is true and transcripts and paperEdits are set, update playlist
   useEffect(() => {
-    const Transcriptions = new Collection(
-      props.firebase,
-      `/projects/${ projectId }/transcripts`
-    );
-    const getTranscripts = async (trIds) => {
-      try {
-        if (!transcripts) {
-          const trs = await Promise.all(trIds.map((async trId => {
-            const transcript = await Transcriptions.getItem(trId);
-
-            return { id: trId, ...transcript };
-          })));
-          setTranscripts(trs);
-        } else {
-          const trs = await Promise.all(trIds.map((async trId => {
-            let transcript = (transcripts.find(t => t.id === trId));
-            if (transcript) {
-              return transcript;
-            }
-
-            transcript = await Transcriptions.getItem(trId);
-
-            return { id: trId, ...transcript };
-          })));
-          setTranscripts(trs);
-        }
-      } catch (error) {
-        console.error('Error getting documents: ', error);
-      }
-    };
-
-    if (paperEdits) {
-      if (!transcripts ) {
-        const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
-        getTranscripts(trIds);
-      } else {
-        const newTranscripts = paperEdits.filter(pe => !transcripts.find(tr => tr.id === pe.transcriptId ));
-        if (newTranscripts.length > 0) {
-          const trIds = Array.from(new Set(paperEdits.map(pe => pe.transcriptId)));
-          getTranscripts(trIds);
-        }
-      }
-    }
-
-  }, [ paperEdits, projectId, props.firebase, transcripts ]);
-  useEffect(() => {
-    const getPlaylistItem = (element) => ({
-      type: 'video',
-      sourceStart: element.start,
-      duration: element.end - element.start,
-    });
-
-    const getMediaUrl = async (item) => {
-      return await firebase.storage.storage.ref(item.ref).getDownloadURL();
-    };
-
-    const getPlaylist = async () => {
-      const results = paperEdits.reduce(
-        (prevResult, paperEdit) => {
-          const transcript = transcripts.find(t => t.id === paperEdit.transcriptId);
-          if (transcript) {
-            const playlistItem = getPlaylistItem(paperEdit);
-            playlistItem.ref = transcript.media.ref;
-            playlistItem.start = prevResult.startTime;
-            prevResult.playlist.push(playlistItem);
-            prevResult.startTime += playlistItem.duration;
-
-          }
-
-          return prevResult;
-        },
-        { startTime: 0, playlist: [] }
-      );
-
-      let { playlist: playlistItems } = results;
-      playlistItems = await Promise.all(
-        playlistItems.map(async (item) => {
-          item.src = await getMediaUrl(item);
-
-          return item;
-        })
-      );
-
+    async function getPlaylist() {
+      const playlistItems = await compilePlaylist(paperEdits, transcripts, firebase.storage.storage);
       setPlaylist(playlistItems);
       setResetPreview(false);
-    };
+    }
 
     if (resetPreview && paperEdits && transcripts) {
       getPlaylist();
@@ -352,7 +272,7 @@ const ProgrammeScriptContainer = (props) => {
     return elements.indexOf(insertElement);
   };
 
-  // Calcultates the duration of the programme script playlist up to the point of the new insertion
+  // Calculates the duration of the programme script playlist up to the point of the new insertion
   const getTranscriptSelectionStartTime = (insertIndex) => {
     const prevElements = elements.slice(0, insertIndex);
 
@@ -361,58 +281,54 @@ const ProgrammeScriptContainer = (props) => {
     );
 
     const totalDuration = pes.reduce(
-      (prevResult, paperEdit) => {
+      (runningTotal, paperEdit) => {
         const paperEditDuration = paperEdit.end - paperEdit.start;
-        prevResult.startTime += paperEditDuration;
 
-        return prevResult;
+        return runningTotal + paperEditDuration;
       },
-      { startTime: 0 }
+      0
     );
 
     return totalDuration;
   };
 
-  const formatSingleParagaph = (selection) => {
+  const formatSingleParagaph = ({ start, end, speaker, transcriptId, words }) => {
     console.log('Adding one paragraph...');
     const insertElementIndex = getInsertElementIndex();
     const playlistStartTime = getTranscriptSelectionStartTime(
       insertElementIndex
     );
-    const paperCutDuration = selection.end - selection.start;
+    const paperCutDuration = end - start;
+    const { sourceParagraphIndex } = words[0];
+
+    // Recalcultates word timings to align with programme script playlist
+    const wordsAdjusted = words.map((word, i) => {
+      const wordStartTime = word.start - start + playlistStartTime;
+      const wordDuration = word.end - word.start;
+      const wordEndTime = wordStartTime + wordDuration;
+
+      return { ...word,
+        index: i,
+        start: wordStartTime,
+        end: wordEndTime,
+        speaker,
+      };
+    });
 
     const newElement = {
       id: cuid(),
       index: insertElementIndex,
       type: 'paper-cut',
-      start: selection.start,
-      end: selection.end,
-      vcStart: playlistStartTime.startTime,
-      vcEnd: playlistStartTime.startTime + paperCutDuration,
-      words: [],
-      speaker: selection.speaker,
-      transcriptId: selection.transcriptId,
+      start,
+      end,
+      vcStart: playlistStartTime,
+      vcEnd: playlistStartTime + paperCutDuration,
+      words: wordsAdjusted,
+      speaker,
+      transcriptId,
       labelId: [],
+      sourceParagraphIndex
     };
-
-    const selectedWords = selection.words;
-
-    // Recalcultates word timings to align with programme script playlist
-    selectedWords.forEach((word, i) => {
-      const wordStartTime =
-        word.start - selection.start + playlistStartTime.startTime;
-      const wordDuration = word.end - word.start;
-      const wordEndTime = wordStartTime + wordDuration;
-      const newWord = {
-        index: i,
-        start: wordStartTime,
-        end: wordEndTime,
-        speaker: selection.speaker,
-        text: word.text,
-        transcriptId: word.transcriptId,
-      };
-      newElement.words.push(newWord);
-    });
 
     return newElement;
   };
@@ -422,16 +338,21 @@ const ProgrammeScriptContainer = (props) => {
     const playlistStartTime = getTranscriptSelectionStartTime(
       insertElementIndex
     );
+
     const paragraphSelections = divideWordsSelectionsIntoParagraphs(
       selection.words
     );
 
+    const emptyPaperEditElement = {
+      elements: [],
+      newDuration: playlistStartTime,
+      index: elements.length - 1,
+    };
     const paperEditElements = paragraphSelections.reduce(
       (prevResult, paragraph) => {
         // Calculates start and end times in the programme script playlist
         const paperCutStart = prevResult.newDuration;
-        const paperCutDuration =
-          paragraph[paragraph.length - 1].end - paragraph[0].start;
+        const paperCutDuration = paragraph[paragraph.length - 1].end - paragraph[0].start;
         const paperCutEnd = paperCutStart + paperCutDuration;
 
         // Stores start and end times corresponding to the original media file and transcription
@@ -440,6 +361,23 @@ const ProgrammeScriptContainer = (props) => {
 
         const paperCutSpeaker = paragraph[0].speaker;
         const paperCutTranscriptId = paragraph[0].transcriptId;
+        const sourceParagraphIndex = paragraph[0].sourceParagraphIndex;
+
+        // Recalcultates word timings to align with programme script playlist
+        const wordsAdjusted = paragraph.map((word, wordIndex) => {
+          const newStart = word.start - transcriptStart + paperCutStart;
+          const wordDuration = word.end - word.start;
+          const newEnd = newStart + wordDuration;
+
+          return {
+            index: wordIndex,
+            start: newStart,
+            end: newEnd,
+            speaker: paperCutSpeaker,
+            text: word.text,
+            transcriptId: paperCutTranscriptId,
+          };
+        });
 
         const newPaperCut = {
           id: cuid(),
@@ -449,46 +387,25 @@ const ProgrammeScriptContainer = (props) => {
           end: transcriptEnd,
           vcStart: paperCutStart,
           vcEnd: paperCutEnd,
-          words: [],
+          words: wordsAdjusted,
           speaker: paperCutSpeaker,
           transcriptId: paperCutTranscriptId,
           labelId: [],
+          sourceParagraphIndex
         };
 
-        // Recalcultates word timings to align with programme script playlist
-        paragraph.forEach((word, index) => {
-          const newStart = word.start - transcriptStart + paperCutStart;
-          const wordDuration = word.end - word.start;
-          const newEnd = newStart + wordDuration;
-          const newWord = {
-            index: index,
-            start: newStart,
-            end: newEnd,
-            speaker: paperCutSpeaker,
-            text: word.text,
-            transcriptId: paperCutTranscriptId,
-          };
-          newPaperCut.words.push(newWord);
-        });
-
-        prevResult.elements.push(newPaperCut);
-        prevResult.newDuration += paperCutDuration;
-        prevResult.index += 1;
-
-        return prevResult;
-      },
-      {
-        elements: [],
-        newDuration: playlistStartTime.startTime,
-        index: elements.length - 1,
-      }
+        return {
+          elements: [ ...prevResult.elements, newPaperCut ],
+          newDuration: prevResult.newDuration + paperCutDuration,
+          index: prevResult.index + 1
+        };
+      }, emptyPaperEditElement
     );
 
     return paperEditElements;
   };
 
   const handleTransfer = () => {
-    console.log('Handling add transcript selection...');
     const selection = getDataFromUserWordsSelection();
     const elementsClone = JSON.parse(JSON.stringify(elements));
     const insertElementIndex = getInsertElementIndex();
@@ -496,11 +413,7 @@ const ProgrammeScriptContainer = (props) => {
 
     if (selection) {
       if (isOneParagraph(selection.words)) {
-        const newPaperCut = formatSingleParagaph(
-          selection,
-          elementsClone,
-          insertElementIndex
-        );
+        const newPaperCut = formatSingleParagaph(selection);
         elementsClone.splice(insertElementIndex, 0, newPaperCut);
 
         // Adjusts word timings for paper-cuts that come after the new element
@@ -509,10 +422,7 @@ const ProgrammeScriptContainer = (props) => {
           insertElementIndex
         );
       } else {
-        const newPaperCuts = formatMultipleParagraphs(
-          selection,
-          insertElementIndex
-        );
+        const newPaperCuts = formatMultipleParagraphs(selection, insertElementIndex);
         elementsClone.splice(insertElementIndex, 0, ...newPaperCuts.elements);
 
         // Adjusts word timings for paper-cuts effected by the insert
@@ -612,7 +522,7 @@ const ProgrammeScriptContainer = (props) => {
                   transcripts={ transcripts }
                   title={ title }
                   elements={ elements }
-                  handleGetMediaUrl = { handleGetMediaUrl }
+                  handleGetMediaUrl = { getMediaUrl }
                 />
                 : (<Button variant="outline-secondary" disabled>
                   <FontAwesomeIcon icon={ faShare } /> Export

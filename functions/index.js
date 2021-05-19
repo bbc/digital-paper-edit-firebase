@@ -1,12 +1,12 @@
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
 admin.initializeApp();
 
-const inventoryChecker = require("./inventoryChecker");
-const audioStripper = require("./audioStripper");
-const awsUploader = require("./awsUploader");
-const sttChecker = require("./sttChecker");
-const dpeCronExpiredMediaChecker = require("./dpeCronExpiredMediaChecker");
+const inventoryChecker = require('./inventoryChecker');
+const audioStripper = require('./audioStripper');
+const awsUploader = require('./awsUploader');
+const sttChecker = require('./sttChecker');
+const dpeCronExpiredMediaChecker = require('./dpeCronExpiredMediaChecker');
 
 // Was run as a migration task
 // const compressData = require("./compressData")
@@ -27,24 +27,24 @@ exports.dpeOnDeleteBucketObjUpdateFirestore = bucketTrigger.onDelete((obj) =>
 
 const maxRuntimeOpts = {
   timeoutSeconds: 540, // 9 minutes
-  memory: "2GB",
+  memory: '2GB',
 };
 
 exports.dpeOnCreateAudioFirestoreUploadToAWS = functions
   .runWith(maxRuntimeOpts)
-  .firestore.document("apps/digital-paper-edit/users/{userId}/audio/{itemId}")
+  .firestore.document('apps/digital-paper-edit/users/{userId}/audio/{itemId}')
   .onCreate((snap, context) =>
     awsUploader.createHandler(snap, bucket, config.aws, context)
   );
 
 exports.dpeOnCreateFirestoreUploadStripAndUploadAudio = functions
   .runWith(maxRuntimeOpts)
-  .firestore.document("apps/digital-paper-edit/users/{userId}/uploads/{itemId}")
+  .firestore.document('apps/digital-paper-edit/users/{userId}/uploads/{itemId}')
   .onCreate((snap, context) =>
     audioStripper.createHandler(snap, bucket, context)
   );
 
-const runSchedule = config.aws.api.transcriber.schedule || "every 60 minutes";
+const runSchedule = config.aws.api.transcriber.schedule || 'every 60 minutes';
 
 exports.dpeCronSTTJobChecker = functions
   .runWith(maxRuntimeOpts)
@@ -55,7 +55,7 @@ exports.dpeCronSTTJobChecker = functions
 
 exports.dpeCronExpiredMediaChecker = functions
   .runWith(maxRuntimeOpts)
-  .pubsub.schedule("every 24 hours")
+  .pubsub.schedule('every 24 hours')
   .onRun(() =>
     dpeCronExpiredMediaChecker.createHandler(bucket, admin)
   );
