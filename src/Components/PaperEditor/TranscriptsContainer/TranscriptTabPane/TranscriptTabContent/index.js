@@ -64,9 +64,6 @@ const TranscriptTabContent = (props) => {
             return { ...doc.data(), id: doc.id, display: true };
           });
           const lbls = tempLabels ? tempLabels : []; // to remove once a bug is fixed
-          tempLabels.sort((a, b) => {
-            return a.created - b.created;
-          });
           setLabels(lbls);
         });
       } catch (error) {
