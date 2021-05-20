@@ -233,25 +233,37 @@ const WorkspaceView = props => {
   };
 
   const handleEditPaperEdit = (itemId) => {
-    const popupTitle = typeof(itemId) === 'string' ? 'Edit Programme Script' : 'New Programme Script';
-    setModalPETitle(popupTitle);
-    const item = paperEditItems.find(i => i.id === itemId);
-    dispatchPEForm({
-      type: 'update',
-      payload: item
-    });
+    if (typeof(itemId) === 'string') {
+      setModalPETitle('Edit Programme Script');
+      const item = paperEditItems.find(i => i.id === itemId);
+      dispatchPEForm({
+        type: 'update',
+        payload: item
+      });
+    } else {
+      setModalPETitle('New Programme Script');
+      dispatchPEForm({
+        type: 'reset'
+      });
+    }
     setShowPEModal(true);
     setShowTModal(false);
   };
 
   const handleEditTranscript = (itemId) => {
-    const popupTitle = typeof (itemId) === 'string' ? 'Edit Transcript' : 'New Transcript';
-    setModalTTitle(popupTitle);
-    const item = transcriptItems.find(i => i.id === itemId);
-    dispatchTForm({
-      type: 'update',
-      payload: item
-    });
+    if (typeof (itemId) === 'string') {
+      setModalTTitle('Edit Transcript');
+      const item = transcriptItems.find(i => i.id === itemId);
+      dispatchTForm({
+        type: 'update',
+        payload: item
+      });
+    } else {
+      setModalTTitle('New Transcript');
+      dispatchTForm({
+        type: 'reset'
+      });
+    }
     setShowTModal(true);
     setShowPEModal(false);
   };
