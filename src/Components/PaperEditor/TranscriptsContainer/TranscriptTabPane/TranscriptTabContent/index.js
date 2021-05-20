@@ -316,7 +316,7 @@ const TranscriptTabContent = (props) => {
     if (e.target.type !== 'checkbox') {
       const text = e.target.value;
       if (text) {
-        props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleSearch ${ text }` });
+        trackEvent({ category: 'paperEditor transcriptsTab', action: `handleSearch ${ text }` });
         setSearchString(text);
       } else {
         setSearchString('');
@@ -378,7 +378,7 @@ const TranscriptTabContent = (props) => {
       createAnnotation(newAnnotation);
       setAnnotations(() => [ ...annotations, newAnnotation ]);
       setProcessingParagraphs(false);
-      props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleCreateAnnotation ${ selection.labelId } ${ words.toString() } ` });
+      trackEvent({ category: 'paperEditor transcriptsTab', action: `handleCreateAnnotation ${ selection.labelId } ${ words.toString() } ` });
     } else {
       alert('Select some text in the transcript to highlight ');
     }
@@ -391,7 +391,7 @@ const TranscriptTabContent = (props) => {
 
     AnnotationsCollection.deleteItem(annotationId);
     setProcessingParagraphs(false);
-    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleDeleteAnnotation ${ annotationId } ` });
+    trackEvent({ category: 'paperEditor transcriptsTab', action: `handleDeleteAnnotation ${ annotationId } ` });
   };
 
   const handleEditAnnotation = (annotationId) => {
@@ -412,7 +412,7 @@ const TranscriptTabContent = (props) => {
       alert('all good nothing changed');
     }
 
-    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `handleEditAnnotation ${ annotationId } ` });
+    trackEvent({ category: 'paperEditor transcriptsTab', action: `handleEditAnnotation ${ annotationId } ` });
   };
 
   const createLabel = async (newLabel) => {
@@ -427,7 +427,7 @@ const TranscriptTabContent = (props) => {
   const onLabelUpdate = (labelId, updatedLabel) => {
     setLabels(() => [ ...labels, updatedLabel ]);
     LabelsCollection.putItem(labelId, updatedLabel);
-    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `label update ${ labelId } ${ updatedLabel }` });
+    trackEvent({ category: 'paperEditor transcriptsTab', action: `label update ${ labelId } ${ updatedLabel }` });
   };
 
   const onLabelDelete = (labelToDelete) => {
@@ -439,14 +439,14 @@ const TranscriptTabContent = (props) => {
     tempLabels.splice(labelToDelete.id, 1);
     LabelsCollection.deleteItem(labelToDelete.id);
     setLabels(tempLabels);
-    props.trackEvent({ category: 'paperEditor transcriptsTab', action: `label delete ${ labelToDelete }` });
+    trackEvent({ category: 'paperEditor transcriptsTab', action: `label delete ${ labelToDelete }` });
   };
 
   const onLabelCreate = (newLabel) => {
     createLabel(newLabel);
     const tempLabels = labels;
     tempLabels.push(newLabel);
-    props.trackEvent({ category: 'paperEditor transcriptsTab', action: 'label create ' });
+    trackEvent({ category: 'paperEditor transcriptsTab', action: 'label create ' });
   };
 
   const onLabelSelect = (selectedLabel) => {

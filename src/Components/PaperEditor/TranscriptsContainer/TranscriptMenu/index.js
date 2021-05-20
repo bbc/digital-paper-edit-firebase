@@ -12,14 +12,14 @@ import { faCog, faTag } from '@fortawesome/free-solid-svg-icons';
 import './index.scss';
 
 const TranscriptMenu = (props) => {
-  const { labels, activeLabel } = props;
+  const { labels, activeLabel, onLabelSelect } = props;
 
   useEffect(() => {
     if (labels) {
       const defaultLabel = labels.find((label) => label.label === 'Default');
-      if (!activeLabel) props.onLabelSelect(defaultLabel);
+      if (!activeLabel) onLabelSelect(defaultLabel);
     }
-  }, [ activeLabel, labels, props ]);
+  }, [ activeLabel, labels, onLabelSelect ]);
 
   const LabelButton = (
     <Button
