@@ -56,15 +56,21 @@ const LabelForm = (props) => {
   const handleManualColorChange = (e) => {
     if (e && e.target && e.target.value) {
       const colorValue = e.target.value;
-      setColor({ color: chroma.valid(colorValue) ? chroma(colorValue).name() : colorValue });
+      setColor(chroma.valid(colorValue) ? chroma(colorValue).name() : colorValue);
     }
     else if (e && e.target && e.target.value === '') {
-      setColor({ color: '' });
+      setColor('');
     }
   };
 
   const handleSave = () => {
-    if (label) {
+    if (!chroma.valid(color) || !color) {
+      alert('choose a valid color');
+    }
+    if (!name) {
+      alert('enter a valid label name');
+    }
+    else {
       const tempLabel = {
         value: color,
         label: name,
@@ -74,9 +80,6 @@ const LabelForm = (props) => {
       };
       setLabel(tempLabel);
       props.handleSave(tempLabel);
-    }
-    else {
-      alert('choose a valid color');
     }
   };
 
@@ -90,6 +93,7 @@ const LabelForm = (props) => {
             placeholder="Enter label name"
             defaultValue={ name }
             onInput={ (e) => setName(e.target.value) }
+            required
           />
           <Form.Text className="text-muted">
             Required label name
@@ -110,7 +114,7 @@ const LabelForm = (props) => {
         </Form.Group>
 
         <Form.Group controlId="formGroupPassword">
-          <Form.Label>Color</Form.Label>
+          <Form.Label>Colour</Form.Label>
           <Row>
             <Col xs={ 2 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
               <Button onClick={ handleRandomiseColor } variant="light" size="sm">
@@ -121,7 +125,7 @@ const LabelForm = (props) => {
               <Form.Control
                 value={ color }
                 type="text"
-                placeholder="#"
+                placeholder="Choose a colour"
                 onChange={ handleManualColorChange }
               />
             </Col>
@@ -138,7 +142,7 @@ const LabelForm = (props) => {
           <Row>
             <Col xs={ 12 } sm={ 12 } md={ 12 } lg={ 12 } xl={ 12 } >
               <Form.Text className="text-muted">
-                To pick a color you can chose one at random, pick one form the list below, or type the name or hex code above.
+                To pick a colour you can chose one at random, pick one form the list below, or type the name or hex code above.
               </Form.Text>
               <GithubPicker
                 width={ '100%' }
@@ -151,7 +155,7 @@ const LabelForm = (props) => {
             </Col>
           </Row>
         </Form.Group>
-        <Button variant="primary" onClick={ handleSave } >
+        <Button variant="primary" onClick={ handleSave } type='submit'>
           Save
         </Button>
       </Form>

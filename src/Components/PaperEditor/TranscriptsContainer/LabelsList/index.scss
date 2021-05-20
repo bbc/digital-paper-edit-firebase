@@ -1,0 +1,53 @@
+.LabelsList__ {
+  &dropdown-card-header {
+    background-color: #222222;
+    color: white;
+  }
+
+  &dropdown-list {
+    height: 140px;
+    width: 20vw;
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+
+  &label-element {
+    display: contents;
+    color: #222222;
+    padding-right: 16px;
+  }
+
+  &label-color-square {
+    height: 20px;
+    width: 20px;
+    margin: auto 8px;
+  }
+
+  &label-text {
+    margin-top: auto;
+    margin-bottom: auto;
+    padding: 0;
+    text-align: left;
+  }
+
+  &label-button {
+    padding: 0;
+    margin-left: auto;
+    margin-right: 8px;
+
+    &edit {
+      margin-left: 0;
+      margin-top: 2px;
+    }
+  }
+
+  &list-item {
+    padding-right: 26px;
+    width: 100%;
+  }
+}
+
+.svg-inline--fa {
+  color: #222222;
+}
+

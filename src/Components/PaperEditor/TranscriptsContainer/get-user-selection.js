@@ -36,6 +36,7 @@ const getUserWordsSelection = () => {
 const getTimeFromWords = (words) => {
   // https://stackoverflow.com/questions/11300590/how-to-captured-selected-text-range-in-ios-after-text-selection-expansion
   // https://jsfiddle.net/JasonMore/gWZfb/
+  if (!words.length) return;
 
   return {
     start: parseFloat(words[0].dataset.start),

@@ -1,17 +1,14 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
-import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTag,
-  faTags,
-  faTimes,
+  faTrash,
   faPen,
-  faCog,
 } from '@fortawesome/free-solid-svg-icons';
 import cuid from 'cuid';
 
@@ -19,21 +16,18 @@ import LabelModal from './LabelModal.js';
 import { randomColor } from './css-color-names.js';
 import PropTypes from 'prop-types';
 
-const LabelsList = (props) => {
-  const labels = props.labels;
-  const onLabelDelete = props.onLabelDelete;
-  const onLabelCreate = props.onLabelCreate;
-  const onLabelUpdate = props.onLabelUpdate;
+import './index.scss';
 
-  const handleDelete = (id) => {
+const LabelsList = (props) => {
+  const { labels, onLabelDelete, onLabelCreate, onLabelUpdate, onLabelSelect, trackEvent } = props;
+
+  const handleDelete = (label) => {
     const response = window.confirm(
       'Click OK to delete the label, Cancel if you changed your mind'
     );
 
     if (response) {
-      onLabelDelete(id);
-    } else {
-      alert('Your label was not deleted');
+      onLabelDelete(label);
     }
   };
 
@@ -48,12 +42,15 @@ const LabelsList = (props) => {
     } else {
       onLabelCreate(newLabel);
     }
+    onLabelSelect(newLabel);
   };
 
-  const EditableLabel = (id, color, label, description) => {
+  const EditableLabel = (l) => {
+    const { color, label, description, id } = l;
+
     return (
       <>
-        <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
+        <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 } className='LabelsList__label-button edit'>
           <LabelModal
             color={ color }
             label={ label }
@@ -64,29 +61,28 @@ const LabelsList = (props) => {
             showButtonSize={ 'sm' }
             showButtonText={
               <span>
-                {' '}
                 <FontAwesomeIcon icon={ faPen } />
               </span> }
           />
         </Col>
-        <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
+        <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 } className='LabelsList__label-button'>
           <Button
             title={ 'delete label' }
             variant="link"
             size="sm"
             onClick={ (e) => {
-              handleDelete(id, e);
+              handleDelete(l, e);
             } }
             disabled={ false }
           >
-            <FontAwesomeIcon icon={ faTimes } />
+            <FontAwesomeIcon icon={ faTrash } />
           </Button>
         </Col>
       </>
     );
   };
 
-  const NonEditableLabel = (id) => {
+  const NonEditableLabel = (label) => {
     return (
       <>
         <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
@@ -94,10 +90,10 @@ const LabelsList = (props) => {
             title={ 'edit label' }
             variant="link"
             size="sm"
-            onClick={ (e) => handleEdit(id, e) }
+            onClick={ (e) => handleEdit(label.id, e) }
             disabled={ true }
+            style= { { padding: 0 } }
           >
-            <FontAwesomeIcon icon={ faPen } />{' '}
           </Button>
         </Col>
         <Col xs={ 1 } sm={ 1 } md={ 1 } lg={ 1 } xl={ 1 }>
@@ -105,10 +101,10 @@ const LabelsList = (props) => {
             title={ 'delete label' }
             variant="link"
             size="sm"
-            onClick={ (e) => handleDelete(id, e) }
+            onClick={ (e) => handleDelete(label, e) }
             disabled={ true }
+            style= { { padding: 0 } }
           >
-            <FontAwesomeIcon icon={ faTimes } />
           </Button>
         </Col>
       </>
@@ -121,42 +117,34 @@ const LabelsList = (props) => {
 
   if (labels) {
     labelEls = labels.map((l) => {
-      const { label, color, id, description } = l;
+      const { label, color, id } = l;
 
       return (
-        <ListGroup.Item style={ { width: '100%' } } key={ cuid() }>
+        <ListGroup.Item
+          key={ cuid() }
+          className='LabelsList__list-item'
+          href='#'
+          style= { { backgroundColor: 'white', borderColor: 'rgba(0, 0, 0, 0.125)' } }>
           <Row>
-            <Col
-              xs={ 1 }
-              sm={ 1 }
-              md={ 1 }
-              lg={ 1 }
-              xl={ 1 }
-              style={ { backgroundColor: color } }
-              title={ label }
-            ></Col>
-            <Col xs={ 6 } sm={ 6 } md={ 6 } lg={ 6 } xl={ 6 } title={ label }>
-              {label}
-            </Col>
+            <button
+              className='LabelsList__label-element'
+              onClick={ () => {
+                onLabelSelect(l);
+                trackEvent({ category: 'paperEditor transcriptsTab', action: `label select ${ id }` });
+              } }
+            >
+              <span
+                className='LabelsList__label-color-square'
+                style= { { backgroundColor: color } }
+              />
+              <Col xs={ 6 } sm={ 6 } md={ 6 } lg={ 6 } xl={ 6 } title={ label } className='LabelsList__label-text'>
+                {label}
+              </Col>
+            </ button>
 
             {label === 'Default'
-              ? NonEditableLabel(id)
-              : EditableLabel(id, color, label, description)}
-          </Row>
-          <Row>
-            {/* Spacing to align title and color */}
-            <Col
-              xs={ 1 }
-              sm={ 1 }
-              md={ 1 }
-              lg={ 1 }
-              xl={ 1 }
-              className="text-truncate"
-              title={ label }
-            ></Col>
-            <Col xs={ 10 } sm={ 10 } md={ 10 } lg={ 10 } xl={ 10 }>
-              <Form.Text title={ description }>{description}</Form.Text>
-            </Col>
+              ? NonEditableLabel(l)
+              : EditableLabel(l)}
           </Row>
         </ListGroup.Item>
       );
@@ -164,22 +152,14 @@ const LabelsList = (props) => {
   }
 
   const labelsList = (
-    <ListGroup
-      style={ {
-        height: '50vh',
-        width: '20vw',
-        overflowY: 'scroll',
-        overflowX: 'hidden',
-      } }
-    >
+    <ListGroup className='LabelsList__dropdown-list'>
       {labelEls}
     </ListGroup>
   );
 
   return (
     <Card>
-      <Card.Header>
-        <FontAwesomeIcon icon={ faTags } /> <FontAwesomeIcon icon={ faCog } />{' '}
+      <Card.Header className='LabelsList__dropdown-card-header'>
         Labels
       </Card.Header>
       {labelsList}
@@ -208,6 +188,8 @@ LabelsList.propTypes = {
   onLabelDelete: PropTypes.any,
   onLabelCreate: PropTypes.any,
   onLabelUpdate: PropTypes.any,
+  onLabelSelect: PropTypes. any,
+  trackEvent: PropTypes. any,
 };
 
 export default LabelsList;
