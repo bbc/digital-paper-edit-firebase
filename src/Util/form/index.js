@@ -4,7 +4,8 @@ const initialFormState = {
   id: null
 };
 
-const formReducer = (state = initialFormState, { type, payload }) => {
+const formReducer = (state = initialFormState, props) => {
+  const { type, payload } = props;
   switch (type) {
   case 'update':
     return { ...state, ...payload };

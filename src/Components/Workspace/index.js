@@ -11,6 +11,7 @@ import { PROJECTS } from '../../constants/routes';
 import { withAuthorization } from '../Session';
 import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { formatDuration } from '../../Util/time';
 import './index.scss';
 
 import {
@@ -22,7 +23,6 @@ import { formReducer, incrementCopyName, initialFormState, } from '../../Util/fo
 import { createCollectionItem, createOrUpdateCollectionItem,
   deleteCollectionItem, handleDeleteItem, handleDuplicateItem,
   updateCollectionItem, updateItems } from '../../Util/collection';
-import { formatDuration } from '../../Util/time';
 
 const WorkspaceView = props => {
   const UPLOADFOLDER = 'uploads';
@@ -233,23 +233,37 @@ const WorkspaceView = props => {
   };
 
   const handleEditPaperEdit = (itemId) => {
-    setModalPETitle(formPEData.id ? 'Edit Paper Edit' : 'New Paper Edit');
-    const item = paperEditItems.find(i => i.id === itemId);
-    dispatchPEForm({
-      type: 'update',
-      payload: item
-    });
+    if (typeof(itemId) === 'string') {
+      setModalPETitle('Edit Programme Script');
+      const item = paperEditItems.find(i => i.id === itemId);
+      dispatchPEForm({
+        type: 'update',
+        payload: item
+      });
+    } else {
+      setModalPETitle('New Programme Script');
+      dispatchPEForm({
+        type: 'reset'
+      });
+    }
     setShowPEModal(true);
     setShowTModal(false);
   };
 
   const handleEditTranscript = (itemId) => {
-    setModalTTitle(formTData.id ? 'Edit Transcript' : 'New Transcript');
-    const item = transcriptItems.find(i => i.id === itemId);
-    dispatchTForm({
-      type: 'update',
-      payload: item
-    });
+    if (typeof (itemId) === 'string') {
+      setModalTTitle('Edit Transcript');
+      const item = transcriptItems.find(i => i.id === itemId);
+      dispatchTForm({
+        type: 'update',
+        payload: item
+      });
+    } else {
+      setModalTTitle('New Transcript');
+      dispatchTForm({
+        type: 'reset'
+      });
+    }
     setShowTModal(true);
     setShowPEModal(false);
   };
@@ -340,6 +354,7 @@ const WorkspaceView = props => {
     if (newTranscript.id) {
       newTranscript = await createOrUpdateCollectionItem(newTranscript, createTranscript,
         updateTranscript);
+
       newTranscript.display = true;
 
       return newTranscript;
@@ -462,7 +477,7 @@ const WorkspaceView = props => {
         showModal={ showPEModal }
         handleOnHide={ handleOnPEHide }
         handleSaveForm={ handleSavePaperEditForm }
-        type={ 'paper-edit' }
+        type={ 'programme-script' }
       />
       <FormModal
         title={ formTData.title }
