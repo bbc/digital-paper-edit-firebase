@@ -64,11 +64,11 @@ const LabelForm = (props) => {
   };
 
   const handleSave = () => {
-    if (!chroma.valid(color) || !color) {
-      alert('choose a valid color');
-    }
     if (!name) {
       alert('enter a valid label name');
+    }
+    else if (!chroma.valid(color) || !color) {
+      alert('choose a valid color');
     }
     else {
       const tempLabel = {
@@ -93,7 +93,6 @@ const LabelForm = (props) => {
             placeholder="Enter label name"
             defaultValue={ name }
             onInput={ (e) => setName(e.target.value) }
-            required
           />
           <Form.Text className="text-muted">
             Required label name
@@ -155,13 +154,12 @@ const LabelForm = (props) => {
             </Col>
           </Row>
         </Form.Group>
-        <Button variant="primary" onClick={ handleSave } type='submit'>
+        <Button variant="primary" onClick={ handleSave }>
           Save
         </Button>
       </Form>
     </>
   );
-
 };
 
 LabelForm.propTypes = {
