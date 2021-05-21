@@ -61,7 +61,7 @@ const LabelsList = (props) => {
             showButtonSize={ 'sm' }
             showButtonText={
               <span>
-                <FontAwesomeIcon icon={ faPen } />
+                <FontAwesomeIcon icon={ faPen } className="LabelsList__action-icon"/>
               </span> }
           />
         </Col>
@@ -75,7 +75,7 @@ const LabelsList = (props) => {
             } }
             disabled={ false }
           >
-            <FontAwesomeIcon icon={ faTrash } />
+            <FontAwesomeIcon icon={ faTrash } className="LabelsList__action-icon"/>
           </Button>
         </Col>
       </>
