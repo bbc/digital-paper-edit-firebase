@@ -16,7 +16,6 @@ const convertStreamToAudio = (inputStream, outputStream, jobData) => {
       .on('error', (err) => {
         error(`[ERROR] Create read stream error ${ inputStream }`, err);
       }))
-      .addInputOption('-loglevel trace')
       .noVideo()
       .audioCodec('pcm_s16le')
       .audioChannels(1)
@@ -28,7 +27,6 @@ const convertStreamToAudio = (inputStream, outputStream, jobData) => {
       })
       .on('codecData', (data) => {
         // console.debug(`Input is ${data.audio} audio with ${data.video} video`);
-        console.debug(`Input is ${ data }`);
       })
       .on('error', (err, stdout, stderr) => {
         // console.debug(err.message); //this will likely return "code=1" not really useful
@@ -38,7 +36,7 @@ const convertStreamToAudio = (inputStream, outputStream, jobData) => {
         reject(err);
       })
       .on('progress', (progress) => {
-        console.debug(progress);
+        info('[IN PROGRESS] ffmpeg job', jobData, ', error:', err, ', stderr:', stderr);
         console.debug(`Processing: ${ progress.percent }% done`);
       })
       .on('end', (stdout, stderr) => {
@@ -96,7 +94,7 @@ exports.createHandler = async (snap, bucket, context) => {
     resumable: false
   })
     .on('error', (err) => {
-      console.log('[ERROR] error in write stream: ', err);
+      error('[ERROR] error in write stream: ', err);
     });
   // console.log(writeStream)
   // const writeStream = outFile
@@ -106,8 +104,7 @@ exports.createHandler = async (snap, bucket, context) => {
     project: projectId,
     user: userId
   };
-  console.log(jobData);
-  console.log(metadata);
+
   try {
     // info('[START] audioStripper. Fetching signed storage URL for', jobData);
     const sourceUrl = await getStorageSignedUrl(srcFile);
@@ -133,7 +130,6 @@ exports.createHandler = async (snap, bucket, context) => {
     // await convertStreamToAudio(srcFile, writeStream, jobData);
     await convertStreamToAudio(sourceUrl[0], writeStream, jobData);
   } catch (err) {
-    console.log('>>>\n', err);
 
     return error(
       '[ERROR] Could not stream / transform audio file: ',
