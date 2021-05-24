@@ -329,12 +329,12 @@ const ProgrammeScriptContainer = (props) => {
       index: insertElementIndex,
       type: 'paper-cut',
       start: transcriptStart,
-      end: end,
+      end,
       vcStart: playlistStartTime,
       vcEnd: playlistStartTime + paperCutDuration,
       words: wordsAdjusted,
-      speaker: speaker,
-      transcriptId: transcriptId,
+      speaker,
+      transcriptId,
       labelId: [],
       sourceParagraphIndex
     };
@@ -342,7 +342,7 @@ const ProgrammeScriptContainer = (props) => {
     return newElement;
   };
 
-  const formatMultipleParagaphs = (selection, insertElementIndex) => {
+  const formatMultipleParagraphs = (selection, insertElementIndex) => {
     console.log('Adding multiple paragraphs...');
 
     const playlistStartTime = getTranscriptSelectionStartTime(
@@ -435,7 +435,7 @@ const ProgrammeScriptContainer = (props) => {
           insertElementIndex
         );
       } else {
-        const newPaperCuts = formatMultipleParagaphs(selection, insertElementIndex);
+        const newPaperCuts = formatMultipleParagraphs(selection, insertElementIndex);
         elementsClone.splice(insertElementIndex, 0, ...newPaperCuts.elements);
         updatedElements = updateWordTimings(elementsClone);
       }
