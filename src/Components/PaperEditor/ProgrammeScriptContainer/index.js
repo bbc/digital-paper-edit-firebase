@@ -17,6 +17,7 @@ import { withAuthorization } from '../../Session';
 import ExportDropdown from './ExportDropdown';
 import ElementsDropdown from './ElementsDropdown';
 import getDataFromUserWordsSelection from './get-data-from-user-selection';
+import { isOneParagraph, divideWordsSelectionsIntoParagraphs } from './divide-words-selections-into-paragraphs';
 import { compilePlaylist, getMediaUrl } from './utils/compilePlaylist';
 
 import {
@@ -329,6 +330,83 @@ const ProgrammeScriptContainer = (props) => {
     return newElement;
   };
 
+  const formatMultipleParagaphs = (selection, insertElementIndex) => {
+    console.log('Adding multiple paragraphs...');
+
+    const playlistStartTime = getTranscriptSelectionStartTime(
+      insertElementIndex
+    );
+    const paragraphSelections = divideWordsSelectionsIntoParagraphs(
+      selection.words
+    );
+
+    const emptyPaperEditElement = {
+      elements: [],
+      newDuration: playlistStartTime,
+      index: elements.length - 1,
+    };
+
+    const createPaperEditElements = (prevResults, paragraph) => {
+      // Calculates start and end times in the programme script playlist
+      const paperCutStart = prevResults.newDuration;
+      const paperCutDuration = paragraph[paragraph.length - 1].end - paragraph[0].start;
+      const paperCutEnd = paperCutStart + paperCutDuration;
+
+      // Stores start and end times corresponding to the original media file and transcription
+      const setNextElementStartTime = (existingElements) => existingElements[existingElements.length - 1].end;
+
+      const transcriptStart = prevResults.elements.length > 0 ? setNextElementStartTime(prevResults.elements) : parseFloat(paragraph[0].start);
+      const transcriptEnd = parseFloat(paragraph[paragraph.length - 1].end);
+
+      const paperCutSpeaker = paragraph[0].speaker;
+      const paperCutTranscriptId = paragraph[0].transcriptId;
+      const sourceParagraphIndex = paragraph[0].sourceParagraphIndex;
+
+      // Recalcultates word timings to align with programme script playlist
+      const wordsAdjusted = paragraph.map((word, wordIndex) => {
+        const newStart = word.start - transcriptStart + paperCutStart;
+        const wordDuration = word.end - word.start;
+        const newEnd = newStart + wordDuration;
+
+        return {
+          index: wordIndex,
+          start: newStart,
+          end: newEnd,
+          speaker: paperCutSpeaker,
+          text: word.text,
+          transcriptId: paperCutTranscriptId,
+        };
+      });
+
+      const newPaperCut = {
+        id: cuid(),
+        index: prevResults.index,
+        type: 'paper-cut',
+        start: transcriptStart,
+        end: transcriptEnd,
+        vcStart: paperCutStart,
+        vcEnd: paperCutEnd,
+        words: wordsAdjusted,
+        speaker: paperCutSpeaker,
+        transcriptId: paperCutTranscriptId,
+        labelId: [],
+        sourceParagraphIndex
+      };
+
+      const updatedElements = {
+        elements: [ ...prevResults.elements, newPaperCut ],
+        newDuration: prevResults.newDuration + paperCutDuration,
+        index: prevResults.index + 1
+      };
+
+      return updatedElements;
+    };
+
+    const paperEditElements = paragraphSelections.reduce(createPaperEditElements, emptyPaperEditElement);
+
+    return paperEditElements;
+  };
+
   const handleTransfer = () => {
     const selection = getDataFromUserWordsSelection();
     const elementsClone = JSON.parse(JSON.stringify(elements));
@@ -336,14 +414,22 @@ const ProgrammeScriptContainer = (props) => {
     let updatedElements;
 
     if (selection) {
-      const newPaperCut = formatSingleParagaph(selection);
-      elementsClone.splice(insertElementIndex, 0, newPaperCut);
+      if (isOneParagraph(selection.words)) {
+        const newPaperCut = formatSingleParagaph(selection);
+        console.log(newPaperCut);
+        elementsClone.splice(insertElementIndex, 0, newPaperCut);
 
-      // Adjusts word timings for paper-cuts that come after the new element
-      updatedElements = updateWordTimingsAfterInsert(
-        elementsClone,
-        insertElementIndex
-      );
+        // Adjusts word timings for paper-cuts that come after the new element
+        updatedElements = updateWordTimingsAfterInsert(
+          elementsClone,
+          insertElementIndex
+        );
+      } else {
+        const newPaperCuts = formatMultipleParagaphs(selection, insertElementIndex);
+        console.log(newPaperCuts);
+        elementsClone.splice(insertElementIndex, 0, ...newPaperCuts.elements);
+        updatedElements = updateWordTimings(elementsClone);
+      }
       setElements(updatedElements);
       setResetPreview(true);
       handleSaveProgrammeScript(updatedElements);
