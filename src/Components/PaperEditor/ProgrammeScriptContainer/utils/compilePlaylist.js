@@ -54,7 +54,6 @@ const compilePlaylist = async (paperEdits, transcripts, storage) => {
 
   return Promise.all(
     results.map(async (item) => {
-      console.log('58 item: ', item);
       const src = await getMediaUrl(storage, item);
 
       return { ...item, src };
