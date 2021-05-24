@@ -289,7 +289,8 @@ const ProgrammeScriptContainer = (props) => {
     return totalDuration;
   };
 
-  const formatSingleParagaph = ({ start, end, speaker, transcriptId, words }) => {
+  const formatSingleParagaph = (selection) => {
+    const { start, end, speaker, transcriptId, words } = selection;
     console.log('Adding one paragraph...');
     const insertElementIndex = getInsertElementIndex();
     const playlistStartTime = getTranscriptSelectionStartTime(
@@ -297,6 +298,9 @@ const ProgrammeScriptContainer = (props) => {
     );
     const paperCutDuration = end - start;
     const { sourceParagraphIndex } = words[0];
+
+    // Checking for the second to last element as the last is always 'Insert point to add selection.'
+    const lastElement = elements[elements.length - 2];
 
     // Recalcultates word timings to align with programme script playlist
     const wordsAdjusted = words.map((word, i) => {
@@ -308,21 +312,29 @@ const ProgrammeScriptContainer = (props) => {
         index: i,
         start: wordStartTime,
         end: wordEndTime,
-        speaker,
+        speaker
       };
     });
+
+    const areElementsConsecutive = () => {
+      const areSpeakersConsecutive = parseFloat(lastElement.speaker.replace('TBC - ', '')) + 1 === parseFloat(speaker.replace('TBC - ', ''));
+
+      return lastElement.transcriptId === transcriptId && areSpeakersConsecutive;
+    };
+
+    const transcriptStart = elements.length > 1 && areElementsConsecutive() ? lastElement.end : start;
 
     const newElement = {
       id: cuid(),
       index: insertElementIndex,
       type: 'paper-cut',
-      start,
-      end,
+      start: transcriptStart,
+      end: end,
       vcStart: playlistStartTime,
       vcEnd: playlistStartTime + paperCutDuration,
       words: wordsAdjusted,
-      speaker,
-      transcriptId,
+      speaker: speaker,
+      transcriptId: transcriptId,
       labelId: [],
       sourceParagraphIndex
     };
@@ -354,7 +366,6 @@ const ProgrammeScriptContainer = (props) => {
 
       // Stores start and end times corresponding to the original media file and transcription
       const setNextElementStartTime = (existingElements) => existingElements[existingElements.length - 1].end;
-
       const transcriptStart = prevResults.elements.length > 0 ? setNextElementStartTime(prevResults.elements) : parseFloat(paragraph[0].start);
       const transcriptEnd = parseFloat(paragraph[paragraph.length - 1].end);
 
@@ -416,7 +427,6 @@ const ProgrammeScriptContainer = (props) => {
     if (selection) {
       if (isOneParagraph(selection.words)) {
         const newPaperCut = formatSingleParagaph(selection);
-        console.log(newPaperCut);
         elementsClone.splice(insertElementIndex, 0, newPaperCut);
 
         // Adjusts word timings for paper-cuts that come after the new element
@@ -426,7 +436,6 @@ const ProgrammeScriptContainer = (props) => {
         );
       } else {
         const newPaperCuts = formatMultipleParagaphs(selection, insertElementIndex);
-        console.log(newPaperCuts);
         elementsClone.splice(insertElementIndex, 0, ...newPaperCuts.elements);
         updatedElements = updateWordTimings(elementsClone);
       }
