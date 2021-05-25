@@ -24,6 +24,7 @@ const ExportDropdown = (props) => {
   const elements = props.elements;
   const transcripts = props.transcripts;
   const projectTitle = props.projectTitle;
+  const storage = props.storage;
 
   const [ showADL, setShowADL ] = useState(false);
   const [ showMedia, setShowMedia ] = useState(false);
@@ -86,7 +87,8 @@ const ExportDropdown = (props) => {
   };
 
   const getMediaUrl = async (item) => {
-    return props.handleGetMediaUrl(item);
+
+    return props.handleGetMediaUrl(storage, item);
   };
 
   const handleDownloadMedia = async () => {

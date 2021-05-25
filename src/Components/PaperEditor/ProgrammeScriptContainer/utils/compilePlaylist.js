@@ -15,7 +15,10 @@ const paperEditsAreContinuous = (lastPlaylistItem, currentEdit) => {
   return areFromSameTranscript && areConsecutiveClips;
 };
 
-const getMediaUrl = async (storage, item) => storage.ref(item.ref).getDownloadURL();
+const getMediaUrl = async (storage, item) => {
+
+  return await storage.ref(item.ref).getDownloadURL();
+};
 
 const compilePlaylist = async (paperEdits, transcripts, storage) => {
   const results = paperEdits.reduce((prevResult, paperEdit) => {
