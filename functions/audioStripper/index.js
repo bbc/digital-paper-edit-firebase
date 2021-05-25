@@ -46,11 +46,6 @@ exports.createHandler = async (snap, bucket, context) => {
   const { userId, itemId } = context.params;
   const { projectId, originalName, duration } = snap.data();
 
-  // const { userId, itemId } = { userId: 'gLoKESQNkVavUfSiqqoSEEEa6Lo2', itemId: 'mZ2wfaKxtIwPf6hNJ0nK' }
-  // const { projectId, originalName, duration } = { projectId: 'jyfgomux3r2BppMjzla3', originalName: 'Data Team Segmentation Hackweek Part 1.mov', duration: '237.496208' }
-
-  // const { userId, itemId } = { userId: 'gLoKESQNkVavUfSiqqoSEEEa6Lo2', itemId: 'laicyaKDCDDlnTIxDI8y' }
-  // const { projectId, originalName, duration } = { projectId: '5QxkyK2vQy5PoklnKSsa', originalName: 'DID short.wav', duration: '909.180771' }
   info(`[START] Converting media to wav and uploading audio file ${ { userId, itemId, projectId } }`);
 
   const srcFile = bucket.file(`users/${ userId }/uploads/${ itemId }`);
@@ -98,6 +93,6 @@ exports.createHandler = async (snap, bucket, context) => {
   }
 
   return info(
-    '[COMPLETE] Converting media to wav and uploading audio file', jobData, `to ${ bucketName }/users/${ userId }/audio/${ itemId }`
+    '[COMPLETE] Converting media to wav and uploading audio file', jobData, `to /users/${ userId }/audio/${ itemId }`
   );
 };
