@@ -1,12 +1,14 @@
 const ffmpeg = require('fluent-ffmpeg');
+const path = require('path');
+const fs = require('fs').promises;
+const os = require('os');
 const { info, error } = require('firebase-functions/lib/logger');
-const { getStorageSignedUrl } = require('../utils/firebase');
 
-// Will NOT work for MP4 Streams
-// https://stackoverflow.com/questions/23002316/ffmpeg-pipe0-could-not-find-codec-parameters/40028894#40028894
-const convertStreamToAudio = (inputStream, outputStream, jobData) => {
+const convertStreamToAudio = (inputFile, outputStream, jobData) => {
+  info('[START] ffmpeg job', jobData);
+
   return new Promise((resolve, reject) => {
-    ffmpeg(inputStream)
+    ffmpeg(inputFile)
       .noVideo()
       .audioCodec('pcm_s16le')
       .audioChannels(1)
@@ -14,11 +16,11 @@ const convertStreamToAudio = (inputStream, outputStream, jobData) => {
       .audioFrequency(16000)
       .on('start', (cmd) => {
         // console.debug("Started " + cmd);
-        info(`[START] ffmpeg job ${ jobData } command ${ cmd }`);
+        info('[IN PROGRESS] ffmpeg job', jobData, `command ${ cmd }`);
       })
-      .on('codecData', (data) => {
-        // console.debug(`Input is ${data.audio} audio with ${data.video} video`);
-      })
+      // .on('codecData', (data) => {
+      //   console.debug(`Input codec is `, data);
+      // })
       .on('error', (err, stdout, stderr) => {
         // console.debug(err.message); //this will likely return "code=1" not really useful
         // console.debug("stdout:\n" + stdout);
@@ -27,8 +29,8 @@ const convertStreamToAudio = (inputStream, outputStream, jobData) => {
         reject(err);
       })
       .on('progress', (progress) => {
-        // console.debug(progress);
-        // console.debug(`Processing: ${progress.percent}% done`);
+        // info('[IN PROGRESS] ffmpeg job', progress);
+        // console.debug(`Processing: ${ progress.percent }% done`);
       })
       .on('end', (stdout, stderr) => {
         // console.debug(stdout, stderr);
@@ -43,6 +45,8 @@ const convertStreamToAudio = (inputStream, outputStream, jobData) => {
 exports.createHandler = async (snap, bucket, context) => {
   const { userId, itemId } = context.params;
   const { projectId, originalName, duration } = snap.data();
+
+  info(`[START] Converting media to wav and uploading audio file ${ { userId, itemId, projectId } }`);
 
   const srcFile = bucket.file(`users/${ userId }/uploads/${ itemId }`);
   const outFile = bucket.file(`users/${ userId }/audio/${ itemId }`);
@@ -61,6 +65,7 @@ exports.createHandler = async (snap, bucket, context) => {
 
   const writeStream = outFile.createWriteStream({
     metadata: metadata,
+    resumable: false
   });
 
   const jobData = {
@@ -70,21 +75,24 @@ exports.createHandler = async (snap, bucket, context) => {
   };
 
   try {
-    info('[START] audioStripper. Fetching signed storage URL for', jobData);
-    const sourceUrl = await getStorageSignedUrl(srcFile);
-    info(`[IN PROGRESS] Convert file ${ sourceUrl } to wav audio`, jobData);
-    await convertStreamToAudio(sourceUrl[0], writeStream, jobData);
+    info('[START] Download file to temp directory', jobData);
+    const srcPath = path.join(os.tmpdir(), `/${ itemId }`);
+    await srcFile.download({ destination: srcPath });
+    info(`[COMPLETE] Download file to temp directory ${ srcPath }`, jobData);
+
+    info('[START] Convert file to wav', jobData);
+    await convertStreamToAudio(srcPath, writeStream, jobData);
+    info('[COMPLETE] Convert file to wav', jobData);
+
+    info(`[START] Delete file from temp directory ${ srcPath }`, jobData);
+    await fs.unlink(srcPath);
+    info(`[COMPLETE] Delete file from temp directory ${ srcPath }`, jobData);
   } catch (err) {
-    return error(
-      '[ERROR] Could not stream / transform audio file: ',
-      {
-        ...jobData,
-        err
-      }
-    );
+
+    return error('[ERROR] Could not transform audio file: ', { ...jobData, err });
   }
 
   return info(
-    '[COMPLETE] Uploaded audio file', jobData
+    '[COMPLETE] Converting media to wav and uploading audio file', jobData, `to /users/${ userId }/audio/${ itemId }`
   );
 };
