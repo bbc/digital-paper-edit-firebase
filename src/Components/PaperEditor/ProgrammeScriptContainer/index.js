@@ -533,6 +533,7 @@ const ProgrammeScriptContainer = (props) => {
                   transcripts={ transcripts }
                   title={ title }
                   elements={ elements }
+                  storage={ firebase.storage.storage }
                   handleGetMediaUrl = { getMediaUrl }
                 />
                 : (<Button variant="outline-secondary" disabled>

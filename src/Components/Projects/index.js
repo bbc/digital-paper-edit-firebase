@@ -104,12 +104,19 @@ const Projects = (props) => {
   };
 
   const handleEdit = (itemId) => {
-    setModalTitle(formData.id ? `Edit ${ type }` : `New ${ type }`);
-    const item = items.find(i => i.id === itemId);
-    dispatchForm({
-      type: 'update',
-      payload: item
-    });
+    if (typeof(itemId) === 'string') {
+      setModalTitle('Edit Project');
+      const item = items.find(i => i.id === itemId);
+      dispatchForm({
+        type: 'update',
+        payload: item
+      });
+    } else {
+      setModalTitle('New project');
+      dispatchForm({
+        type: 'reset',
+      });
+    }
     setShowModal(true);
   };
 
