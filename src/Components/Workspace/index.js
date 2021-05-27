@@ -304,6 +304,9 @@ const WorkspaceView = props => {
     const file = transcript.file;
     delete transcript.file;
 
+    const uploaded = new Date();
+    console.log('created: ', uploaded);
+
     const newTranscript = await createOrUpdateCollectionItem({
       ...transcript,
       title: transcript.title,
@@ -311,6 +314,7 @@ const WorkspaceView = props => {
       description: transcript.description ? transcript.description : '',
       status: 'uploading',
       duration: duration,
+      uploaded: uploaded
     }, createTranscript, updateTranscript);
 
     asyncUploadFile(newTranscript.id, file);
