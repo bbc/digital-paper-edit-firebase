@@ -316,13 +316,9 @@ const ProgrammeScriptContainer = (props) => {
       };
     });
 
-    const areElementsConsecutive = () => {
-      const areSpeakersConsecutive = parseFloat(lastElement.speaker.replace('TBC - ', '')) + 1 === parseFloat(speaker.replace('TBC - ', ''));
-
-      return lastElement.transcriptId === transcriptId && areSpeakersConsecutive;
-    };
-
-    const transcriptStart = elements.length > 1 && areElementsConsecutive() ? lastElement.end : start;
+    const isNotFirstElement = () => elements.length > 1;
+    const areElementsConsecutive = () => lastElement.transcriptId === transcriptId && lastElement.sourceParagraphIndex + 1 === sourceParagraphIndex;
+    const transcriptStart = isNotFirstElement() && areElementsConsecutive() ? lastElement.end : start;
 
     const newElement = {
       id: cuid(),
