@@ -27,16 +27,33 @@ const formatToEDLEvent = (transcript, element) => {
   return result;
 };
 
-const getEDLSq = (title, elements, transcripts) => {
-  return elements.reduce((res, element) => {
-    if (element.type === 'paper-cut') {
-      const transcript = getCurrentTranscript(element, transcripts);
-      const edlEvent = formatToEDLEvent(transcript, element);
-      res.index += 1;
-      edlEvent.id = res.index;
-      res.events.push(edlEvent);
-      console.log('res', element, transcript);
+const mergeConsecutiveElements = (elements) => {
+  const paperCuts = elements.filter(element => element.type === 'paper-cut');
+
+  return paperCuts.reduce((accumulator, currentElement) => {
+    const prevElement = accumulator[accumulator.length - 1];
+    const areElementsConsecutive = accumulator.length > 0 && currentElement.transcriptId === prevElement.transcriptId && prevElement.end === currentElement.start;
+
+    if (areElementsConsecutive) {
+      prevElement.end = currentElement.end;
+    } else {
+      accumulator.push(currentElement);
     }
+
+    return accumulator;
+  }, []);
+};
+
+const getEDLSq = (title, elements, transcripts) => {
+  const meregedElements = mergeConsecutiveElements(elements);
+
+  return meregedElements.reduce((res, element) => {
+    const transcript = getCurrentTranscript(element, transcripts);
+    const edlEvent = formatToEDLEvent(transcript, element);
+    res.index += 1;
+    edlEvent.id = res.index;
+    res.events.push(edlEvent);
+    console.log('res', element, transcript);
 
     return res;
   }, {
