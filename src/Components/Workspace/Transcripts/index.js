@@ -16,7 +16,6 @@ const sortItems = (items) => {
 
 const Transcripts = (props) => {
   const items = props.items;
-  console.log(items.length);
   const uploadTasks = props.uploadTasks;
   const sortedItems = sortItems(items);
 

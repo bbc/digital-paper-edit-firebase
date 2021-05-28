@@ -174,7 +174,7 @@ const WorkspaceView = props => {
 
   const handleUploadError = (taskId, error) => {
     console.error('Failed to upload file: ', error);
-    const newTasks = new Map(uploadTasks); // shallow clone
+    const newTasks = new Map(uploadTasks);
     newTasks.delete(taskId);
     setUploadTasks(newTasks);
 
@@ -227,7 +227,7 @@ const WorkspaceView = props => {
           handleUploadError(taskId, error);
         },
         () => {
-          handleUploadComplete(newTranscript, transcriptItems);
+          handleUploadComplete(newTranscript);
         }
       );
     };
