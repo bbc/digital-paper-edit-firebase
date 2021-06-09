@@ -67,7 +67,7 @@ const formatToADLEvent = (transcript, element) => {
     sampleRate: transcript.metadata
       ? transcript.metadata.sampleRate
       : defaultSampleRate,
-    label: '',
+    label: transcript.fileName,
     uuid: transcript.uuid,
     path: transcript.path
   };
