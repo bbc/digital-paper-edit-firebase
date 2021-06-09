@@ -10,19 +10,18 @@ const HelpOverlayTrigger = () => {
     <Popover id="popover-basic">
       <Popover.Title as="h3">Need Help?</Popover.Title>
       <Popover.Content>
-        See the{' '}
-        <a
-          href={ 'https://autoedit.gitbook.io/autoedit-3-user-manual/' }
-          target={ '_blank' }
-          rel="noopener noreferrer"
-        >
-          User manual.
-        </a>
-        <br />
-        This is a <strong>slightly different version</strong> of the Digital
-        Paper Edit, but the general workflows should be the same.
-        Should you require login details, or more assistance,{' '}
-        <a href="mailto:dpe@bbcnewslabs.co.uk">get in touch with Newslabs</a>!
+        <p>Please see the{' '}
+          <a
+            href={ 'https://paper.dropbox.com/doc/Digital-Paper-Edit-User-Manual--BMXxp_dqg0AaKdCsMYh9ZI~jAg-wd9c7c4Du0etP4m6tp3VD' }
+            target={ '_blank' }
+            rel="noopener noreferrer"
+          >
+            Digital Paper Edit user manual</a>. This has guides and how-tos to help you use the tool.
+        </p>
+        <p>
+          Should you require login details, {' '}
+          <a href="mailto:dpe@bbcnewslabs.co.uk">get in touch with News Labs</a>!
+        </p>
       </Popover.Content>
     </Popover>
   );
