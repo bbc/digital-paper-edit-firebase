@@ -5,11 +5,21 @@ import TranscriptRow from '@bbc/digital-paper-edit-storybook/TranscriptRow';
 import { formatDates } from '../../../Util/time';
 import './index.scss';
 
+const sortItems = (items) => {
+  return items.sort((a, b) => {
+    const aTime = a.uploaded ? a.uploaded : a.created;
+    const bTime = b.uploaded ? b.uploaded : b.created;
+
+    return bTime - aTime;
+  });
+};
+
 const Transcripts = (props) => {
   const items = props.items;
   const uploadTasks = props.uploadTasks;
+  const sortedItems = sortItems(items);
 
-  const TranscriptRows = items.map(item => {
+  const TranscriptRows = sortedItems.map(item => {
     const key = `card-transcript-${ item.id }`;
     const { created, updated } = formatDates(item);
     const progress = uploadTasks.get(item.id);

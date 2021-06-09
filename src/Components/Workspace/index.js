@@ -129,7 +129,7 @@ const WorkspaceView = props => {
     let newItem = transcriptItems.find(i => i.id === item.id);
     newItem = { ...newItem, ...item };
     await updateCollectionItem(newItem, TranscriptsCollection);
-    setTranscriptItems(updateItems(newItem, transcriptItems));
+    updateItems(newItem, transcriptItems);
     props.trackEvent({ category: 'transcripts', action: `updateTranscript ${ item.id }` });
 
     return newItem;
@@ -174,27 +174,29 @@ const WorkspaceView = props => {
 
   const handleUploadError = (taskId, error) => {
     console.error('Failed to upload file: ', error);
-    const newTasks = new Map(uploadTasks); // shallow clone
+    const newTasks = new Map(uploadTasks);
     newTasks.delete(taskId);
     setUploadTasks(newTasks);
 
     updateTranscript({ id: taskId, status: 'error' });
   };
 
-  const handleUploadComplete = (taskId) => {
+  const handleUploadComplete = (newTranscript) => {
+    const { id: taskId } = newTranscript;
     console.log('File upload completed');
-    const newTasks = new Map(uploadTasks); // shallow clone
+    const newTasks = new Map(uploadTasks);
     newTasks.delete(taskId);
     setUploadTasks(newTasks);
 
-    updateTranscript({ id: taskId, status: 'in-progress' });
+    updateTranscript({ ...newTranscript, status: 'in-progress' });
   };
 
   const getUploadPath = (taskId) => {
     return `users/${ uid }/${ UPLOADFOLDER }/${ taskId }`;
   };
 
-  const asyncUploadFile = async (taskId, file) => {
+  const asyncUploadFile = async (newTranscript, file) => {
+    const { id: taskId } = newTranscript;
     const path = getUploadPath(taskId);
     const video = document.createElement('video');
     video.preload = 'metadata';
@@ -225,7 +227,7 @@ const WorkspaceView = props => {
           handleUploadError(taskId, error);
         },
         () => {
-          handleUploadComplete(taskId);
+          handleUploadComplete(newTranscript);
         }
       );
     };
@@ -304,6 +306,8 @@ const WorkspaceView = props => {
     const file = transcript.file;
     delete transcript.file;
 
+    const uploaded = new Date();
+
     const newTranscript = await createOrUpdateCollectionItem({
       ...transcript,
       title: transcript.title,
@@ -311,9 +315,10 @@ const WorkspaceView = props => {
       description: transcript.description ? transcript.description : '',
       status: 'uploading',
       duration: duration,
+      uploaded: uploaded
     }, createTranscript, updateTranscript);
 
-    asyncUploadFile(newTranscript.id, file);
+    await asyncUploadFile(newTranscript, file);
 
     newTranscript.display = true;
 
@@ -349,7 +354,6 @@ const WorkspaceView = props => {
 
   const createOrUpdateTranscript = async (item) => {
     let newTranscript = { ...item, projectId: id };
-    delete newTranscript.display;
 
     if (newTranscript.id) {
       newTranscript = await createOrUpdateCollectionItem(newTranscript, createTranscript,
