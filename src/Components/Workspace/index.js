@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { useState, useEffect, useReducer } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import { Prompt } from 'react-router-dom';
 import CustomFooter from '../lib/CustomFooter';
 import Transcripts from './Transcripts';
 import PaperEdits from './PaperEdits';
@@ -48,7 +47,6 @@ const WorkspaceView = props => {
   const [ formPEData, dispatchPEForm ] = useReducer(formReducer, initialFormState);
 
   const [ uploadTasks, setUploadTasks ] = useState(new Map());
-  const [ isUploading, setIsUploading ] = useState(false);
 
   const PaperEditsCollection = new Collection(
     props.firebase,
@@ -75,14 +73,6 @@ const WorkspaceView = props => {
       authListener();
     };
   }, [ firebase ]);
-
-  useEffect(() => {
-    if (uploadTasks.size) {
-      setIsUploading(true);
-    } else {
-      setIsUploading(false);
-    }
-  }, [ uploadTasks.size ]);
 
   useEffect(() => {
     const collection = new Collection(props.firebase, PROJECTS);
@@ -422,13 +412,7 @@ const WorkspaceView = props => {
   }, [ loadingPE, paperEditItems, id, props.firebase ]);
 
   return (
-    <Container >
-      <Prompt
-        when={ isUploading }
-        message={
-          'Leaving the page now will stop the media upload process. Are you sure?'
-        }
-      />
+    <Container>
       <Row>
         <Col sm={ 6 }>
           <a href="#">
