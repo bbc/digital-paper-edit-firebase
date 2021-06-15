@@ -31,16 +31,22 @@ const mergeConsecutiveElements = (elements) => {
   const paperCuts = elements.filter(element => element.type === 'paper-cut');
 
   return paperCuts.reduce((accumulator, currentElement) => {
-    const prevElement = accumulator[accumulator.length - 1];
-    const areElementsConsecutive = accumulator.length > 0 && currentElement.transcriptId === prevElement.transcriptId && prevElement.end === currentElement.start;
+    if (accumulator.length > 0) {
+      const prevElement = accumulator[accumulator.length - 1];
+      const areElementsConsecutive =
+        currentElement.transcriptId === prevElement.transcriptId &&
+        prevElement.end === currentElement.start;
 
-    if (areElementsConsecutive) {
-      prevElement.end = currentElement.end;
-    } else {
-      accumulator.push(currentElement);
+      if (areElementsConsecutive) {
+        const mergedElement = { ...prevElement, end: currentElement.end };
+
+        return [ ...accumulator.slice(0, accumulator.length - 1), mergedElement ];
+      } else {
+        return [ ...accumulator, currentElement ];
+      }
     }
 
-    return accumulator;
+    return [ ...accumulator, currentElement ];
   }, []);
 };
 
