@@ -53,6 +53,9 @@ const mergeConsecutiveElements = (elements) => {
 const getEDLSq = (title, elements, transcripts) => {
   const meregedElements = mergeConsecutiveElements(elements);
 
+  console.log('elements', elements);
+  console.log('mergedEelements', meregedElements);
+
   return meregedElements.reduce((res, element) => {
     const transcript = getCurrentTranscript(element, transcripts);
     const edlEvent = formatToEDLEvent(transcript, element);
@@ -99,8 +102,10 @@ const formatToADLEvent = (transcript, element) => {
 };
 
 const getADLSq = (projectTitle, title, elements, transcripts) => {
-  const edits = elements
-    .filter(el => el.type === 'paper-cut')
+  const meregedElements = mergeConsecutiveElements(elements);
+
+  const edits = meregedElements
+    .filter((el) => el.type === 'paper-cut')
     .map((element, index) => {
       const transcript = getCurrentTranscript(element, transcripts);
       const edit = formatToADLEvent(transcript, element);
