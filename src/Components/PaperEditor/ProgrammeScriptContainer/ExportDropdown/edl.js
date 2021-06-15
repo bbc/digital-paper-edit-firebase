@@ -47,6 +47,7 @@ const getEDLSq = (title, elements, transcripts) => {
 };
 
 const formatToADLEvent = (transcript, element) => {
+  const fileNameNoExtension = transcript.fileName.replace(/\.[^/.]+$/, '');
   const result = {
     start: element.start,
     end: element.end,
@@ -67,7 +68,7 @@ const formatToADLEvent = (transcript, element) => {
     sampleRate: transcript.metadata
       ? transcript.metadata.sampleRate
       : defaultSampleRate,
-    label: transcript.fileName,
+    label: fileNameNoExtension,
     uuid: transcript.uuid,
     path: transcript.path
   };
