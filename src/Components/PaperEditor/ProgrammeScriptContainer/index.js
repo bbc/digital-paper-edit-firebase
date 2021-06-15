@@ -58,11 +58,21 @@ const ProgrammeScriptContainer = (props) => {
     `/projects/${ projectId }/paperedits`
   );
 
-  const createPaperEdits = async (paperEdit) => {
+  const createPaperEdits = async (paperEdit, newElements, insertPointElement) => {
 
     try {
       await PaperEdits.putItem(papereditsId, paperEdit);
+      const insertedPaperCut = newElements.find(element => {
+
+        return element.index === insertPointElement.index - 1;
+      });
       console.log('Successfully saved');
+
+      let insertedWords = '';
+      insertedPaperCut.words.forEach(word => {
+        insertedWords += word.text;
+      });
+      props.trackEvent({ category: 'programme script - programme script panel', action: 'insert selection', name: insertedWords });
       setResetPreview(true);
     } catch (error) {
       console.error('Error saving document', error);
@@ -85,7 +95,7 @@ const ProgrammeScriptContainer = (props) => {
         elements: newElements,
       };
 
-      createPaperEdits(paperEdit);
+      createPaperEdits(paperEdit, newElements, insertPointElement);
       setSaved(true);
     };
   };
@@ -261,7 +271,7 @@ const ProgrammeScriptContainer = (props) => {
     setElements(updatedWords);
     setResetPreview(true);
     handleSaveProgrammeScript(updatedWords);
-    props.trackEvent({ category: 'paperEditor programmeScript', action: `onSortEnd from:${ oldIndex } to:${ newIndex }` });
+    props.trackEvent({ category: 'programme script - programme script panel', action: 'reorder', name: `${ elements[oldIndex].type } from: ${ oldIndex } to: ${ newIndex }` });
   };
 
   const getInsertElementIndex = () => {

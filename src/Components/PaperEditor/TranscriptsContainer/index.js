@@ -14,12 +14,14 @@ import { useState, useEffect } from 'react';
 const TranscriptsContainer = ({ transcripts, projectId, firebase, trackEvent }) => {
   const [ activeKey, setActiveKey ] = useState();
   const transcriptsElNav = transcripts.map((transcript) => (
-    <TranscriptNavItem
-      key={ transcript.id }
-      title={ transcript.title }
-      id={ transcript.id }
-      status={ transcript.status }
-    />
+    <div key={ transcript.id }
+      onClick = { () => trackEvent({ category: 'programme script - transcript panel', action: 'click', name: `transcript: ${ transcript.title }` }) }>
+      <TranscriptNavItem
+        title={ transcript.id }
+        id={ transcript.id }
+        status={ transcript.status }
+      />
+    </div>
   ));
 
   const transcriptsElTab = transcripts.map((transcript) => (

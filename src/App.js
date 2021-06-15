@@ -17,6 +17,7 @@ const App = (props) => {
   const [ user, setUser ] = useState();
 
   useEffect(() => {
+    // eslint-disable-next-line no-shadow
     const authListener = props.firebase.auth.onAuthStateChanged((user) =>
       setAuthUser(user)
     );

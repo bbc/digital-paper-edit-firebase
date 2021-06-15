@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import AuthUserContext from './context';
 import { withFirebase } from '../Firebase';
+import PropTypes from 'prop-types';
 
 const withAuthentication = Component => {
   const WithAuthentication = props => {
@@ -31,6 +32,10 @@ const withAuthentication = Component => {
         <Component { ...props } />
       </AuthUserContext.Provider>
     );
+  };
+
+  WithAuthentication.propTypes = {
+    firebase: PropTypes.any,
   };
 
   return withFirebase(WithAuthentication);

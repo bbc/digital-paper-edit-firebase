@@ -12,7 +12,8 @@ const PaperEdits = (props) => {
     const { created, updated } = formatDates(item);
 
     return (
-      <div key={ key }>
+      <div key={ key }
+        onClick = { () => props.trackEvent({ category: 'project overview', action: 'open', name: `programme script: ${ item.id }` }) }>
         <ProjectRow
           description={ item.description }
           id={ item.id }
@@ -48,7 +49,8 @@ PaperEdits.propTypes = {
   handleDuplicateItem: PropTypes.any,
   handleEditItem: PropTypes.any,
   items: PropTypes.any,
-  projectId: PropTypes.any
+  projectId: PropTypes.any,
+  trackEvent: PropTypes.any
 };
 
 const condition = (authUser) => !!authUser;
