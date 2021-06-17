@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import { compose } from '@shakacode/recompose';
 import { withFirebase } from '../Firebase';
-import * as ROUTES from '../../constants/routes';
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
+import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 
@@ -17,28 +17,52 @@ const PasswordResetPage = () => (
 );
 
 const PasswordResetFormBase = props => {
-
   const [ email, setEmail ] = useState('');
   const [ error, setError ] = useState();
+  const [ isInvalid, setIsInvalid ] = useState(true);
 
   const onSubmit = async event => {
-    // Prevent form from reloading
     event.preventDefault();
+    setError(undefined);
 
     try {
-      await props.firebase.doSignInWithEmailAndPassword(email);
-      props.history.push(ROUTES.PROJECTS);
-    } catch (err) {
-      setError(err);
-      console.error(err);
+      await props.firebase.doPasswordReset(email);
+      window.localStorage.setItem('emailForSignIn', email);
+    } catch (resetError) {
+      setError(resetError);
+      setIsInvalid(true);
+      console.error(resetError);
     }
   };
 
   const onEmailChange = event => {
     setEmail(event.target.value);
+
+    if (event.target.value === '') {
+      setIsInvalid(true);
+    } else {
+      setIsInvalid(false);
+    }
+
+    if (error) {
+      setError(undefined);
+    }
   };
 
-  const isInvalid = email === '';
+  const renderErrorAlert = () => {
+    const notFoundError = (
+      <>
+        Sorry, we can’t find an account with that email. You can contact {' '}
+        <Alert.Link href='mailto:dpe@bbcnewslabs.co.uk'>dpe@bbcnewslabs.co.uk</Alert.Link> for a new account or support.
+      </>
+    );
+
+    return (
+      <Alert variant='danger' style={ { fontSize: '12px', padding: '8px', marginTop: '8px' } }>
+        {error.code === 'auth/user-not-found' ? notFoundError : error.message}
+      </Alert>
+    );
+  };
 
   return (
     <Form onSubmit={ onSubmit }>
@@ -47,6 +71,7 @@ const PasswordResetFormBase = props => {
           <Form.Group controlId="email" >
             <Form.Label>Email address</Form.Label>
             <Form.Control value={ email } onChange={ onEmailChange } type="email" placeholder="Enter email" />
+            { error ? renderErrorAlert() : null }
           </Form.Group>
         </Col>
       </Form.Row>
@@ -57,17 +82,13 @@ const PasswordResetFormBase = props => {
         type="submit">
         Send password reset email
       </Button>
-      {error && <p>{error.message}</p>}
     </Form>
   );
 };
 
 PasswordResetFormBase.propTypes = {
   firebase: PropTypes.shape({
-    doSignInWithEmailAndPassword: PropTypes.func
-  }),
-  history: PropTypes.shape({
-    push: PropTypes.func
+    doPasswordReset: PropTypes.func
   })
 };
 
