@@ -1,5 +1,6 @@
 export const LANDING = '/';
 export const SIGN_IN = '/signin';
+export const PASSWORD_RESET = '/reset';
 export const ADMIN = '/admin';
 export const PROJECTS = '/projects';
 export const WORKSPACE = '/projects/:projectId';
