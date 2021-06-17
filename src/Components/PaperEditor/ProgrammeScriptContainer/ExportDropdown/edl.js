@@ -98,9 +98,9 @@ const formatToADLEvent = (transcript, element) => {
 };
 
 const getADLSq = (projectTitle, title, elements, transcripts) => {
-  const meregedElements = mergeConsecutiveElements(elements);
+  const mergedElements = mergeConsecutiveElements(elements);
 
-  const edits = meregedElements
+  const edits = mergedElements
     .filter((el) => el.type === 'paper-cut')
     .map((element, index) => {
       const transcript = getCurrentTranscript(element, transcripts);
