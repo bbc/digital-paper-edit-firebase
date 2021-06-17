@@ -51,18 +51,14 @@ const mergeConsecutiveElements = (elements) => {
 };
 
 const getEDLSq = (title, elements, transcripts) => {
-  const meregedElements = mergeConsecutiveElements(elements);
+  const mergedElements = mergeConsecutiveElements(elements);
 
-  console.log('elements', elements);
-  console.log('mergedEelements', meregedElements);
-
-  return meregedElements.reduce((res, element) => {
+  return mergedElements.reduce((res, element) => {
     const transcript = getCurrentTranscript(element, transcripts);
     const edlEvent = formatToEDLEvent(transcript, element);
     res.index += 1;
     edlEvent.id = res.index;
     res.events.push(edlEvent);
-    console.log('res', element, transcript);
 
     return res;
   }, {
