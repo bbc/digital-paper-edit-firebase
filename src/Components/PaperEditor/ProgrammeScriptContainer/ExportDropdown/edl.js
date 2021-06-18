@@ -1,8 +1,9 @@
 import writeEDL from '@bbc/aes31-adl-composer';
 import { defaultReelName, getCurrentTranscript, defaultTimecodeOffset, defaultSampleRate, defaultFps } from './helper';
 
-const formatToEDLEvent = (transcript, element) => {
+const formatToEDLEvent = (transcript, element, index) => {
   const result = {
+    id: index,
     startTime: element.start,
     endTime: element.end,
     reelName: transcript.metadata
@@ -55,12 +56,9 @@ const getEDLSq = (title, elements, transcripts) => {
 
   return mergedElements.reduce((res, element) => {
     const transcript = getCurrentTranscript(element, transcripts);
-    const edlEvent = formatToEDLEvent(transcript, element);
-    res.index += 1;
-    edlEvent.id = res.index;
-    res.events.push(edlEvent);
+    const edlEvent = formatToEDLEvent(transcript, element, res.index + 1);
 
-    return res;
+    return { ...res, events: [ ...res.events, edlEvent ] };
   }, {
     title: title,
     events: [],

@@ -289,8 +289,7 @@ const ProgrammeScriptContainer = (props) => {
     return totalDuration;
   };
 
-  const formatSingleParagaph = (selection) => {
-    const { start, end, speaker, transcriptId, words } = selection;
+  const formatSingleParagraph = ({ start, end, speaker, transcriptId, words }) => {
     console.log('Adding one paragraph...');
     const insertElementIndex = getInsertElementIndex();
     const playlistStartTime = getTranscriptSelectionStartTime(
@@ -422,7 +421,7 @@ const ProgrammeScriptContainer = (props) => {
 
     if (selection) {
       if (isOneParagraph(selection.words)) {
-        const newPaperCut = formatSingleParagaph(selection);
+        const newPaperCut = formatSingleParagraph(selection);
         elementsClone.splice(insertElementIndex, 0, newPaperCut);
 
         // Adjusts word timings for paper-cuts that come after the new element
