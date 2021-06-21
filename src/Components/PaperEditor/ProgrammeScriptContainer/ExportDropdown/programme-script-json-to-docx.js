@@ -26,7 +26,7 @@ const programmeScriptJsonToDocx = (edlJson, title, includeClipReference) => {
         new Paragraph({
           children: [
             new TextRun({
-              text: `Voice Over:\t`,
+              text: 'Voice Over:\t',
               italics: false,
               bold: true,
             }),
@@ -42,7 +42,7 @@ const programmeScriptJsonToDocx = (edlJson, title, includeClipReference) => {
     } else if (event.type === 'note') {
       sections.push(
         new Paragraph({
-          children: [ new TextRun({ text: `Notes:\t`, italics: true, bold: true }), new TextRun({ text: `${ event.text }`, italics: true }) ],
+          children: [ new TextRun({ text: 'Notes:\t', italics: true, bold: true }), new TextRun({ text: `${ event.text }`, italics: true }) ],
           spacing: {
             after: 200,
           },
