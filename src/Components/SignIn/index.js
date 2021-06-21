@@ -64,14 +64,14 @@ const SignInFormBase = props => {
             </Form.Group>
           </Col>
         </Form.Row>
-        <Button
-          disabled={ isInvalid }
-          variant="primary"type="submit">
+        <Button disabled={ isInvalid } variant="primary" type="submit">
           Sign in
         </Button>
         {error && <p>{error.message}</p>}
       </Form>
-      <Link to="/reset" style={ { textDecoration: 'underline', color: '#6b6b6b' } }>Password reset</Link>
+      <Link to={ { pathname: '/reset', search: `?email=${ email }` } } style={ { textDecoration: 'underline', color: '#6b6b6b' } }>
+        Password reset
+      </Link>
     </>
   );
 };

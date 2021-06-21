@@ -16,10 +16,13 @@ const PasswordResetPage = () => (
   </Container>
 );
 
-const PasswordResetFormBase = props => {
-  const [ email, setEmail ] = useState('');
+const PasswordResetFormBase = ({ firebase, location: { search } }) => {
+  const params = new URLSearchParams(search);
+  const emailParam = params.get('email') || '';
+
+  const [ email, setEmail ] = useState(emailParam);
   const [ error, setError ] = useState();
-  const [ isInvalid, setIsInvalid ] = useState(true);
+  const [ isValid, setIsValid ] = useState(emailParam.length > 0);
   const [ isSubmitted, setIsSubmitted ] = useState(false);
 
   const onSubmit = async event => {
@@ -27,12 +30,12 @@ const PasswordResetFormBase = props => {
     setError(undefined);
 
     try {
-      await props.firebase.doPasswordReset(email);
+      await firebase.doPasswordReset(email);
       window.localStorage.setItem('emailForSignIn', email);
       setIsSubmitted(true);
     } catch (resetError) {
       setError(resetError);
-      setIsInvalid(true);
+      setIsValid(false);
       console.error(resetError);
     }
   };
@@ -41,9 +44,9 @@ const PasswordResetFormBase = props => {
     setEmail(event.target.value);
 
     if (event.target.value === '') {
-      setIsInvalid(true);
+      setIsValid(false);
     } else {
-      setIsInvalid(false);
+      setIsValid(true);
     }
 
     if (error) {
@@ -81,7 +84,7 @@ const PasswordResetFormBase = props => {
         </Form.Row>
         <Button
           style={ { position: 'absolute', bottom: '4em' } }
-          disabled={ isInvalid }
+          disabled={ !isValid }
           variant="primary"
           type="submit">
           Send password reset email
@@ -100,7 +103,8 @@ const PasswordResetFormBase = props => {
       </p>
       <p>Can’t find it? Check your spam folder.</p>
       <p>
-        <Link to="/reset" style={ { textDecoration: 'underline', color: '#363636' } } onClick={ () => setIsSubmitted(false) }>
+        <Link to={ { pathname: '/reset', search: `?email=${ email }` } } style={ { textDecoration: 'underline', color: '#363636' } }
+          onClick={ () => setIsSubmitted(false) }>
           Or resend the email.
         </Link>
       </p>
