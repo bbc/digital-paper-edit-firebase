@@ -113,7 +113,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
 
       handleSaveProgrammeScript(newList);
-      props.trackEvent({ category: 'paperEditor programmeScript', action: 'handleClearProgrammeScript' });
+      props.trackEvent({ category: 'programme script - programme script panel', action: 'clear', name: papereditsId });
     }
   };
 
@@ -246,7 +246,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
       handleSaveProgrammeScript(updatedWords);
     }
-    props.trackEvent({ category: 'paperEditor programmeScript', action: `handleDelete ${ i }` });
+    props.trackEvent({ category: 'programme script - programme script panel', action: 'delete', name: `${ elements[i].type }` });
   };
 
   const handleEdit = (i) => {
@@ -261,7 +261,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
       handleSaveProgrammeScript(newElements);
     }
-    props.trackEvent({ category: 'paperEditor programmeScript', action: `handleEdit ${ newText }` });
+    props.trackEvent({ category: 'programme script - programme script panel', action: 'edit', name: `${ currentElement.type }` });
   };
 
   const onSortEnd = ({ oldIndex, newIndex }) => {
@@ -485,6 +485,7 @@ const ProgrammeScriptContainer = (props) => {
         console.log('Added element');
         setResetPreview(true);
         handleSaveProgrammeScript(newElements);
+        props.trackEvent({ category: 'programme script - programme script panel', action: 'add', name: elementType });
       } else {
         console.log('Not adding element');
       }
@@ -534,6 +535,7 @@ const ProgrammeScriptContainer = (props) => {
                   elements={ elements }
                   storage={ firebase.storage.storage }
                   handleGetMediaUrl = { getMediaUrl }
+                  trackEvent ={ props.trackEvent }
                 />
                 : (<Button variant="outline-secondary" disabled>
                   <FontAwesomeIcon icon={ faShare } /> Export

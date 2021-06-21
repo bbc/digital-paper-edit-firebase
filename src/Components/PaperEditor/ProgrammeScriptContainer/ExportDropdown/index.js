@@ -18,13 +18,7 @@ import { formatJsonToText, getJson } from './json';
 import { useState } from 'react';
 import programmeScriptJsonToDocx from './programme-script-json-to-docx';
 
-const ExportDropdown = (props) => {
-
-  const title = props.title;
-  const elements = props.elements;
-  const transcripts = props.transcripts;
-  const projectTitle = props.projectTitle;
-  const storage = props.storage;
+const ExportDropdown = ({ title, elements, transcripts, projectTitle, storage, trackEvent, handleGetMediaUrl }) => {
 
   const [ showADL, setShowADL ] = useState(false);
   const [ showMedia, setShowMedia ] = useState(false);
@@ -37,11 +31,11 @@ const ExportDropdown = (props) => {
   const handleShowMedia = () => setShowMedia(true);
 
   const handleExportFCPX = () => {
-    // alert('this function has not been implemented yet');
     const edlSq = getEDLSq(title, elements, transcripts);
     const result = jsonToFCPX(edlSq);
     console.log('FCPX result', result);
     downloadjs(result, `${ title }.fcpxml`, 'text/plain');
+    trackEvent({ category: 'programme script - programme script panel', action: 'export', name: `FCPX: ${ title }` });
   };
 
   const handleExportJson = () => {
@@ -52,6 +46,7 @@ const ExportDropdown = (props) => {
       `${ title }.json`,
       'text/plain'
     );
+    trackEvent({ category: 'programme script - programme script panel', action: 'export', name: `JSON: ${ title }` });
   };
 
   const handleExportTxt = () => {
@@ -63,12 +58,14 @@ const ExportDropdown = (props) => {
       `${ title }.txt`,
       'text/plain'
     );
+    trackEvent({ category: 'programme script - programme script panel', action: 'export', name: `text file: ${ title }` });
   };
 
   const handleExportEDL = () => {
     const edlSq = getEDLSq(title, elements, transcripts);
     const edl = new EDL(edlSq);
     downloadjs(edl.compose(), `${ title }.edl`, 'text/plain');
+    trackEvent({ category: 'programme script - programme script panel', action: 'export', name: `EDL: ${ title }` });
   };
 
   const generateADL = (data) => {
@@ -79,16 +76,18 @@ const ExportDropdown = (props) => {
 
   const handleExportADL = () => {
     handleShowADL();
+    trackEvent({ category: 'programme script - programme script panel', action: 'export', name: `ADL: ${ title }` });
   };
 
   const handleExportDocx = () => {
     const programmeScriptJson = getJson(title, elements, transcripts, true);
     programmeScriptJsonToDocx(programmeScriptJson, title, true);
+    trackEvent({ category: 'programme script - programme script panel', action: 'export', name: `word document: ${ title }` });
   };
 
   const getMediaUrl = async (item) => {
 
-    return props.handleGetMediaUrl(storage, item);
+    return handleGetMediaUrl(storage, item);
   };
 
   const handleDownloadMedia = async () => {
@@ -155,8 +154,10 @@ const ExportDropdown = (props) => {
           Download Media files <FontAwesomeIcon icon={ faInfoCircle } />
         </Dropdown.Item>
 
-        <ADLModal show={ showADL } onSubmit={ generateADL } transcripts={ transcripts } handleClose={ handleCloseADL } ></ADLModal>
-        {urls.length > 0 ? <MediaModal urls={ urls } show={ showMedia } handleClose={ handleCloseMedia } ></MediaModal> : null}
+        <ADLModal show={ showADL } onSubmit={ generateADL } transcripts={ transcripts } handleClose={ handleCloseADL } />
+        { urls.length > 0
+          ? <MediaModal urls={ urls } show={ showMedia } handleClose={ handleCloseMedia } trackEvent= { trackEvent } />
+          : null }
       </Dropdown.Menu>
     </Dropdown>
   );
@@ -169,7 +170,8 @@ ExportDropdown.propTypes = {
   projectTitle: PropTypes.any,
   title: PropTypes.any,
   transcripts: PropTypes.any,
-  storage: PropTypes.any
+  storage: PropTypes.any,
+  trackEvent: PropTypes.func
 };
 
 export default ExportDropdown;

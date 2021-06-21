@@ -7,7 +7,7 @@ import {
 import Button from 'react-bootstrap/Button';
 import download from 'downloadjs';
 
-const MediaModalFiles = ({ name, fileName, url, type }) => {
+const MediaModalFiles = ({ name, fileName, url, type, trackEvent }) => {
   const [ isDownloading, setIsDownloading ] = useState(false);
   const [ progress, setProgress ] = useState();
 
@@ -28,6 +28,7 @@ const MediaModalFiles = ({ name, fileName, url, type }) => {
       setIsDownloading(false);
     };
     xmlhttp.send();
+    trackEvent({ category: 'programme script - programme script panel', action: 'export', name: `media file: ${ fileName }` });
   };
 
   const getStatus = () => {
@@ -59,7 +60,8 @@ MediaModalFiles.propTypes = {
   name: PropTypes.string,
   fileName: PropTypes.string,
   url: PropTypes.string,
-  type: PropTypes.string
+  type: PropTypes.string,
+  trackEvent: PropTypes.func
 };
 
 export default MediaModalFiles;

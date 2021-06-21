@@ -417,7 +417,9 @@ const WorkspaceView = props => {
       <Row>
         <Col sm={ 6 }>
           <a href="#">
-            <Button size="sm">
+            <Button
+              size="sm"
+              onClick={ () => props.trackEvent({ category: 'project overview', action: 'click', name: 'back to projects' }) }>
               <FontAwesomeIcon icon={ faArrowLeft } /> Back to Projects
             </Button>
           </a>
