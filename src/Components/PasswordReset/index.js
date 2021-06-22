@@ -8,10 +8,10 @@ import Col from 'react-bootstrap/Col';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
+import './index.scss';
 
 const PasswordResetPage = () => (
-  <Container style={ { marginBottom: '5em', marginTop: '1em', border: '1px solid #6b6b6b',
-    width: '398px', height: '354px', padding: '1.5em', position: 'relative' } }>
+  <Container className='PasswordReset__container'>
     <PasswordResetForm />
   </Container>
 );
@@ -63,7 +63,7 @@ const PasswordResetFormBase = ({ firebase, location: { search } }) => {
     );
 
     return (
-      <Alert variant='danger' style={ { fontSize: '12px', padding: '8px', marginTop: '8px' } }>
+      <Alert variant='danger' className='PasswordReset__error'>
         {error.code === 'auth/user-not-found' ? notFoundError : error.message}
       </Alert>
     );
@@ -71,19 +71,19 @@ const PasswordResetFormBase = ({ firebase, location: { search } }) => {
 
   const renderForm = () => (
     <>
-      <h2 style={ { marginBottom: '0.5em' } }>Password reset</h2>
+      <h2 className='PasswordReset__header'>Password reset</h2>
       <Form onSubmit={ onSubmit }>
         <Form.Row>
           <Col>
             <Form.Group controlId="email" >
               <Form.Label>Email address</Form.Label>
-              <Form.Control value={ email } onChange={ onEmailChange } type="email" placeholder="Enter email" />
+              <Form.Control value={ email } onChange={ onEmailChange } type="email" placeholder="Enter email" isInvalid={ !!error } />
               { error ? renderErrorAlert() : null }
             </Form.Group>
           </Col>
         </Form.Row>
         <Button
-          style={ { position: 'absolute', bottom: '4em' } }
+          className='PasswordReset__submit'
           disabled={ !isValid }
           variant="primary"
           type="submit">
@@ -95,7 +95,7 @@ const PasswordResetFormBase = ({ firebase, location: { search } }) => {
 
   const renderSuccessMessage = () => (
     <div>
-      <h2 style={ { marginBottom: '0.5em' } }>Password reset successful</h2>
+      <h2 className='PasswordReset__header'>Password reset successful</h2>
       <p>
         Please check your inbox.<br />
         We’ve just sent a reset link for your password.<br />
@@ -103,7 +103,7 @@ const PasswordResetFormBase = ({ firebase, location: { search } }) => {
       </p>
       <p>Can’t find it? Check your spam folder.</p>
       <p>
-        <Link to={ { pathname: '/reset', search: `?email=${ email }` } } style={ { textDecoration: 'underline', color: '#363636' } }
+        <Link to={ { pathname: '/reset', search: `?email=${ email }` } } className='PasswordReset__link'
           onClick={ () => setIsSubmitted(false) }>
           Or resend the email.
         </Link>

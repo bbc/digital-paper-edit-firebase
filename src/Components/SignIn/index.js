@@ -8,16 +8,16 @@ import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
+import './index.scss';
 
 const SignInPage = () => (
-  <Container style={ { marginBottom: '5em', marginTop: '1em', border: '1px solid black', width: '398px', padding: '1.5em' } }>
-    <h2 style={ { marginBottom: '0.5em' } }>Sign In</h2>
+  <Container className='SignIn__container'>
+    <h2 className='SignIn__header'>Sign In</h2>
     <SignInForm />
   </Container>
 );
 
 const SignInFormBase = props => {
-
   const [ email, setEmail ] = useState('');
   const [ password, setPassword ] = useState('');
   const [ error, setError ] = useState();
@@ -47,7 +47,7 @@ const SignInFormBase = props => {
 
   return (
     <>
-      <Form style={ { marginBottom: '1em' } } onSubmit={ onSubmit }>
+      <Form className='SignIn__form' onSubmit={ onSubmit }>
         <Form.Row>
           <Col>
             <Form.Group controlId="email" >
@@ -69,7 +69,7 @@ const SignInFormBase = props => {
         </Button>
         {error && <p>{error.message}</p>}
       </Form>
-      <Link to={ { pathname: '/reset', search: `?email=${ email }` } } style={ { textDecoration: 'underline', color: '#6b6b6b' } }>
+      <Link to={ { pathname: '/reset', search: `?email=${ email }` } } className='SignIn__link'>
         Password reset
       </Link>
     </>
