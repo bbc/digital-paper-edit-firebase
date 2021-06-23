@@ -185,8 +185,7 @@ const Projects = (props) => {
     const { created, updated } = formatDates(item);
 
     return (
-      <div key={ key }
-        onClick = { () => props.trackEvent({ category: 'projects', action: 'click', name: item.id }) }>
+      <div key={ key }>
         <ProjectRow
           description={ item.description }
           id={ item.id }
@@ -196,7 +195,9 @@ const Projects = (props) => {
           updated={ updated ? updated : 'NA' }
           handleDuplicateItem={ (itemId) => handleDuplicateItem({ id: itemId }, duplicateProject) }
           handleEditItem={ (itemId) => handleEdit(itemId) }
-          handleDeleteItem={ (itemId) => handleDeleteItem({ id: itemId }, deleteProject) }>
+          handleDeleteItem={ (itemId) => handleDeleteItem({ id: itemId }, deleteProject) }
+          handleClick={ () => props.trackEvent({ category: 'projects', action: 'click', name: item.id }) }
+        >
         </ProjectRow>
         <hr style={ { color: 'grey' } } />
       </div>

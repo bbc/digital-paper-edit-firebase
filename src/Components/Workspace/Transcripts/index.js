@@ -25,8 +25,7 @@ const Transcripts = (props) => {
     const progress = uploadTasks.get(item.id);
 
     return (
-      <div key={ key }
-        onClick = { () => props.trackEvent({ category: 'project overview', action: 'click', name: `transcript: ${ item.id }` }) }>
+      <div key={ key }>
         <TranscriptRow
           description={ item.description }
           id={ item.id }
@@ -42,6 +41,7 @@ const Transcripts = (props) => {
           handleEditItem={ props.handleEditItem }
           handleDeleteItem={ props.handleDeleteItem }
           mediaType={ item.type }
+          handleClick={ props.trackEvent({ category: 'project overview', action: 'click', name: `transcript: ${ item.id }` }) }
         />
       </div>
     );
