@@ -155,7 +155,7 @@ const PaperEditor = (props) => {
           name: `${ paperEditTitle }`,
         },
       ] }
-      handleClick={ props.trackEvent({ category: 'programme script/transcript editor', action: 'breadcrumb', name: 'go to project overview' }) }
+      handleClick={ () => props.trackEvent({ category: 'programme script/transcript editor', action: 'breadcrumb', name: 'go to project overview' }) }
     />
   );
 

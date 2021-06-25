@@ -41,7 +41,7 @@ const Transcripts = (props) => {
           handleEditItem={ props.handleEditItem }
           handleDeleteItem={ props.handleDeleteItem }
           mediaType={ item.type }
-          handleClick={ props.trackEvent({ category: 'project overview', action: 'click', name: `transcript: ${ item.id }` }) }
+          handleClick={ () => props.trackEvent({ category: 'project overview', action: 'click', name: `transcript: ${ item.id }` }) }
         />
       </div>
     );
