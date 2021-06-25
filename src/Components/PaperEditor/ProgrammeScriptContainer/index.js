@@ -507,6 +507,7 @@ const ProgrammeScriptContainer = (props) => {
               width={ width }
               playlist={ playlist }
               currentTime={ currentTime }
+              handleClick={ (control) => props.trackEvent({ category: 'programme script - programme script panel', action: control, name: title }) }
             />
           ) : null}
         </Card.Header>

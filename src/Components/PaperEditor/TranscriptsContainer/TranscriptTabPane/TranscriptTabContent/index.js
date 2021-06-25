@@ -457,6 +457,8 @@ const TranscriptTabContent = (props) => {
 
   let mediaElement;
 
+  const analyticsEvent = (action) => trackEvent({ category: 'programme script - transcript panel', action: action, name: title });
+
   if (mediaType.startsWith('audio')) {
     mediaElement = (
       <audio
@@ -468,6 +470,9 @@ const TranscriptTabContent = (props) => {
           backgroundColor: 'black',
         } }
         controls
+        onPlay= { () => analyticsEvent('play') }
+        onPause= { () => analyticsEvent('pause') }
+        onSeeking= { () => analyticsEvent('seeking') }
       />
     );
   } else {
@@ -481,6 +486,9 @@ const TranscriptTabContent = (props) => {
           backgroundColor: 'black',
         } }
         controls
+        onPlay= { () => analyticsEvent('play') }
+        onPause= { () => analyticsEvent('pause') }
+        onSeeking= { () => analyticsEvent('seeking') }
       />
     );
   }

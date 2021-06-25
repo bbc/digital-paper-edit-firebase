@@ -12,8 +12,7 @@ const PaperEdits = (props) => {
     const { created, updated } = formatDates(item);
 
     return (
-      <div key={ key }
-        onClick = { () => props.trackEvent({ category: 'project overview', action: 'open', name: `programme script: ${ item.id }` }) }>
+      <div key={ key }>
         <ProjectRow
           description={ item.description }
           id={ item.id }
@@ -24,6 +23,7 @@ const PaperEdits = (props) => {
           handleDuplicateItem={ props.handleDuplicateItem }
           handleEditItem={ props.handleEditItem }
           handleDeleteItem={ props.handleDeleteItem }
+          handleClick={ () => props.trackEvent({ category: 'project overview', action: 'open', name: `programme script: ${ item.id }` }) }
         />
         <hr style={ { color: 'grey' } } />
       </div>
