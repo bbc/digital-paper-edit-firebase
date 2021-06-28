@@ -17,14 +17,14 @@ const App = (props) => {
   const [ user, setUser ] = useState();
 
   useEffect(() => {
-    const authListener = props.firebase.auth.onAuthStateChanged(() =>
-      setAuthUser(user)
+    const authListener = props.firebase.auth.onAuthStateChanged((authStateUser) =>
+      setAuthUser(authStateUser)
     );
 
     return () => {
       authListener();
     };
-  }, [ props.firebase.auth, user ]);
+  }, [ props.firebase.auth ]);
 
   useEffect(() => {
     const userCollection = new Collection(props.firebase, '/users');
