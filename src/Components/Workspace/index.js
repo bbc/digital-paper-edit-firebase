@@ -91,6 +91,15 @@ const WorkspaceView = props => {
     return () => {};
   }, [ id, props.firebase ]);
 
+  useEffect(() => {
+    window.onbeforeunload = (event) => {
+      event.preventDefault();
+      if (uploadTasks.size !== 0) {
+        event.returnValue = 'Your file has not finished uploading';
+      }};
+
+  }, [ uploadTasks ]);
+
   // modal
 
   const createPaperEdit = async (item) => {
@@ -413,7 +422,7 @@ const WorkspaceView = props => {
   };
 
   return (
-    <Container >
+    <Container>
       <Row>
         <Col sm={ 6 }>
           <a href="#">

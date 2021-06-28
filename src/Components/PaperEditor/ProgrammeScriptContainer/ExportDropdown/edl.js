@@ -1,8 +1,9 @@
 import writeEDL from '@bbc/aes31-adl-composer';
 import { defaultReelName, getCurrentTranscript, defaultTimecodeOffset, defaultSampleRate, defaultFps } from './helper';
 
-const formatToEDLEvent = (transcript, element) => {
+const formatToEDLEvent = (transcript, element, index) => {
   const result = {
+    id: index,
     startTime: element.start,
     endTime: element.end,
     reelName: transcript.metadata
@@ -27,18 +28,37 @@ const formatToEDLEvent = (transcript, element) => {
   return result;
 };
 
-const getEDLSq = (title, elements, transcripts) => {
-  return elements.reduce((res, element) => {
-    if (element.type === 'paper-cut') {
-      const transcript = getCurrentTranscript(element, transcripts);
-      const edlEvent = formatToEDLEvent(transcript, element);
-      res.index += 1;
-      edlEvent.id = res.index;
-      res.events.push(edlEvent);
-      console.log('res', element, transcript);
+const mergeConsecutiveElements = (elements) => {
+  const paperCuts = elements.filter(element => element.type === 'paper-cut');
+
+  return paperCuts.reduce((accumulator, currentElement) => {
+    if (accumulator.length > 0) {
+      const prevElement = accumulator[accumulator.length - 1];
+      const areElementsConsecutive =
+        currentElement.transcriptId === prevElement.transcriptId &&
+        prevElement.end === currentElement.start;
+
+      if (areElementsConsecutive) {
+        const mergedElement = { ...prevElement, end: currentElement.end };
+
+        return [ ...accumulator.slice(0, accumulator.length - 1), mergedElement ];
+      } else {
+        return [ ...accumulator, currentElement ];
+      }
     }
 
-    return res;
+    return [ ...accumulator, currentElement ];
+  }, []);
+};
+
+const getEDLSq = (title, elements, transcripts) => {
+  const mergedElements = mergeConsecutiveElements(elements);
+
+  return mergedElements.reduce((res, element) => {
+    const transcript = getCurrentTranscript(element, transcripts);
+    const edlEvent = formatToEDLEvent(transcript, element, res.index + 1);
+
+    return { ...res, events: [ ...res.events, edlEvent ] };
   }, {
     title: title,
     events: [],
@@ -47,6 +67,7 @@ const getEDLSq = (title, elements, transcripts) => {
 };
 
 const formatToADLEvent = (transcript, element) => {
+  const fileNameNoExtension = transcript.fileName.replace(/\.[^/.]+$/, '');
   const result = {
     start: element.start,
     end: element.end,
@@ -67,7 +88,7 @@ const formatToADLEvent = (transcript, element) => {
     sampleRate: transcript.metadata
       ? transcript.metadata.sampleRate
       : defaultSampleRate,
-    label: transcript.fileName,
+    label: fileNameNoExtension,
     uuid: transcript.uuid,
     path: transcript.path
   };
@@ -76,8 +97,10 @@ const formatToADLEvent = (transcript, element) => {
 };
 
 const getADLSq = (projectTitle, title, elements, transcripts) => {
-  const edits = elements
-    .filter(el => el.type === 'paper-cut')
+  const mergedElements = mergeConsecutiveElements(elements);
+
+  const edits = mergedElements
+    .filter((el) => el.type === 'paper-cut')
     .map((element, index) => {
       const transcript = getCurrentTranscript(element, transcripts);
       const edit = formatToADLEvent(transcript, element);
