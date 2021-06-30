@@ -17,8 +17,8 @@ const App = (props) => {
   const [ user, setUser ] = useState();
 
   useEffect(() => {
-    const authListener = props.firebase.auth.onAuthStateChanged((user) =>
-      setAuthUser(user)
+    const authListener = props.firebase.auth.onAuthStateChanged((authStateUser) =>
+      setAuthUser(authStateUser)
     );
 
     return () => {

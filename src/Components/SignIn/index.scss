@@ -1,0 +1,22 @@
+.SignIn {
+  &__container {
+    margin-bottom: 5em;
+    margin-top: 1em;
+    border: 1px solid black;
+    width: 398px;
+    padding: 1.5em;
+  }
+
+  &__header {
+    margin-bottom: 0.5em;
+  }
+
+  &__form {
+    margin-bottom: 1em;
+  }
+
+  &__link {
+    text-decoration: underline;
+    color: #363636;
+  }
+}
