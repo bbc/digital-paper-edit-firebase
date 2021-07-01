@@ -24,4 +24,10 @@ SignOutButton.propTypes = {
   firebase: PropTypes.any,
 };
 
+SignOutButton.propTypes = {
+  firebase: PropTypes.shape({
+    doSignOut: PropTypes.func
+  })
+};
+
 export default withFirebase(SignOutButton);

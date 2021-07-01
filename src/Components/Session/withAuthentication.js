@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 
 import AuthUserContext from './context';
 import { withFirebase } from '../Firebase';
-import PropTypes from 'prop-types';
 
 const withAuthentication = Component => {
   const WithAuthentication = props => {
@@ -35,7 +35,9 @@ const withAuthentication = Component => {
   };
 
   WithAuthentication.propTypes = {
-    firebase: PropTypes.any,
+    firebase: PropTypes.shape({
+      onAuthUserListener: PropTypes.func
+    })
   };
 
   return withFirebase(WithAuthentication);

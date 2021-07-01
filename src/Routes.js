@@ -7,6 +7,7 @@ import PaperEditor from './Components/PaperEditor';
 import Admin from './Components/Admin';
 import { Switch, Route, HashRouter } from 'react-router-dom';
 import SignIn from './Components/SignIn';
+import PasswordReset from './Components/PasswordReset';
 import * as ROUTES from './constants/routes';
 
 const PageNotFound = () => {
@@ -33,6 +34,7 @@ const Routes = ({ authUser }) => {
       <Switch>
         {landingRoute()}
         <Route exact path={ ROUTES.SIGN_IN } component={ SignIn } />
+        <Route exact path={ ROUTES.PASSWORD_RESET } component={ PasswordReset } />
         <Route exact path={ ROUTES.PROJECTS } component={ Projects } />
         <Route exact path={ ROUTES.WORKSPACE } component={ Workspace } />
         <Route exact path={ ROUTES.PAPER_EDITOR } component={ PaperEditor } />

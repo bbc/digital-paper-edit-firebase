@@ -170,7 +170,7 @@ ExportDropdown.propTypes = {
   projectTitle: PropTypes.any,
   title: PropTypes.any,
   transcripts: PropTypes.any,
-  storage: PropTypes.any,
+  storage: PropTypes.object,
   trackEvent: PropTypes.func
 };
 
