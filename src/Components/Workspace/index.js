@@ -105,7 +105,7 @@ const WorkspaceView = props => {
   const createPaperEdit = async (item) => {
     const newItem = await createCollectionItem(item, PaperEditsCollection);
     setPaperEditItems(() => [ newItem, ...paperEditItems ]);
-    props.trackEvent({ category: 'paperEdits', action: `createPaperEdit ${ newItem.id }` });
+    props.trackEvent({ category: 'project overview', action: 'create', name: `programme script: ${ newItem.id }` });
 
     return newItem;
   };
@@ -113,7 +113,8 @@ const WorkspaceView = props => {
   const deletePaperEdit = async (item) => {
     await deleteCollectionItem(item.id, PaperEditsCollection);
     setPaperEditItems(() => paperEditItems.filter(i => i.id !== item.id));
-    props.trackEvent({ category: 'paperEdits', action: `deletePaperEdit ${ item.id }` });
+    props.trackEvent({ category: 'project overview', action: 'delete', name: `programme script: ${ item.id }` });
+
   };
 
   const duplicatePaperEdit = async (item) => {
@@ -121,7 +122,7 @@ const WorkspaceView = props => {
     newItem.title = incrementCopyName(newItem.title, paperEditItems.map(p => p.title));
     newItem = await createCollectionItem(newItem, PaperEditsCollection);
     setPaperEditItems(() => [ newItem, ...paperEditItems ]);
-    props.trackEvent({ category: 'paperEdits', action: `duplicatePaperEdit ${ item.id }` });
+    props.trackEvent({ category: 'project overview', action: 'duplicate', name: `programme script: ${ item.id }` });
   };
 
   const updatePaperEdit = async (item) => {
@@ -129,7 +130,7 @@ const WorkspaceView = props => {
     newItem = { ...newItem, ...item };
     newItem = await updateCollectionItem(newItem, PaperEditsCollection);
     setPaperEditItems(updateItems(newItem, paperEditItems));
-    props.trackEvent({ category: 'paperEdits', action: `updatePaperEdit ${ item.id }` });
+    props.trackEvent({ category: 'project overview', action: 'update', name: `programme script: ${ item.id }` });
 
     return newItem;
   };
@@ -139,7 +140,7 @@ const WorkspaceView = props => {
     newItem = { ...newItem, ...item };
     await updateCollectionItem(newItem, TranscriptsCollection);
     updateItems(newItem, transcriptItems);
-    props.trackEvent({ category: 'transcripts', action: `updateTranscript ${ item.id }` });
+    props.trackEvent({ category: 'project overview', action: 'update', name: `transcript: ${ item.id }` });
 
     return newItem;
   };
@@ -147,7 +148,7 @@ const WorkspaceView = props => {
   const createTranscript = async (item) => {
     const newItem = await createCollectionItem(item, TranscriptsCollection);
     setTranscriptItems(() => [ newItem, ...transcriptItems ]);
-    props.trackEvent({ category: 'transcripts', action: `createTranscript ${ item.id }` });
+    props.trackEvent({ category: 'project overview', action: 'create', name: `transcript: ${ newItem.id }` });
 
     return newItem;
   };
@@ -162,7 +163,7 @@ const WorkspaceView = props => {
     } catch (e) {
       console.error('Failed to delete item in storage: ', e.code_);
     }
-    props.trackEvent({ category: 'transcripts', action: `deleteTranscript ${ item.id }` });
+    props.trackEvent({ category: 'project overview', action: 'delete', name: `transcript: ${ item.id }` });
   };
 
   // storage
@@ -415,12 +416,19 @@ const WorkspaceView = props => {
     return () => {};
   }, [ loadingPE, paperEditItems, id, props.firebase ]);
 
+  const convertMediaButton = () => {
+    handleEditTranscript();
+    props.trackEvent({ category: 'project overview', action: 'click', name: 'convert media to transcript' });
+  };
+
   return (
     <Container>
       <Row>
         <Col sm={ 6 }>
           <a href="#">
-            <Button size="sm">
+            <Button
+              size="sm"
+              onClick={ () => props.trackEvent({ category: 'project overview', action: 'click', name: 'back to projects' }) }>
               <FontAwesomeIcon icon={ faArrowLeft } /> Back to Projects
             </Button>
           </a>
@@ -437,7 +445,9 @@ const WorkspaceView = props => {
         </Col>
         <Col sm={ 3 }>
           <Button
-            onClick={ handleEditTranscript }
+            onClick={
+              convertMediaButton
+            }
             variant="outline-secondary"
             size="sm"
             block
@@ -467,6 +477,7 @@ const WorkspaceView = props => {
               handleEditItem={ (itemId) => handleEditPaperEdit(itemId) }
               handleDeleteItem={ (itemId) => handleDeleteItem({ id: itemId }, deletePaperEdit) }
               handleDuplicateItem={ (itemId) => handleDuplicateItem({ id: itemId }, duplicatePaperEdit) }
+              trackEvent ={ props.trackEvent }
             />
           ) : null}
         </Col>

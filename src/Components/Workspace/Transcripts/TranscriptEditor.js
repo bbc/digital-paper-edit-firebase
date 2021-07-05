@@ -196,7 +196,7 @@ const TranscriptEditor = ({ match, firebase, trackEvent }) => {
       );
     }
 
-    trackEvent({ category: 'transcriptEditor', action: 'handleSave' });
+    trackEvent({ category: 'transcript editor', action: 'save', name: transcriptId });
   };
 
   return (
@@ -251,6 +251,7 @@ const TranscriptEditor = ({ match, firebase, trackEvent }) => {
               // fileName={ this.state.projectTitle }// optional*
               ref={ transcriptEditorRef }
               mediaType={ mediaType }
+              handleAnalyticsEvents={ (analytics) => trackEvent({ category: 'transcript editor', action: analytics.action, name: transcriptId }) }
             />
           ) : null}
         </Suspense>

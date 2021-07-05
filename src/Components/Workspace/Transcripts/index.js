@@ -25,23 +25,25 @@ const Transcripts = (props) => {
     const progress = uploadTasks.get(item.id);
 
     return (
-      <TranscriptRow
-        key={ key }
-        description={ item.description }
-        id={ item.id }
-        title={ item.title }
-        url={ item.url ? item.url : '' }
-        created={ created ? created : 'NA' }
-        updated={ updated ? updated : 'NA' }
-        message={ item.message }
-        mediaDuration={ item.duration ? item.duration : null }
-        transcriptionDuration={ item.transcriptionDuration }
-        status={ item.status }
-        progress={ progress }
-        handleEditItem={ props.handleEditItem }
-        handleDeleteItem={ props.handleDeleteItem }
-        mediaType={ item.type }
-      />
+      <div key={ key }>
+        <TranscriptRow
+          description={ item.description }
+          id={ item.id }
+          title={ item.title }
+          url={ item.url ? item.url : '' }
+          created={ created ? created : 'NA' }
+          updated={ updated ? updated : 'NA' }
+          message={ item.message }
+          mediaDuration={ item.duration ? item.duration : null }
+          transcriptionDuration={ item.transcriptionDuration }
+          status={ item.status }
+          progress={ progress }
+          handleEditItem={ props.handleEditItem }
+          handleDeleteItem={ props.handleDeleteItem }
+          mediaType={ item.type }
+          handleClick={ () => props.trackEvent({ category: 'project overview', action: 'click', name: `transcript: ${ item.id }` }) }
+        />
+      </div>
     );
   });
 

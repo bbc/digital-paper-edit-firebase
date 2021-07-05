@@ -55,7 +55,7 @@ const Projects = (props) => {
     const newItem = await createCollectionItem(item, ProjectsCollection);
     await createDefaultLabel(newItem.id);
     setItems(() => [ newItem, ...items ]);
-    props.trackEvent({ category: 'projects', action: `createProject ${ item.id }` });
+    props.trackEvent({ category: 'projects', action: 'create', name: newItem.id });
 
     return newItem;
   };
@@ -65,7 +65,7 @@ const Projects = (props) => {
     newItem = { ...newItem, ...item };
     await updateCollectionItem(newItem, ProjectsCollection);
     setItems(updateItems(newItem, items));
-    props.trackEvent({ category: 'projects', action: `updateProject ${ item.id }` });
+    props.trackEvent({ category: 'projects', action: 'update', name: item.id });
 
     return newItem;
   };
@@ -88,7 +88,7 @@ const Projects = (props) => {
     newItem.title = incrementCopyName(newItem.title, items.map(p => p.title));
     newItem = await createCollectionItem(newItem, ProjectsCollection);
     setItems(() => [ newItem, ...items ]);
-    props.trackEvent({ category: 'projects', action: `duplicateProject ${ item.id }` });
+    props.trackEvent({ category: 'projects', action: 'duplicate', name: item.id });
   };
 
   const handleSaveForm = (item) => {
@@ -100,7 +100,7 @@ const Projects = (props) => {
   const deleteProject = async (item) => {
     await deleteCollectionItem(item.id, ProjectsCollection);
     setItems(() => items.filter(i => i.id !== item.id));
-    props.trackEvent({ category: 'projects', action: `deleteProject ${ item.id }` });
+    props.trackEvent({ category: 'projects', action: 'delete', name: item.id });
   };
 
   const handleEdit = (itemId) => {
@@ -196,7 +196,9 @@ const Projects = (props) => {
           handleDuplicateItem={ (itemId) => handleDuplicateItem({ id: itemId }, duplicateProject) }
           handleEditItem={ (itemId) => handleEdit(itemId) }
           handleDeleteItem={ (itemId) => handleDeleteItem({ id: itemId }, deleteProject) }
-        />
+          handleClick={ () => props.trackEvent({ category: 'projects', action: 'click', name: item.id }) }
+        >
+        </ProjectRow>
         <hr style={ { color: 'grey' } } />
       </div>
     );

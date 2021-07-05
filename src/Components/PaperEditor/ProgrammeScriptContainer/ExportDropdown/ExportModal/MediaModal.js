@@ -19,7 +19,8 @@ const MediaModal = (props) => {
             name={ name }
             url={ url }
             fileName={ fileName }
-            type={ type }/>
+            type={ type }
+            trackEvent= { props.trackEvent }/>
         ))}
       </Modal.Body>
     </Modal>
@@ -30,7 +31,8 @@ const MediaModal = (props) => {
 MediaModal.propTypes = {
   handleClose: PropTypes.any,
   show: PropTypes.any,
-  urls: PropTypes.any
+  urls: PropTypes.any,
+  trackEvent: PropTypes.func
 };
 
 export default MediaModal;

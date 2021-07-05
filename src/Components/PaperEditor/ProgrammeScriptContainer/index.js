@@ -55,11 +55,21 @@ const ProgrammeScriptContainer = (props) => {
     `/projects/${ projectId }/paperedits`
   );
 
-  const createPaperEdits = async (paperEdit) => {
+  const createPaperEdits = async (paperEdit, newElements, insertPointElement) => {
 
     try {
       await PaperEdits.putItem(papereditsId, paperEdit);
+      const insertedPaperCut = newElements.find(element => {
+
+        return element.index === insertPointElement.index - 1;
+      });
       console.log('Successfully saved');
+
+      let insertedWords = '';
+      insertedPaperCut.words.forEach(word => {
+        insertedWords += word.text;
+      });
+      props.trackEvent({ category: 'programme script - programme script panel', action: 'insert selection', name: insertedWords });
       setResetPreview(true);
     } catch (error) {
       console.error('Error saving document', error);
@@ -82,7 +92,7 @@ const ProgrammeScriptContainer = (props) => {
         elements: newElements,
       };
 
-      createPaperEdits(paperEdit);
+      createPaperEdits(paperEdit, newElements, insertPointElement);
       setSaved(true);
     };
   };
@@ -100,7 +110,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
 
       handleSaveProgrammeScript(newList);
-      props.trackEvent({ category: 'paperEditor programmeScript', action: 'handleClearProgrammeScript' });
+      props.trackEvent({ category: 'programme script - programme script panel', action: 'clear', name: papereditsId });
     }
   };
 
@@ -233,7 +243,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
       handleSaveProgrammeScript(updatedWords);
     }
-    props.trackEvent({ category: 'paperEditor programmeScript', action: `handleDelete ${ i }` });
+    props.trackEvent({ category: 'programme script - programme script panel', action: 'delete', name: `${ elements[i].type }` });
   };
 
   const handleEdit = (i) => {
@@ -248,7 +258,7 @@ const ProgrammeScriptContainer = (props) => {
       setResetPreview(true);
       handleSaveProgrammeScript(newElements);
     }
-    props.trackEvent({ category: 'paperEditor programmeScript', action: `handleEdit ${ newText }` });
+    props.trackEvent({ category: 'programme script - programme script panel', action: 'edit', name: `${ currentElement.type }` });
   };
 
   const onSortEnd = ({ oldIndex, newIndex }) => {
@@ -258,7 +268,7 @@ const ProgrammeScriptContainer = (props) => {
     setElements(updatedWords);
     setResetPreview(true);
     handleSaveProgrammeScript(updatedWords);
-    props.trackEvent({ category: 'paperEditor programmeScript', action: `onSortEnd from:${ oldIndex } to:${ newIndex }` });
+    props.trackEvent({ category: 'programme script - programme script panel', action: 'reorder', name: `${ elements[oldIndex].type } from: ${ oldIndex } to: ${ newIndex }` });
   };
 
   const getInsertElementIndex = () => {
@@ -481,6 +491,7 @@ const ProgrammeScriptContainer = (props) => {
         console.log('Added element');
         setResetPreview(true);
         handleSaveProgrammeScript(newElements);
+        props.trackEvent({ category: 'programme script - programme script panel', action: 'add', name: elementType });
       } else {
         console.log('Not adding element');
       }
@@ -502,6 +513,7 @@ const ProgrammeScriptContainer = (props) => {
               width={ width }
               playlist={ playlist }
               currentTime={ currentTime }
+              handleClick={ (control) => props.trackEvent({ category: 'programme script - programme script panel', action: control, name: title }) }
             />
           ) : null}
         </Card.Header>
@@ -530,6 +542,7 @@ const ProgrammeScriptContainer = (props) => {
                   elements={ elements }
                   storage={ firebase.storage.storage }
                   handleGetMediaUrl = { getMediaUrl }
+                  trackEvent ={ props.trackEvent }
                 />
                 : (<Button variant="outline-secondary" disabled>
                   <FontAwesomeIcon icon={ faShare } /> Export

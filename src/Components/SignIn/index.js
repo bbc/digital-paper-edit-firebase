@@ -8,6 +8,7 @@ import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import './index.scss';
 
 const SignInPage = () => (
@@ -21,6 +22,8 @@ const SignInFormBase = props => {
   const [ email, setEmail ] = useState('');
   const [ password, setPassword ] = useState('');
   const [ error, setError ] = useState();
+
+  const { trackEvent } = useMatomo();
 
   const onSubmit = async event => {
     // Prevent form from reloading
@@ -64,7 +67,12 @@ const SignInFormBase = props => {
             </Form.Group>
           </Col>
         </Form.Row>
-        <Button disabled={ isInvalid } variant="primary" type="submit">
+        <Button
+          disabled={ isInvalid }
+          variant="primary"
+          type="submit"
+          onClick={ () => trackEvent({ category: 'sign in page', action: 'click', name: 'sign in' }) }
+        >
           Sign in
         </Button>
         {error && <p>{error.message}</p>}

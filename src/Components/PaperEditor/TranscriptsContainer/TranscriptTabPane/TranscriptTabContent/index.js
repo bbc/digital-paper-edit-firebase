@@ -316,7 +316,7 @@ const TranscriptTabContent = (props) => {
     if (e.target.type !== 'checkbox') {
       const text = e.target.value;
       if (text) {
-        trackEvent({ category: 'paperEditor transcriptsTab', action: `handleSearch ${ text }` });
+        trackEvent({ category: 'programme script - transcript panel', action: 'search', name: text });
         setSearchString(text);
       } else {
         setSearchString('');
@@ -378,7 +378,7 @@ const TranscriptTabContent = (props) => {
       createAnnotation(newAnnotation);
       setAnnotations(() => [ ...annotations, newAnnotation ]);
       setProcessingParagraphs(false);
-      trackEvent({ category: 'paperEditor transcriptsTab', action: `handleCreateAnnotation ${ selection.labelId } ${ words.toString() } ` });
+      trackEvent({ category: 'programme Script - transcript panel', action: 'label', name: `${ activeLabel.id } ${ activeLabel.label }` });
     } else {
       alert('Select some text in the transcript to highlight ');
     }
@@ -427,7 +427,7 @@ const TranscriptTabContent = (props) => {
   const onLabelUpdate = (labelId, updatedLabel) => {
     setLabels(() => [ ...labels, updatedLabel ]);
     LabelsCollection.putItem(labelId, updatedLabel);
-    trackEvent({ category: 'paperEditor transcriptsTab', action: `label update ${ labelId } ${ updatedLabel }` });
+    trackEvent({ category: 'programme script - transcript panel', action:'update', name: `label: ${ labelId } ${ updatedLabel.label }` });
   };
 
   const onLabelDelete = (labelToDelete) => {
@@ -439,14 +439,14 @@ const TranscriptTabContent = (props) => {
     tempLabels.splice(labelToDelete.id, 1);
     LabelsCollection.deleteItem(labelToDelete.id);
     setLabels(tempLabels);
-    trackEvent({ category: 'paperEditor transcriptsTab', action: `label delete ${ labelToDelete }` });
+    trackEvent({ category: 'programme script - transcript panel', action:'delete', name: `label: ${ labelToDelete.id } ${ labelToDelete.label }` });
   };
 
   const onLabelCreate = (newLabel) => {
     createLabel(newLabel);
     const tempLabels = labels;
     tempLabels.push(newLabel);
-    trackEvent({ category: 'paperEditor transcriptsTab', action: 'label create ' });
+    trackEvent({ category: 'programme script - transcript panel', action:'create', name: `label: ${ newLabel.label }` });
   };
 
   const onLabelSelect = (selectedLabel) => {
@@ -456,6 +456,8 @@ const TranscriptTabContent = (props) => {
   const cardBodyHeight = mediaType.startsWith('audio') ? '100vh' : '60vh';
 
   let mediaElement;
+
+  const analyticsEvent = (action) => trackEvent({ category: 'programme script - transcript panel', action: action, name: title });
 
   if (mediaType.startsWith('audio')) {
     mediaElement = (
@@ -468,6 +470,9 @@ const TranscriptTabContent = (props) => {
           backgroundColor: 'black',
         } }
         controls
+        onPlay= { () => analyticsEvent('play') }
+        onPause= { () => analyticsEvent('pause') }
+        onSeeking= { () => analyticsEvent('seeking') }
       />
     );
   } else {
@@ -481,6 +486,9 @@ const TranscriptTabContent = (props) => {
           backgroundColor: 'black',
         } }
         controls
+        onPlay= { () => analyticsEvent('play') }
+        onPause= { () => analyticsEvent('pause') }
+        onSeeking= { () => analyticsEvent('seeking') }
       />
     );
   }

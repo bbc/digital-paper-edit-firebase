@@ -23,6 +23,7 @@ const PaperEdits = (props) => {
           handleDuplicateItem={ props.handleDuplicateItem }
           handleEditItem={ props.handleEditItem }
           handleDeleteItem={ props.handleDeleteItem }
+          handleClick={ () => props.trackEvent({ category: 'project overview', action: 'open', name: `programme script: ${ item.id }` }) }
         />
         <hr style={ { color: 'grey' } } />
       </div>
@@ -48,7 +49,8 @@ PaperEdits.propTypes = {
   handleDuplicateItem: PropTypes.any,
   handleEditItem: PropTypes.any,
   items: PropTypes.any,
-  projectId: PropTypes.any
+  projectId: PropTypes.any,
+  trackEvent: PropTypes.any
 };
 
 const condition = (authUser) => !!authUser;

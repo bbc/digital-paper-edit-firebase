@@ -103,14 +103,16 @@ const PaperEditor = (props) => {
     if (isProgramScriptShown) {
       setIsTranscriptsShown(!isTranscriptsShown);
     }
-    props.trackEvent({ category: 'paperEditor', action: `handleToggle transcripts: ${ isTranscriptsShown } programScripts: ${ isProgramScriptShown }` });
+    const hideOrShow = isTranscriptsShown ? 'hide' : 'show';
+    props.trackEvent({ category: 'programme script', action: 'click', name: `${ hideOrShow } transcript panel` });
   };
 
   const toggleProgramScript = () => {
     if (isTranscriptsShown) {
       setIsProgramScriptShown(!isProgramScriptShown);
     }
-    props.trackEvent({ category: 'paperEditor', action: `handleToggle transcripts: ${ isTranscriptsShown } programScripts: ${ isProgramScriptShown }` });
+    const hideOrShow = isProgramScriptShown ? 'hide' : 'show';
+    props.trackEvent({ category: 'programme script', action: 'click', name: `${ hideOrShow } programme script panel` });
   };
 
   const toggleButton = (text, isShown, toggle) => {
@@ -153,6 +155,7 @@ const PaperEditor = (props) => {
           name: `${ paperEditTitle }`,
         },
       ] }
+      handleClick={ () => props.trackEvent({ category: 'programme script/transcript editor', action: 'breadcrumb', name: 'go to project overview' }) }
     />
   );
 
