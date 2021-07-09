@@ -50,7 +50,7 @@ PaperEdits.propTypes = {
   handleEditItem: PropTypes.any,
   items: PropTypes.any,
   projectId: PropTypes.any,
-  trackEvent: PropTypes.any
+  trackEvent: PropTypes.func
 };
 
 const condition = (authUser) => !!authUser;
