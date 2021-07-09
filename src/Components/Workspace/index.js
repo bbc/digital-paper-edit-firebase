@@ -416,7 +416,7 @@ const WorkspaceView = props => {
     return () => {};
   }, [ loadingPE, paperEditItems, id, props.firebase ]);
 
-  const convertMediaButton = () => {
+  const handleConvertMedia = () => {
     handleEditTranscript();
     props.trackEvent({ category: 'project overview', action: 'click', name: 'convert media to transcript' });
   };
@@ -446,7 +446,7 @@ const WorkspaceView = props => {
         <Col sm={ 3 }>
           <Button
             onClick={
-              convertMediaButton
+              handleConvertMedia
             }
             variant="outline-secondary"
             size="sm"
