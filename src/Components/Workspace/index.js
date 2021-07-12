@@ -11,7 +11,7 @@ import { PROJECTS } from '../../constants/routes';
 import { withAuthorization } from '../Session';
 import FormModal from '@bbc/digital-paper-edit-storybook/FormModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { formatDuration } from '../../Util/time';
+import { ToHumanReadable } from '../../Util/time';
 import './index.scss';
 
 import {
@@ -344,7 +344,7 @@ const WorkspaceView = props => {
     video.onloadedmetadata = async () => {
       window.URL.revokeObjectURL(video.src);
       const duration = video.duration;
-      const formattedDuration = await formatDuration(duration);
+      const formattedDuration = ToHumanReadable(duration);
 
       return await finishCreateOrUpdateTranscript(newTranscript, formattedDuration, video);
     };
