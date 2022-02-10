@@ -28,7 +28,7 @@
     "firebaseui": "^4.3.0",
     "formik": "^2.2.6",
     "http2": "^3.3.7",
-    "node-sass": "^4.13.0",
+    "node-sass": "^7.0.0",
     "randomcolor": "^0.5.4",
     "react": "^16.10.2",
     "react-bootstrap": "^1.0.0-beta.14",
