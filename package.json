@@ -21,7 +21,7 @@
     "docx": "^6.0.3",
     "downloadjs": "^1.4.7",
     "edl_composer": "^1.0.3",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "firebase": "^7.14.0",
     "firebase-admin": "^9.4.2",
     "firebase-functions": "^3.13.2",
