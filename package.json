@@ -23,7 +23,7 @@
     "edl_composer": "^1.0.3",
     "express": "^4.17.1",
     "firebase": "^7.14.0",
-    "firebase-admin": "^9.4.2",
+    "firebase-admin": "^11.4.1",
     "firebase-functions": "^3.13.2",
     "firebaseui": "^4.3.0",
     "formik": "^2.2.6",
