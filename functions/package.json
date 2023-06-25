@@ -17,18 +17,18 @@
   },
   "dependencies": {
     "aws-sdk": "^2.588.0",
-    "firebase-admin": "^9.8.0",
+    "firebase-admin": "^11.9.0",
     "firebase-functions": "^3.14.1",
     "fluent-ffmpeg": "^2.1.2",
     "node-fetch": "^2.6.1",
     "zlib": "^1.0.5"
   },
   "devDependencies": {
-    "eslint": "^5.12.0",
+    "eslint": "^8.43.0",
     "eslint-plugin-promise": "^4.0.1",
     "fetch-mock": "^9.3.1",
     "firebase-functions-test": "^0.1.7",
-    "mocha": "^7.1.1"
+    "mocha": "^10.2.0"
   },
   "private": true
 }
